@@ -7,14 +7,18 @@
 
 package org.omnetpp.ned.editor.graph.parts;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
+import org.omnetpp.ned.editor.graph.parts.canvas.*;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
 import org.omnetpp.ned.model.ex.NedFileElementEx;
+import org.omnetpp.ned.model.ex.PropertyElementEx;
 import org.omnetpp.ned.model.ex.SubmoduleElementEx;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
 import org.omnetpp.ned.model.pojo.TypesElement;
+import static org.omnetpp.common.canvas.CanvasFigureConstants.*;
 
 /**
  * Factory to create corresponding controller objects for the model objects.
@@ -43,8 +47,48 @@ public class NedEditPartFactory implements EditPartFactory {
             child = new NedTypeEditPart();
         else if (model instanceof TypesElement)
             child = new TypesEditPart();
-        else
-            throw new IllegalArgumentException("Unknown model element: "+model);
+        else if (model instanceof PropertyElementEx) {
+            PropertyElementEx property = (PropertyElementEx)model;
+            if (property.getName().equals("figure")) {
+                String type = property.getValue(PKEY_TYPE);
+
+                if (type.equals(FTYPE_RECTANGLE)) {
+                    child = new RectangleEditPart();
+                } else if (type.equals(FTYPE_OVAL)) {
+                    child = new OvalEditPart();
+                } else if (type.equals(FTYPE_RING)) {
+                    child = new RingEditPart();
+                } else if (type.equals(FTYPE_PIESLICE)) {
+                    child = new PiesliceEditPart();
+                } else if (type.equals(FTYPE_ARC)) {
+                    child = new ArcEditPart();
+                } else if ((type.equals(FTYPE_POLYLINE)) || (type.equals(FTYPE_LINE))) {
+                    child = new PolylineEditPart();
+                } else if (type.equals(FTYPE_POLYGON)) {
+                    child = new PolygonEditPart();
+                } else if (type.equals(FTYPE_TEXT)) {
+                    child = new TextEditPart();
+                } else if (type.equals(FTYPE_LABEL)) {
+                    child = new LabelEditPart();
+                } else if (type.equals(FTYPE_GROUP)) {
+                    child = new GroupEditPart();
+                } else if (type.equals(FTYPE_IMAGE)) {
+                    child = new ImageEditPart();
+                } else if (type.equals(FTYPE_PIXMAP)) {
+                    child = new PixmapEditPart();
+                } else if (type.equals(FTYPE_ICON)) {
+                    child = new IconEditPart();
+                } else if (type.equals(FTYPE_PATH)) {
+                    child = new PathEditPart();
+                }
+
+                // child must not be null here, because the getModelChildren() methods of
+                // AbstractCanvasFigureEditPart and CompoundModuleEditPart should only allow
+                // PropertyElements here which are all handled above (they have a known type)
+                Assert.isTrue(child != null);
+            }
+        } else
+            throw new IllegalArgumentException("Unknown model element: " + model);
 
         child.setModel(model);
         return child;

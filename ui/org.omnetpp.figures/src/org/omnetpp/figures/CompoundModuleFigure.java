@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Layer;
 import org.eclipse.draw2d.LayeredPane;
 import org.eclipse.draw2d.StackLayout;
@@ -30,6 +31,9 @@ import org.omnetpp.common.image.ImageFactory;
 import org.omnetpp.common.ui.ISelectable;
 import org.omnetpp.figures.anchors.IAnchorBounds;
 import org.omnetpp.figures.layout.CompoundModuleLayout;
+import org.omnetpp.figures.misc.FigureUtils;
+import org.omnetpp.figures.misc.IComparableFigure;
+import org.omnetpp.figures.misc.IFigureSortingParent;
 import org.omnetpp.figures.misc.ILayerSupport;
 import org.omnetpp.figures.misc.ISelectionHandleBounds;
 import org.omnetpp.figures.routers.CompoundModuleConnectionRouter;
@@ -65,7 +69,26 @@ public class CompoundModuleFigure extends LayeredPane implements IAnchorBounds, 
     protected String unit = "m";
     protected float snapGridSpacing;  // UNSCALED! multiply by scale before use
 
+    /*
+     *  The layer hierarchy currently looks like this:
+     *
+     *  CompoundModuleFigure
+     *   +- figureLayer ( <- sorts children by zIndex )
+     *   |   +- any @figure (AbstractCanvasFigure) with a childZ higher than of the [submodules] group
+     *   |   +- networkLayer ( <- has a zIndex, the childZ of the [submodules] group )
+     *   |   |   +- messageLayer
+     *   |   |   +- connectionLayer
+     *   |   |   +- frontDecorationLayer
+     *   |   |   +- submoduleLayer
+     *   |   |   \- backDecorationLayer
+     *   |   \- any @figure (AbstractCanvasFigure) with a childZ lower than of the [submodules] group
+     *   \- backgroundLayer
+     *
+     */
+
     protected BackgroundLayer backgroundLayer; // compound module background: images, colors, grid, etc.
+    protected FigureLayer figureLayer; // @figure properties, and the whole network among them
+    protected NetworkLayer networkLayer;
     protected Layer backDecorationLayer; // submodule background decoration (range indicators, etc), non-extensible
     protected SubmoduleLayer submoduleLayer; // layer to display submodules - size is automatically calculated from children sizes and positions
     protected Layer frontDecorationLayer; // foreground decorations: text messages, decorator icons, etc.
@@ -162,6 +185,45 @@ public class CompoundModuleFigure extends LayeredPane implements IAnchorBounds, 
         }
     }
 
+    // the @figure properties are drawn onto this layer
+    public class FigureLayer extends LayeredPane implements IFigureSortingParent {
+
+        public FigureLayer() {
+            super();
+            // The whole network is contained in the figureLayer to allow proper z-ordering.
+            add(networkLayer = new NetworkLayer());
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void add(IFigure figure, java.lang.Object constraint, int index) {
+            super.add(figure, constraint, index);
+            FigureUtils.sortFigures(getChildren());
+        }
+
+        @Override
+        protected boolean useLocalCoordinates() {
+            return true;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void childChanged(IComparableFigure child) {
+            FigureUtils.sortFigures(getChildren());
+            repaint();
+        }
+
+        @Override
+        public Dimension getPreferredSize(int wHint, int hHint) {
+            return networkLayer.getPreferredSize(wHint, hHint);
+        }
+
+        @Override
+        public Dimension getMinimumSize(int wHint, int hHint) {
+            return networkLayer.getMinimumSize(wHint, hHint);
+        }
+    }
+
     /**
      * Main layer used to display submodules
      */
@@ -177,17 +239,76 @@ public class CompoundModuleFigure extends LayeredPane implements IAnchorBounds, 
         }
     }
 
+    public class NetworkLayer extends LayeredPane implements IComparableFigure {
+        private double zIndex = 0;
+        private int ordinal = 0;
+
+        public NetworkLayer() {
+            setLayoutManager(new StackLayout());
+
+            addLayerAfter(messageLayer = new Layer(), null, null);
+            addLayerAfter(connectionLayer = new ConnectionLayer(), null, null);
+            addLayerAfter(frontDecorationLayer = new Layer(), null, null);
+            addLayerAfter(submoduleLayer = new SubmoduleLayer(), null, null);
+            addLayerAfter(backDecorationLayer = new Layer(), null, null);
+        }
+
+        @Override
+        public Dimension getPreferredSize(int wHint, int hHint) {
+            return submoduleLayer.getPreferredSize();
+        }
+
+        @Override
+        public Dimension getMinimumSize(int wHint, int hHint) {
+            Dimension minimumSize = new Dimension(0, 0);
+
+            minimumSize.union(backDecorationLayer.getMinimumSize());
+            minimumSize.union(submoduleLayer.getMinimumSize());
+            minimumSize.union(frontDecorationLayer.getMinimumSize());
+            minimumSize.union(connectionLayer.getMinimumSize());
+            minimumSize.union(messageLayer.getMinimumSize());
+
+            return minimumSize;
+        }
+
+        @Override
+        public void setZIndex(double zIndex) {
+            if (this.zIndex != zIndex) {
+                this.zIndex = zIndex;
+                if (getParent() instanceof IFigureSortingParent) {
+                    ((IFigureSortingParent)getParent()).childChanged(this);
+                }
+            }
+        }
+
+        @Override
+        public double getZIndex() {
+            return zIndex;
+        }
+
+        @Override
+        public void setOrdinal(int ordinal) {
+            if (this.ordinal != ordinal) {
+                this.ordinal = ordinal;
+                if (getParent() instanceof IFigureSortingParent) {
+                    ((IFigureSortingParent)getParent()).childChanged(this);
+                }
+            }
+        }
+
+        @Override
+        public int getOrdinal() {
+            return ordinal;
+        }
+    }
+
     public CompoundModuleFigure() {
         super();
 
         setLayoutManager(new StackLayout());
 
-        add(backgroundLayer = new BackgroundLayer());
-        add(backDecorationLayer = new Layer());
-        add(submoduleLayer = new SubmoduleLayer());
-        add(frontDecorationLayer = new Layer());
-        add(connectionLayer = new ConnectionLayer());
-        add(messageLayer = new Layer());
+        addLayerAfter(backgroundLayer = new BackgroundLayer(), null, null);
+        addLayerAfter(figureLayer = new FigureLayer(), null, null);  // contains the whole network as well
 
         // add a compound module border
         setBorder(new CompoundModuleLineBorder());
@@ -196,9 +317,11 @@ public class CompoundModuleFigure extends LayeredPane implements IAnchorBounds, 
         // can follow the size of the submoduleLayer which uses the layouter to calculate the
         // preferred size.
         submoduleLayer.setLayoutManager(layouter = new CompoundModuleLayout(this));
+        networkLayer.setPreferredSize(0, 0);
         messageLayer.setPreferredSize(0, 0);
         connectionLayer.setPreferredSize(0, 0);
         frontDecorationLayer.setPreferredSize(0, 0);
+        figureLayer.setPreferredSize(0, 0);
         backDecorationLayer.setPreferredSize(0, 0);
         backgroundLayer.setPreferredSize(0, 0);
 
@@ -411,6 +534,14 @@ public class CompoundModuleFigure extends LayeredPane implements IAnchorBounds, 
 
     public Layer getBackgroundLayer() {
         return backgroundLayer;
+    }
+
+    public Layer getFigureLayer() {
+        return figureLayer;
+    }
+
+    public Layer getNetworkLayer() {
+        return networkLayer;
     }
 
     public Layer getBackgroundDecorationLayer() {

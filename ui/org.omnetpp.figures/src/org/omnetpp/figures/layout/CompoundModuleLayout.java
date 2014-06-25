@@ -100,9 +100,12 @@ public class CompoundModuleLayout extends AbstractLayout {
         // all child figures on this layer are considered as node
         IFigure nodeParent = compoundModuleFigure.getSubmoduleLayer();
         for (SubmoduleFigure node : (List<SubmoduleFigure>)nodeParent.getChildren()) {
+            if (!(node instanceof SubmoduleFigure))
+                continue;
+
             submoduleToId.put(node, nodeIndex);
 
-            ISubmoduleConstraint constraint = getConstraint(node);
+            ISubmoduleConstraint constraint = (SubmoduleConstraint)getConstraint(node);
             DimensionF shapeSize = constraint.getShapeSize();
             if (shapeSize == null)
                 shapeSize = new DimensionF(0, 0);
@@ -248,7 +251,7 @@ public class CompoundModuleLayout extends AbstractLayout {
             for (SubmoduleFigure node : submoduleToId.keySet()) {
                 Integer id = submoduleToId.get(node);
                 PointF loc = alg.getNodePosition(id);
-                ISubmoduleConstraint constraint = getConstraint(node);
+                ISubmoduleConstraint constraint = (SubmoduleConstraint)getConstraint(node);
                 constraint.setLayoutedLocation(loc);
                 node.setCenterPosition(loc.toPixels(scale));
             }
@@ -268,8 +271,10 @@ public class CompoundModuleLayout extends AbstractLayout {
         // forget all cached coordinates
         IFigure nodeParent = compoundModuleFigure.getSubmoduleLayer();
         for (IFigure node : (List<IFigure>)nodeParent.getChildren()) {
-            ISubmoduleConstraint constr = getConstraint(node);
-            constr.setLayoutedLocation(null);
+            if (node instanceof SubmoduleFigure) {
+                ISubmoduleConstraint constr = (ISubmoduleConstraint)getConstraint(node);
+                constr.setLayoutedLocation(null);
+            }
         }
     }
 
@@ -310,7 +315,7 @@ public class CompoundModuleLayout extends AbstractLayout {
     }
 
     @Override
-    public ISubmoduleConstraint getConstraint(IFigure child) {
-        return ((SubmoduleFigure)child).getLayoutConstraint();
+    public Object getConstraint(IFigure child) {
+        return (child instanceof SubmoduleFigure) ? ((SubmoduleFigure)child).getLayoutConstraint() : super.getConstraint(child);
     }
 }

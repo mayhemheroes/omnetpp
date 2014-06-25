@@ -7,12 +7,16 @@
 
 package org.omnetpp.figures.misc;
 
-import java.util.Collection;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FreeformFigure;
 import org.eclipse.draw2d.FreeformLayer;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
@@ -109,7 +113,6 @@ public class FigureUtils {
         };
         canvas.addListener(SWT.MouseMove, listener);
         canvas.addListener(SWT.MouseHover, listener);
-
     }
 
     static private String getFigureTooltip(IFigure rootFigure, int x, int y) {
@@ -143,5 +146,40 @@ public class FigureUtils {
             }
             return getBounds(freeformHelperFigure);
         }
+    }
+
+    /**
+     * Sorts the given list of figures into the order in which they should be
+     * drawn to appear correctly, according to their childZ values and ordinal
+     * positions.
+     */
+    public static void sortFigures(List<? extends IFigure> figures) {
+        Collections.sort(figures, new Comparator<IFigure> () {
+
+            @Override
+            public int compare(IFigure a, IFigure b) {
+                double zA = 0, zB = 0;
+                int ordA = 0, ordB = 0;
+
+                if (a instanceof IComparableFigure) {
+                    zA = ((IComparableFigure)a).getZIndex();
+                    ordA = ((IComparableFigure)a).getOrdinal();
+                }
+
+                if (b instanceof IComparableFigure) {
+                    zB = ((IComparableFigure)b).getZIndex();
+                    ordB = ((IComparableFigure)b).getOrdinal();
+                }
+
+                int result = Double.compare(zA, zB);
+
+                if (result == 0) {
+                    result = Integer.compare(ordA, ordB);
+                }
+
+                return result;
+            }
+
+        });
     }
 }

@@ -17,6 +17,8 @@ import org.eclipse.draw2d.Layer;
  */
 public interface ILayerSupport {
     public Layer getBackgroundLayer();
+    public Layer getFigureLayer();
+    public Layer getNetworkLayer();
     public Layer getBackgroundDecorationLayer();
     public Layer getSubmoduleLayer();
     public Layer getForegroundDecorationLayer();

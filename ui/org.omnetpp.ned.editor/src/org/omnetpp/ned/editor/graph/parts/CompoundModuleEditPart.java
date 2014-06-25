@@ -35,15 +35,21 @@ import org.omnetpp.figures.CompoundModuleFigure;
 import org.omnetpp.figures.anchors.CompoundModuleGateAnchor;
 import org.omnetpp.figures.anchors.GateAnchor;
 import org.omnetpp.ned.editor.NedEditorPlugin;
+import org.omnetpp.figures.CompoundModuleFigure.NetworkLayer;
+import org.omnetpp.ned.core.NedCanvasFigureValidator;
 import org.omnetpp.ned.editor.graph.figures.CompoundModuleTypeFigure;
+import org.omnetpp.ned.editor.graph.misc.CanvasFigureUtils;
+import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
 import org.omnetpp.ned.editor.graph.parts.policies.CompoundModuleLayoutEditPolicy;
 import org.omnetpp.ned.editor.graph.properties.util.TypeNameValidator;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
+import org.omnetpp.ned.model.ex.PropertyElementEx;
 import org.omnetpp.ned.model.interfaces.IInterfaceTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
 import org.omnetpp.ned.model.pojo.TypesElement;
+import static org.omnetpp.common.canvas.CanvasFigureConstants.*;
 
 /**
  * Edit part controlling the appearance of the compound module figure. Note that this
@@ -118,6 +124,8 @@ public class CompoundModuleEditPart extends ModuleEditPart {
         // submodule figures should be added to the main pane
         if (childEditPart instanceof SubmoduleEditPart)
             getContentPane().add(childFigure);
+        if (childEditPart instanceof AbstractCanvasFigureEditPart)
+            getFigure().getSubmoduleArea().getFigureLayer().add(childFigure);
         // the inner type compartment should be added as the second child (between title and submodules)
         else if (childEditPart instanceof TypesEditPart)
             getFigure().add(childFigure,1); // add it as a second child to be displayed between the title and the submodulesarea
@@ -166,8 +174,22 @@ public class CompoundModuleEditPart extends ModuleEditPart {
         if (typesElement != null)
             result.add(typesElement);
 
-        // return all submodule including inherited ones
+        // return all submodules, including inherited ones
         result.addAll(getModel().getSubmodules());
+
+        // adding figure properties with known types, but only the top level ones
+        Map<String, PropertyElementEx> figures = getModel().getProperties().get("figure");
+        if (figures != null) {
+            for (PropertyElementEx property : figures.values()) {
+                String type = property.getValue(PKEY_TYPE);
+
+                if ((type != null) && NedCanvasFigureValidator.validTypes.contains(type)
+                        && (CanvasFigureUtils.getClosestAncestor(property) == null)) {
+                    result.add(property);
+                }
+            }
+        }
+
         return result;
     }
 
@@ -219,6 +241,32 @@ public class CompoundModuleEditPart extends ModuleEditPart {
         boolean snapToGridVisible = EditPartUtil.isSnapToGridVisible(getViewer());
         float snapToGridSpacing = EditPartUtil.getSnapToGridSpacing(getViewer());
         getFigure().getSubmoduleArea().setSnapGridSpacing(snapToGridVisible ? snapToGridSpacing : -1.0f);
+
+        NetworkLayer networkLayer = (NetworkLayer)compoundModuleFigure.getSubmoduleArea().getNetworkLayer();
+
+        Map<String, PropertyElementEx> figures = compoundModuleModel.getProperties().get("figure");
+
+        if (figures != null) {
+            PropertyElementEx submodules = figures.get("submodules");
+
+            networkLayer.setOrdinal((submodules == null) ? figures.size() : CanvasFigureUtils.getOrdinal(figures, "submodules"));
+
+            if (submodules != null) {
+                String childZString = submodules.getValue(PKEY_ZINDEX);
+
+                double zIndex = 0;
+
+                if (childZString != null) {
+                    try {
+                        zIndex = Double.parseDouble(childZString);
+                    } catch (NumberFormatException e) {
+                        // Nothing.
+                    }
+                }
+
+                networkLayer.setZIndex(zIndex);
+            }
+        }
     }
 
     protected float getInitialScale(Dimension unscaledSize) {
@@ -319,6 +367,7 @@ public class CompoundModuleEditPart extends ModuleEditPart {
     public void setScale(float scale) {
         this.scale = scale;
         getSettings().put(getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_SCALE, scale);
+        refresh();
     }
 
     public void zoomIn() {

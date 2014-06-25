@@ -90,7 +90,7 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
     public SubmoduleFigure() {
     }
 
-    public ISubmoduleConstraint getLayoutConstraint() {
+    public Object getLayoutConstraint() {
         return constraint;
     }
 

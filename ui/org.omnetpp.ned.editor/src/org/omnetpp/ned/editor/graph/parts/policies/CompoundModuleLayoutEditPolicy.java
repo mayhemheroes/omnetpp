@@ -47,6 +47,7 @@ import org.omnetpp.ned.editor.graph.parts.CompoundModuleEditPart;
 import org.omnetpp.ned.editor.graph.parts.EditPartUtil;
 import org.omnetpp.ned.editor.graph.parts.ModuleEditPart;
 import org.omnetpp.ned.editor.graph.parts.SubmoduleEditPart;
+import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.NedElementFactoryEx;
@@ -200,6 +201,19 @@ public class CompoundModuleLayoutEditPolicy extends ConstrainedLayoutEditPolicy 
 
     @Override
     protected Command createAddCommand(EditPart childToAdd, Object constraint) {
+
+        // Returning a dummy instance as the add command of canvas figures. This
+        // is needed only for non-toplevel figures, because the
+        // CompoundModuleEditPart believes that they are added to it, as they
+        // are not its direct children. If this isn't done, an unexecutable
+        // command gets into the CompoundCommand after the move instead of this.
+        // Then the CompoundCommand in turn will be unexecutable, so not even
+        // the move command will be executed.
+        if (childToAdd instanceof AbstractCanvasFigureEditPart) {
+            return new Command() { @Override
+            public void execute() { }}; // HACK FIXME
+        }
+
         INedElement element = (INedElement)childToAdd.getModel();
 
         // if the add is not targeted to the title/border i.e. it is dropped inside

@@ -22,6 +22,7 @@ import org.omnetpp.common.color.ColorFactory;
 import org.omnetpp.figures.misc.ISelectionHandleBounds;
 import org.omnetpp.ned.editor.graph.GraphicalNedEditor;
 import org.omnetpp.ned.editor.graph.parts.EditPartUtil;
+import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
 
 /**
  * Handles feedback figures during move and resize and enables / disables
@@ -41,6 +42,19 @@ public class NedResizeEditPolicy extends ResizableEditPolicy {
         figure.setBounds(getInitialFeedbackBounds());
         addFeedback(figure);
         return figure;
+    }
+
+    @Override
+    public void showSourceFeedback(Request request) { // HACK
+        // For top level figures, there is a move request first, and when it is
+        // dragged out of the module, an add request is created too, and we
+        // should inhibit the feedback for that second request.
+        // For child figures, there is no move request, only an add (which only
+        // moves), because those are not direct children of the module.
+        if ((getHost().getParent() instanceof AbstractCanvasFigureEditPart) // if it is a child figure, we are good to go
+                || (!((getHost() instanceof AbstractCanvasFigureEditPart) && !REQ_MOVE.equals(request.getType())))) { // or if it is a top-level, we only accept a move request
+            super.showSourceFeedback(request);
+        }
     }
 
     @SuppressWarnings("unchecked")

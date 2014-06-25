@@ -27,8 +27,10 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.PositionConstants;
+import org.eclipse.draw2d.Viewport;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.ContextMenuProvider;
@@ -38,12 +40,14 @@ import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.KeyHandler;
 import org.eclipse.gef.KeyStroke;
+import org.eclipse.gef.MouseWheelHandler;
 import org.eclipse.gef.SelectionManager;
 import org.eclipse.gef.SnapToGeometry;
 import org.eclipse.gef.SnapToGrid;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.GridLayer;
+import org.eclipse.gef.editparts.GraphicalRootEditPart;
 import org.eclipse.gef.editparts.ScalableRootEditPart;
 import org.eclipse.gef.internal.ui.palette.editparts.DrawerEditPart;
 import org.eclipse.gef.internal.ui.palette.editparts.DrawerFigure;
@@ -83,6 +87,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -106,6 +111,7 @@ import org.omnetpp.common.util.DelayedJob;
 import org.omnetpp.common.util.DisplayUtils;
 import org.omnetpp.common.util.PersistentResourcePropertyManager;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.figures.CompoundModuleFigure;
 import org.omnetpp.figures.misc.FigureUtils;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.editor.NedEditor;
@@ -131,10 +137,12 @@ import org.omnetpp.ned.editor.graph.actions.ToggleSnapToGridAction;
 import org.omnetpp.ned.editor.graph.actions.ZoomInAction;
 import org.omnetpp.ned.editor.graph.actions.ZoomOutAction;
 import org.omnetpp.ned.editor.graph.commands.ExternalChangeCommand;
+import org.omnetpp.ned.editor.graph.figures.CompoundModuleTypeFigure;
 import org.omnetpp.ned.editor.graph.misc.NedSelectionSynchronizer;
 import org.omnetpp.ned.editor.graph.misc.PaletteManager;
 import org.omnetpp.ned.editor.graph.parts.CompoundModuleEditPart;
 import org.omnetpp.ned.editor.graph.parts.NedEditPartFactory;
+import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
 import org.omnetpp.ned.editor.graph.properties.NedPropertySheetPage;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
@@ -350,7 +358,7 @@ public class GraphicalNedEditor
                 for (Object o : sel) {
                     if (o instanceof INedModelProvider) {
                         INedElement nedElement = ((INedModelProvider)o).getModel();
-                        if (nedElement.getContainingNedFileElement() != null)
+                        if ((nedElement != null) && (nedElement.getContainingNedFileElement() != null))
                             newSel.add(o);
                     }
                 }
@@ -358,25 +366,8 @@ public class GraphicalNedEditor
             }
         });
 
-        ScalableRootEditPart root = new ScalableRootEditPart() {  // need to customize this for the "snap to" grid to work
-            @Override
-            protected void refreshGridLayer() {
-                // this is called on viewer property change events, arrange a refresh to let showing/hiding the grid via property changes take effect
-                EditPart contents = getContents();
-                if (contents != null)
-                    contents.refresh();
-            }
-
-            @Override
-            protected GridLayer createGridLayer() {
-                return new GridLayer() {
-                    @Override
-                    public void paint(Graphics graphics) {
-                        // overridden to do nothing -- we don't want to see original grid
-                    }
-                };
-            }
-        };
+        // The overriding of some of ScaledGraphics's functionality begins here.
+        ScalableRootEditPart root = new ScalableRootEditPart();
 
         // set the root edit part as the main viewer
         viewer.setRootEditPart(root);
@@ -387,7 +378,7 @@ public class GraphicalNedEditor
         viewer.setProperty(SnapToGeometry.PROPERTY_SNAP_ENABLED, preferenceStore.getBoolean(SnapToGeometry.PROPERTY_SNAP_ENABLED));
         viewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_ENABLED));
         viewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_VISIBLE));
-        viewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_SPACING));
+        //viewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_SPACING));
         viewer.setContextMenu(provider);
         // register the menu so we can contribute to it from other plugins BUT do not include the
         // contributions for the editor input (otherwise we will get a ton of unnecessary menus like
@@ -649,7 +640,8 @@ public class GraphicalNedEditor
 
     protected void loadProperties() {
         // Scroll-wheel Zoom support
-//TODO        getGraphicalViewer().setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD1), MouseWheelZoomHandler.SINGLETON);
+        // TODO: should prevent vertical scrolling during zooming
+        getGraphicalViewer().setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD1), new WheelHandler());
     }
 
     @Override
@@ -779,7 +771,7 @@ public class GraphicalNedEditor
     public void reveal(INedElement model) {
         EditPart editPart = getNearestEditPartForModel(getGraphicalViewer(), model);
 
-         if (editPart == null) {
+         if ((editPart == null) || (!editPart.isSelectable())) {
              getGraphicalViewer().deselectAll();
          }
          else {
@@ -1101,6 +1093,60 @@ public class GraphicalNedEditor
         @Override
         public boolean canRedo() {
             return super.canRedo() && isModelEditable();
+        }
+    }
+
+    private class WheelHandler implements MouseWheelHandler {
+        @SuppressWarnings("unchecked")
+        @Override
+        public void handleMouseWheel(Event event, EditPartViewer viewer) {
+            ScalableRootEditPart rootPart = (ScalableRootEditPart)viewer.getRootEditPart();
+            Viewport viewport = (Viewport)rootPart.getFigure();
+
+            PrecisionPoint viewLoc = new PrecisionPoint(viewport.getViewLocation());
+            PrecisionPoint mousePos = new PrecisionPoint(event.x, event.y);
+
+            CompoundModuleEditPart modulePart = null;
+            EditPart hoveredPart = viewer.findObjectAt(new Point(event.x, event.y));
+
+            if (hoveredPart instanceof CompoundModuleEditPart)
+                modulePart = (CompoundModuleEditPart)hoveredPart;
+            else if (hoveredPart instanceof AbstractCanvasFigureEditPart) {
+                modulePart = ((AbstractCanvasFigureEditPart)hoveredPart).getCompoundModulePart();
+            }
+
+            if (modulePart == null)
+                return;
+
+            CompoundModuleFigure moduleFigure = ((CompoundModuleTypeFigure)modulePart.getFigure()).getSubmoduleArea();
+            Point moduleCoords = moduleFigure.getLocation();
+            // after this, moduleCoords should be the position of the submodule area in the scene
+            moduleFigure.getParent().translateToParent(moduleCoords);
+
+            // this is the unscrolled position
+            mousePos.translate(viewLoc.x(), viewLoc.y());
+            // this is the position relative to the top left corner of the compound module
+            mousePos.translate(-moduleCoords.x(), -moduleCoords.y());
+            // this is the unscaled position of the mouse inside the compound module
+            mousePos.scale(1.0 / modulePart.getScale());
+
+            if (event.count > 0)
+                modulePart.zoomIn();
+            else
+                modulePart.zoomOut();
+
+            // scaling and translating back with the new scale to scene coordinates
+            mousePos.scale(modulePart.getScale());
+            mousePos.translate(moduleCoords.x(), moduleCoords.y());
+            // and this should be at the top left corner of the viewport
+            mousePos.translate(-event.x, -event.y);
+
+            // validating is necessary to make sure it is aware of the increased size of
+            // the scene, otherwise it won't scroll right far enough when zooming in
+            viewport.validate();
+            viewport.setViewLocation(mousePos);
+
+            event.doit = false; // prevents the default scrolling
         }
     }
 }
