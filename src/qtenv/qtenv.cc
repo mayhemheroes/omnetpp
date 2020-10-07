@@ -640,9 +640,6 @@ void Qtenv::doRun()
     static char arg[] = { 'Q', 't', 'e', 'n', 'v', '\0' };
     static char *argv[] = { arg, nullptr };
 
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
-
     app = new QApplication(argc, argv);
 
     // our icon color levels are #40 and #F0, halfway between those is 152, which is close to 0.6 * 255
