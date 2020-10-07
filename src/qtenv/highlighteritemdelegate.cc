@@ -117,10 +117,10 @@ void HighlighterItemDelegate::updateEditorGeometry(QWidget *editor, const QStyle
     // another UserRole, and get it from the model that way, but why bother...)
     HighlightRange range = index.data(Qt::UserRole).value<HighlightRange>();
     // this is where the editor should start
-    int editorLeft = option.fontMetrics.width(wholeText.left(range.start));
+    int editorLeft = option.fontMetrics.horizontalAdvance(wholeText.left(range.start));
 
     // and this is how wide it should be
-    int editorWidth = option.fontMetrics.width(editorText);
+    int editorWidth = option.fontMetrics.horizontalAdvance(editorText);
 
     // moving the editor horizontally and setting its width as computed
     auto geom = editor->geometry();

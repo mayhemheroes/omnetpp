@@ -441,7 +441,7 @@ BubbleItem::BubbleItem(QPointF position, const QString& text, QGraphicsItem *par
 QRectF BubbleItem::boundingRect() const
 {
     QFontMetrics metrics(getQtenv()->getCanvasFont());
-    double textWidth = metrics.width(text);
+    double textWidth = metrics.boundingRect(text).width();
     double textHeight = metrics.height();
 
     // the -1 and +2 is the line width, and also "just to be safe".
@@ -455,7 +455,7 @@ void BubbleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 {
     QFontMetrics metrics(getQtenv()->getCanvasFont());
 
-    double textWidth = metrics.width(text);
+    double textWidth = metrics.boundingRect(text).width();
     double textHeight = metrics.height();
 
     if (!pathBuilt) {

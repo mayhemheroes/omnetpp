@@ -377,7 +377,7 @@ int TextViewerWidget::getLineColumnOffset(const QFontMetrics& metrics, int lineI
             ++inTableColumn;
             int sectionPosition = header->sectionPosition(inTableColumn); // TODO range check
 
-            x = std::max(sectionPosition, x + metrics.width(" "));
+            x = std::max(sectionPosition, x + metrics.horizontalAdvance(" "));
 
             ++textPointer;
         }
@@ -396,13 +396,13 @@ int TextViewerWidget::getLineColumnOffset(const QFontMetrics& metrics, int lineI
 
             if ((textPointer - textStart) >= columnIndex) {
                 QString text = QString::fromUtf8(start, columnIndex - (start - textStart));
-                x += metrics.width(text);
+                x += metrics.horizontalAdvance(text);
                 break;
             }
 
             QString text = QString::fromUtf8(start, textPointer - start);
 
-            x += metrics.width(text);
+            x += metrics.horizontalAdvance(text);
         }
     }
 
@@ -439,7 +439,7 @@ Pos TextViewerWidget::getColumnInLineAt(int x, int lineIndex)
             ++inColumn;
             int sectionPosition = header->sectionPosition(inColumn) - horizontalScrollOffset; // TODO range check
 
-            int gap = std::max(sectionPosition - curX, metrics.width(" "));
+            int gap = std::max(sectionPosition - curX, metrics.horizontalAdvance(" "));
             if (gap > 0)
                 curX += gap;
 
@@ -458,11 +458,11 @@ Pos TextViewerWidget::getColumnInLineAt(int x, int lineIndex)
             int len = textPointer - start;
             QString text = QString::fromUtf8 (start, len);
 
-            int width = metrics.width(text);
+            int width = metrics.horizontalAdvance(text);
 
             if (curX + width >= x) {
                 for (int i = 0; i <= len; ++i) {
-                    int subWidth = metrics.width(text, i);
+                    int subWidth = metrics.horizontalAdvance(text, i);
                     if (curX + subWidth >= x) {
                         result = Pos(lineIndex, start - textStart + i);
                         break;
@@ -1099,7 +1099,7 @@ int TextViewerWidget::paintText(const QString& text, QPainter& painter, const QF
 {
     painter.setFont(font);
 
-    int width = metrics.width(text);
+    int width = metrics.horizontalAdvance(text);
 
     // background if needed
     if (bgColor.isValid()) {
@@ -1144,7 +1144,7 @@ void TextViewerWidget::drawLine(QPainter& painter, int lineIndex, int x, int y, 
             ++inColumn;
             int sectionPosition = header->sectionPosition(inColumn) - horizontalScrollOffset; // TODO range check
 
-            int width = std::max(sectionPosition - x, metrics.width(" ")); // treat the tab as at least a space wide
+            int width = std::max(sectionPosition - x, metrics.horizontalAdvance(" ")); // treat the tab as at least a space wide
 
             // we might already be past the section position
             if (width > 0) {

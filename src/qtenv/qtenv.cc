@@ -2472,7 +2472,7 @@ void Qtenv::getTextExtent(const cFigure::Font& font, const char *text, double& o
 
     double w = 0;
     for (const auto& l : lines)
-        w = std::max(metrics.width(l), w);
+        w = std::max(metrics.boundingRect(l).width(), w);
 
     outWidth = w;
     // No need to account for interline leading, or use lineSpacing,

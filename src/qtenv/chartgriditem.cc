@@ -177,7 +177,7 @@ double ChartGridItem::getYLabelWidth()
 inline int ChartGridItem::getTextWidth(const QString& text) const
 {
     QFontMetrics m(scene()->font());
-    int w = m.width(text);
+    int w = m.boundingRect(text).width();
     return w;
 }
 
