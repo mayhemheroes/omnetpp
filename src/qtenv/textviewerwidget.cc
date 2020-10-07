@@ -543,7 +543,7 @@ QList<QVariant> TextViewerWidget::getColumnWidths()
 
 void TextViewerWidget::setColumnWidths(const QList<QVariant>& widths)
 {
-    for (int i = 0; i < std::min(headerModel->columnCount(), widths.length()); ++i) {
+    for (int i = 0; i < std::min(headerModel->columnCount(), (int)widths.length()); ++i) {
         header->resizeSection(i, widths[i].toInt());
     }
 }

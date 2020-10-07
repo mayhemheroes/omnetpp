@@ -205,7 +205,7 @@ QMenu *InspectorUtil::createInspectorContextMenu(QVector<cObject *> objects, Ins
         const int maxObjects = 20;
 
         // then create a submenu for each object
-        for (int i = 0; i < std::min(maxObjects, objects.size()); ++i) {
+        for (int i = 0; i < std::min(maxObjects, (int)objects.size()); ++i) {
             cObject *object = objects[i];
 
             const char *name = object->getFullName();
