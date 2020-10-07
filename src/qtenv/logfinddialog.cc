@@ -74,7 +74,7 @@ QString LogFindDialog::getText()
 
 SearchFlags LogFindDialog::getOptions()
 {
-    SearchFlags options = 0;
+    SearchFlags options = SearchFlags(0);
 
     if (ui->regexpCheckBox->isChecked())
         options |= FIND_REGULAR_EXPRESSION;

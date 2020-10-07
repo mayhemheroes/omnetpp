@@ -126,7 +126,7 @@ void FileEditor::updateFont()
 
 void FileEditor::findNext()
 {
-    QTextDocument::FindFlags flags = 0;
+    QTextDocument::FindFlags flags = QTextDocument::FindFlags(0);
 
     if (findOptions & FIND_CASE_SENSITIVE)
         flags |= QTextDocument::FindCaseSensitively;
