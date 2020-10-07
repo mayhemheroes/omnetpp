@@ -163,7 +163,7 @@ void ModuleInspector::createViews(bool isTopLevel)
     toolbar = createToolbar(isTopLevel);
 
     auto layout = new QVBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     if (isTopLevel) {

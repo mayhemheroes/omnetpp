@@ -47,7 +47,7 @@ TimeLineInspector::TimeLineInspector(QWidget *parent, bool isTopLevel, Inspector
 
     parent->setMinimumSize(20, 20);
     layout->addWidget(timeLine, 0, 0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     connect(timeLine, SIGNAL(contextMenuRequested(QVector<cObject *>, QPoint)), this, SLOT(createContextMenu(QVector<cObject *>, QPoint)));
     connect(timeLine, SIGNAL(click(cObject *)), this, SLOT(setObjectToObjectInspector(cObject *)));

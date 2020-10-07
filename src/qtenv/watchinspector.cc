@@ -54,7 +54,7 @@ Register_InspectorFactory(WatchInspectorFactory);
 WatchInspector::WatchInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f) : Inspector(parent, isTopLevel, f)
 {
     auto layout = new QHBoxLayout(this);
-    layout->setMargin(2);
+    layout->setContentsMargins(2, 2, 2, 2);
     layout->setSpacing(2);
 
     label = new QLabel(this);

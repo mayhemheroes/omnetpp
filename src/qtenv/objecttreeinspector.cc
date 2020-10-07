@@ -53,7 +53,7 @@ ObjectTreeInspector::ObjectTreeInspector(QWidget *parent, bool isTopLevel, Inspe
     QGridLayout *layout = new QGridLayout(this);
     view = new QTreeView();
     layout->addWidget(view, 0, 0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     model = new GenericObjectTreeModel(nullptr, GenericObjectTreeModel::Mode::CHILDREN, {}, this);
 
     view->setModel(model);

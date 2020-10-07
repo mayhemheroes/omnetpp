@@ -144,7 +144,7 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
 
     layout->addWidget(toolbar);
     layout->addWidget(treeView, 1);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     parent->setMinimumSize(20, 20);
 

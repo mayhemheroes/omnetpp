@@ -116,7 +116,7 @@ Inspector::Inspector(QWidget *parent, bool isTopLevel, InspectorFactory *f)
     else {
         auto layout = new QGridLayout(parent);
         parent->setLayout(layout);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(this, 0, 0, 1, 1);
     }
 }

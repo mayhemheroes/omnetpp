@@ -62,7 +62,7 @@ CanvasInspector::CanvasInspector(QWidget *parent, bool isTopLevel, InspectorFact
     auto contentLayout = new QVBoxLayout(this);
     contentLayout->addWidget(createToolbar());
     contentLayout->addWidget(canvasViewer);
-    contentLayout->setMargin(0);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
 
     connect(canvasViewer, SIGNAL(click(QMouseEvent *)), this, SLOT(onClick(QMouseEvent *)));
     connect(canvasViewer, SIGNAL(contextMenuRequested(QContextMenuEvent *)), this, SLOT(onContextMenuRequested(QContextMenuEvent *)));

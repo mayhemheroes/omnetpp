@@ -85,7 +85,7 @@ MainWindow::MainWindow(Qtenv *env, QWidget *parent) :
     // can't be inserted into a menu), then a stretch, and
     // the two event labels at the right.
     auto toolBarLayout = new QHBoxLayout(ui->toolBarArea);
-    toolBarLayout->setMargin(0);
+    toolBarLayout->setContentsMargins(0, 0, 0, 0);
 
     // clearing the hack notification, so we won't be caught
     ui->toolBarArea->setWhatsThis("");
@@ -133,7 +133,7 @@ MainWindow::MainWindow(Qtenv *env, QWidget *parent) :
     // this little widget will add a small margin above the two labels
     QWidget *labelsContainer = new QWidget();
     QHBoxLayout *labelsLayout = new QHBoxLayout();
-    labelsLayout->setMargin(0);
+    labelsLayout->setContentsMargins(0, 0, 0, 0);
     labelsContainer->setLayout(labelsLayout);
 
     labelsLayout->addWidget(eventNumLabel);

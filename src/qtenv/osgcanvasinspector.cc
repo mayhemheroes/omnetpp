@@ -42,7 +42,7 @@ OsgCanvasInspector::OsgCanvasInspector(QWidget *parent, bool isTopLevel, Inspect
     osgViewer = IOsgViewer::createOne();
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(osgViewer, 0, 0);
-    grid->setMargin(0);
+    grid->setContentsMargins(0, 0, 0, 0);
     setLayout(grid);
 }
 

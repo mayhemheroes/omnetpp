@@ -74,7 +74,7 @@ LogInspector::LogInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f
     componentHistory = getQtenv()->getComponentHistory();
 
     auto layout = new QGridLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
     textWidget = new TextViewerWidget(this);
