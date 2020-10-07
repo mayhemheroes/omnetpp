@@ -17,7 +17,7 @@
 #include "logfinddialog.h"
 #include "ui_logfinddialog.h"
 #include <QtWidgets/QPushButton>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include "qtenv.h"
 
 namespace omnetpp {
@@ -44,8 +44,8 @@ LogFindDialog::LogFindDialog(QWidget *parent, QString lastText, SearchFlags opti
 
 void LogFindDialog::updateRegExpValidation()
 {
-    QRegExp regexp;
-    bool isValid = !ui->regexpCheckBox->isChecked() || (regexp = QRegExp(ui->text->text())).isValid();
+    QRegularExpression regexp;
+    bool isValid = !ui->regexpCheckBox->isChecked() || (regexp = QRegularExpression(ui->text->text())).isValid();
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(isValid);
     if (!isValid) {
         if (regexpErrorLabel == nullptr) {

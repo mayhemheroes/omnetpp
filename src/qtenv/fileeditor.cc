@@ -21,6 +21,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
 #include <QtCore/QFile>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QTextStream>
 #include "textviewerwidget.h"
 #include "textviewerproviders.h"
@@ -136,9 +137,9 @@ void FileEditor::findNext()
 
     QTextCursor textCursor;
     if (findOptions & FIND_REGULAR_EXPRESSION) {
-        Qt::CaseSensitivity regExpFlag = flags & QTextDocument::FindCaseSensitively ?
-                    Qt::CaseSensitive : Qt::CaseInsensitive;
-        textCursor = ui->plainTextEdit->document()->find(QRegExp(searchString, regExpFlag),
+        QRegularExpression::PatternOptions patternOptions = (flags & QTextDocument::FindCaseSensitively)
+            ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption;
+        textCursor = ui->plainTextEdit->document()->find(QRegularExpression(searchString, patternOptions),
                                             ui->plainTextEdit->textCursor(), flags);
     }
     else

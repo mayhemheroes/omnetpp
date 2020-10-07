@@ -28,6 +28,7 @@
 #include <QtWidgets/QGraphicsEffect>
 #include <QtWidgets/QToolTip>
 #include <QtCore/QDebug>
+#include <QtCore/QRegularExpression>
 
 #include "common/stringutil.h"
 #include "common/colorutil.h"
@@ -744,17 +745,17 @@ SearchResult findSubstring(const char *haystack, const char *needle, int startIn
     bool wholeWords = flags & FIND_WHOLE_WORDS;
 
     if (flags & FIND_REGULAR_EXPRESSION) {
-        // NOTE: QRegExp seems to be quite a bit faster than std::regex, that's why we use it here
+        // NOTE: QRegularExpression seems to be quite a bit faster than std::regex, that's why we use it here
         QString qhaystack = QString::fromUtf8(haystack + startIndex);
         QString qneedle = QString::fromUtf8(needle);
 
         if (wholeWords)
             qneedle = "\\b" + qneedle + "\\b";
-        QRegExp re(qneedle, caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
-        int index = re.indexIn(qhaystack);
-        if (index == -1)
+        QRegularExpression re(qneedle, caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatch match = re.match(qhaystack);
+        if (!match.hasMatch())
             return {nullptr, 0};
-        return {haystack + startIndex + index, re.matchedLength()};
+        return {haystack + startIndex + match.capturedStart(), (int)match.capturedLength()};
     }
 
     // not a regular expression search
