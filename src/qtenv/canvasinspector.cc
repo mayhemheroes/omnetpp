@@ -182,7 +182,7 @@ void CanvasInspector::onContextMenuRequested(QContextMenuEvent *event)
     std::vector<cObject *> objects = canvasViewer->getObjectsAt(event->pos());
 
     if (objects.size()) {
-        QMenu *menu = InspectorUtil::createInspectorContextMenu(QVector<cObject *>::fromStdVector(objects), this);
+        QMenu *menu = InspectorUtil::createInspectorContextMenu(QVector<cObject *>(objects.begin(), objects.end()), this);
 
         menu->addSeparator();
         // TODO Create Select Layers dialog

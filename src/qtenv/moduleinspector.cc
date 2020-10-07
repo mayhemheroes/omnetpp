@@ -696,7 +696,7 @@ void ModuleInspector::createContextMenu(const std::vector<cObject *>& objects, c
     if (!object)
         return;
 
-    auto o = QVector<cObject *>::fromStdVector(objects);
+    auto o = QVector<cObject *>(objects.begin(), objects.end());
     if (o.empty())
         o.push_back(object);
 

@@ -842,7 +842,7 @@ void OsgViewer::mouseReleaseEvent(QMouseEvent *event)
         Inspector *insp = InspectorUtil::getContainingInspector(this);
         QMenu *menu;
         if (!objects.empty() && insp && insp->supportsObject(objects.front())) {
-            menu = InspectorUtil::createInspectorContextMenu(QVector<cObject*>::fromStdVector(objects), insp);
+            menu = InspectorUtil::createInspectorContextMenu(QVector<cObject*>(objects.begin(), objects.end()), insp);
             menu->addSeparator();
         } else {
             menu = new QMenu(this);
