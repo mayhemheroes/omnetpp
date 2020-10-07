@@ -35,8 +35,8 @@ class RootNode;
 // when the UserRole data is requested, so the itemdelegate
 // of the TreeView can highlight a section in the string
 struct QTENV_API HighlightRange {
-    int start; // the index of the first highlighted character
-    int length; // the number of highlighted characters
+    int64_t start; // the index of the first highlighted character
+    int64_t length; // the number of highlighted characters
 };
 
 // This is used as a proxy for GenericObjectTreeModel.
