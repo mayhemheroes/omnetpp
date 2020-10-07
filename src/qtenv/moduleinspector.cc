@@ -379,11 +379,11 @@ cCanvas *ModuleInspector::getCanvas()
 void ModuleInspector::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
-        int d = event->delta() / 120;  // see the Qt docs for the division
+        int d = event->angleDelta().y() / 120;  // see the Qt docs for the division
         if (d < 0)
-            zoomOut(event->x(), event->y(), -d);
+            zoomOut(event->position().x(), event->position().y(), -d);
         if (d > 0)
-            zoomIn(event->x(), event->y(), d);
+            zoomIn(event->position().x(), event->position().y(), d);
 
         event->accept();
     }
