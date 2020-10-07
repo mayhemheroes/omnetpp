@@ -6138,8 +6138,8 @@ fi
 if test "$WITH_QTENV" = "yes"; then
     if test "$QMAKE" = ""; then
         # Check for qmake variants on path if the user did not specify the QMAKE variable to use its own Qt installation.
-        # first try qt5 specific variants to force qt5 in case either qt4 or qt6 is installed on the user's system
-        for ac_prog in qmake-qt5 qmake5 qmake
+        # first try qt6 specific variants to force qt6 in case either qt4 or qt5 is installed on the user's system
+        for ac_prog in qmake-qt6 qmake6 qmake
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6196,12 +6196,14 @@ test -n "$QMAKE" || QMAKE="nope"
     fi
 
     if test "$QMAKE" = nope; then
-        as_fn_error $? "Qtenv cannot find qmake -- maybe it is not in the PATH or has some exotic name (tested names were: qmake-qt5 qmake5 qmake) - You can disable Qtenv by setting the WITH_QTENV variable to \"no\" in configure.user, or try setting the QMAKE variable to point your Qt installation's qmake file." "$LINENO" 5
+        as_fn_error $? "Qtenv cannot find qmake -- maybe it is not in the PATH or has some exotic name (tested names were: qmake-qt6 qmake6 qmake) - You can disable Qtenv by setting the WITH_QTENV variable to \"no\" in configure.user, or try setting the QMAKE variable to point your Qt installation's qmake file." "$LINENO" 5
     else
         QT_INSTALL_BINS=$(cd $($QMAKE -query QT_INSTALL_BINS) ; pwd) # this cd/pwd trick is required to return valid unix sytle path even on mingw
         QT_INSTALL_HEADERS=$(cd $($QMAKE -query QT_INSTALL_HEADERS) ; pwd)
         QT_INSTALL_LIBS=$(cd $($QMAKE -query QT_INSTALL_LIBS) ; pwd)
-        for ac_prog in moc-qt5 moc5 moc
+        QT_INSTALL_LIBEXECS=$(cd $($QMAKE -query QT_INSTALL_LIBEXECS) ; pwd)
+
+        for ac_prog in moc-qt6 moc6 moc
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6217,7 +6219,7 @@ else case e in #(
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS
+for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS
 do
   IFS=$as_save_IFS
   case $as_dir in #(((
@@ -6253,7 +6255,7 @@ fi
 done
 test -n "$MOC" || MOC="nope"
 
-        for ac_prog in uic-qt5 uic5 uic
+        for ac_prog in uic-qt6 uic6 uic
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6269,7 +6271,7 @@ else case e in #(
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS
+for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS
 do
   IFS=$as_save_IFS
   case $as_dir in #(((
@@ -6305,7 +6307,7 @@ fi
 done
 test -n "$UIC" || UIC="nope"
 
-        for ac_prog in rcc-qt5 rcc5 rcc
+        for ac_prog in rcc-qt6 rcc6 rcc
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6321,7 +6323,7 @@ else case e in #(
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS
+for as_dir in path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS
 do
   IFS=$as_save_IFS
   case $as_dir in #(((
@@ -6359,18 +6361,18 @@ test -n "$RCC" || RCC="nope"
 
 
         if test "$MOC" = nope || test "$UIC" = nope || test "$RCC" = nope ; then
-          as_fn_error $? "Could not find all of moc, rcc, and uic for Qt5 -- $MOC, $RCC, $UIC" "$LINENO" 5
+          as_fn_error $? "Could not find all of moc, rcc, and uic for Qt6 -- $MOC, $RCC, $UIC" "$LINENO" 5
         fi
 
         QT_CFLAGS=${QT_CFLAGS:-"-I $QT_INSTALL_HEADERS"}
-        QT_LIBS=${QT_LIBS:-"-lQt5Gui -lQt5Core -lQt5Widgets -lQt5PrintSupport -lQt5OpenGL $LDFLAG_LIBPATH$QT_INSTALL_LIBS"}
+        QT_LIBS=${QT_LIBS:-"-lQt6Gui -lQt6Core -lQt6Widgets -lQt6PrintSupport -lQt6OpenGL -lQt6OpenGLWidgets $LDFLAG_LIBPATH$QT_INSTALL_LIBS"}
         if test -z "$RPATH_UNSUPPORTED"; then
             QTENV_LDFLAGS="-Wl,-rpath,$QT_INSTALL_LIBS"
         fi
 
 QT_VERSIONCHECK_CODE=$(cat <<-EOT
     qVersion();
-    #if QT_VERSION < QT_VERSION_CHECK(5,9,0) || QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    #if QT_VERSION < QT_VERSION_CHECK(6,2,0) || QT_VERSION >= QT_VERSION_CHECK(7,0,0)
     #error
     #endif
 EOT
@@ -6382,8 +6384,8 @@ EOT
    CXXFLAGS="$CXXFLAGS $CFLAGS $QT_CFLAGS"
    LIBS="$QT_LIBS"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"" >&5
-printf %s "checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"" >&5
+printf %s "checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -6414,7 +6416,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
         # Test on Windows/MinGW toolchain
         if test $qt_ok = no; then
-            QT_LIBS="-lQtGui5 -lQtCore5 -lQtWidgets5 -lQtPrintSupport5 -lQtOpenGL5"
+            QT_LIBS="-lQtGui6 -lQtCore6 -lQtWidgets6 -lQtPrintSupport6 -lQtOpenGL6 -lQtOpenGLWidgets6"
             QTENV_LDFLAGS=""
 
    save_CXXFLAGS=$CXXFLAGS
@@ -6423,8 +6425,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    CXXFLAGS="$CXXFLAGS $CFLAGS $QT_CFLAGS"
    LIBS="$QT_LIBS"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"" >&5
-printf %s "checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"" >&5
+printf %s "checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -6456,7 +6458,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
         # Test on Mac OS X using the local Qt framework
         if test $qt_ok = no; then
-            QT_LIBS="-framework QtGui -framework QtCore -framework QtWidgets -framework QtPrintSupport -framework QtOpenGL -F $QT_INSTALL_LIBS"
+            QT_LIBS="-framework QtGui -framework QtCore -framework QtWidgets -framework QtPrintSupport -framework QtOpenGL -framework QtOpenGLWidgets -F $QT_INSTALL_LIBS"
             QTENV_LDFLAGS=""
 
    save_CXXFLAGS=$CXXFLAGS
@@ -6465,8 +6467,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    CXXFLAGS="$CXXFLAGS $CFLAGS $QT_CFLAGS"
    LIBS="$QT_LIBS $LDFLAGS_TOOLS_MACOSX"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS $LDFLAGS_TOOLS_MACOSX\"" >&5
-printf %s "checking for Qt5 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS $LDFLAGS_TOOLS_MACOSX\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS $LDFLAGS_TOOLS_MACOSX\"" >&5
+printf %s "checking for Qt6 with CFLAGS=\"$CXXFLAGS $CFLAGS $QT_CFLAGS\" LIBS=\"$QT_LIBS $LDFLAGS_TOOLS_MACOSX\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -6497,7 +6499,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         fi
 
         if test $qt_ok = no; then
-            as_fn_error $? "Cannot build Qt apps, probably due to missing or too old Qt 5 packages. Make sure Qt 5 development packages are installed and is version Qt 5.9 or newer. You can disable Qtenv by setting the WITH_QTENV variable to \"no\" in configure.user, or try setting the QMAKE variable to point your Qt installation's qmake file." "$LINENO" 5
+            as_fn_error $? "Cannot build Qt apps, probably due to missing or too old Qt 6 packages. Make sure the development packages for Qt 6 are installed and it is version 6.2 or newer. You can disable Qtenv by setting the WITH_QTENV variable to \"no\" in configure.user, or try setting the QMAKE variable to point your Qt installation's qmake file." "$LINENO" 5
         fi
     fi
 fi # WITH_QTENV

@@ -26,7 +26,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QToolBar>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QMessageBox>
 
 namespace omnetpp {

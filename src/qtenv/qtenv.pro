@@ -48,7 +48,7 @@ QMAKE_CFLAGS += $$(OPP_CFLAGS) $$WARNING_FLAGS
 QMAKE_MOC += $$(OPP_DEFINES)
 
 # add QT modules
-QT *= core gui opengl widgets printsupport
+QT *= core gui opengl openglwidgets widgets printsupport
 
 SOURCES += animationcontrollerdialog.cc \
     areaselectordialog.cc \

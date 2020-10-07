@@ -39,6 +39,7 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QApplication>
+#include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 
 using namespace omnetpp;

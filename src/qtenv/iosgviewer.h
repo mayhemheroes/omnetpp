@@ -20,7 +20,7 @@
 #include "qtenv.h"
 #include "common/ver.h"
 
-#include <QtWidgets/QOpenGLWidget>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 

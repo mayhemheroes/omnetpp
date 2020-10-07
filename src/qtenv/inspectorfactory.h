@@ -21,6 +21,8 @@
 #include "omnetpp/onstartup.h"
 #include "omnetpp/cregistrationlist.h"
 
+class QWidget;
+
 namespace omnetpp {
 namespace qtenv {
 

@@ -22,7 +22,8 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QToolBar>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QStackedLayout>
 #include <QtGui/QContextMenuEvent>

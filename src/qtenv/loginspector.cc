@@ -21,7 +21,7 @@
 #include <cassert>
 #include <fstream>
 #include <QtWidgets/QToolBar>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QToolButton>

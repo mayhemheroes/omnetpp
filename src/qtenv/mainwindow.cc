@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include <QtWidgets/QMessageBox>
+#include <QtGui/QActionGroup>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QToolTip>
 #include <QtWidgets/QStyledItemDelegate>

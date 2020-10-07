@@ -30,7 +30,7 @@
 #include "inspectorutil.h"
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QToolBar>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QMenu>
 #include <QtCore/QDebug>

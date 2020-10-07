@@ -22,6 +22,7 @@
 #include <QtCore/QDebug>
 #include <QtWidgets/QToolTip>
 #include <QtWidgets/QMenu>
+#include <QtGui/QActionGroup>
 #include <QtGui/QResizeEvent>
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLFunctions>

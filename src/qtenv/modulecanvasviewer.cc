@@ -42,7 +42,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtCore/QDebug>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QRubberBand>
 #include <QtWidgets/QToolTip>
 #include <QtPrintSupport/QPrinter>

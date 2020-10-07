@@ -20,6 +20,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QMenu>
+#include <QtGui/QActionGroup>
 #include "omnetpp/cabstracthistogram.h"
 #include "qtenv.h"
 #include "inspectorfactory.h"

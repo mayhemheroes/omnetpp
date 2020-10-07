@@ -37,12 +37,12 @@
 
 #include <QtCore/QMetaType>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0)
-#error Qtenv requires Qt 5.9 or later.
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#error Qtenv requires Qt 6.2 or later.
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#error Qtenv is not compatible with Qt 6.
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#error Qtenv is not compatible with Qt 7.
 #endif
 
 namespace omnetpp {

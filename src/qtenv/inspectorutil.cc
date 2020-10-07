@@ -17,6 +17,7 @@
 #include <QtCore/QDebug>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QApplication>
+#include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <common/stringutil.h>
 #include <omnetpp/cobject.h>
