@@ -2591,7 +2591,10 @@ kernel. This channel is called the \textit{transmission channel}.
 Packets may only be sent when the transmission channel is idle.
 This means that after each transmission, the sender module needs
 to wait until the channel has finished transmitting before it can
-send another packet.
+send another packet. (This applies to the default behavior of
+\cclass{cDatarateChannel}; see section
+\ref{sec:simple-modules:dataratechannel-modes} for alternatives that
+allow multiple concurrent transmissions.)
 
 You can get a pointer to the transmission channel by calling the
 \ffunc{getTransmissionChannel()} method on the output gate.
@@ -3002,7 +3005,7 @@ channel's parent is also the compound module.
 \subsection{The Channel API}
 \label{sec:simple-modules:channel-api}
 
-When subclassing \cclass{Channel}, the following pure virtual member functions
+When subclassing \cclass{cChannel}, the following pure virtual member functions
 need to be overridden:
 
 \begin{itemize}
@@ -3013,6 +3016,12 @@ need to be overridden:
 
 The first two functions are usually one-liners; the channel behavior is
 encapsulated in the third function, \ffunc{processMessage()}.
+
+\cclass{cChannel} also provides an \ffunc{isDisabled()} virtual method
+(returning \ttt{false} by default) that subclasses can override.
+Both \cclass{cDelayChannel} and \cclass{cDatarateChannel} override it
+to return the value of their \ttt{disabled} NED parameter. A disabled
+channel discards all messages sent on it.
 
 \subsubsection{Transmission Channels}
 \label{sec:simple-modules:transmission-channels}
@@ -3182,13 +3191,13 @@ in a bitfield to store the value of \ttt{isDisabled}.}
 \cclass{cDatarateChannel} is different. It performs packet duration modeling
 (duration is calculated from the data rate and the length of the packet),
 so \ffunc{isTransmissionChannel()} returns \ttt{true}.
-\ffunc{getTransmissionFinishTime()} returns the value of a \ttt{txfinishtime}
-data member, which gets updated after every packet.
+\ffunc{getTransmissionFinishTime()} returns the value of the
+\ttt{channelFinishTime} data member, which gets updated after every packet.
 
 \begin{cpp}
 simtime_t cDatarateChannel::getTransmissionFinishTime() const
 {
-    return txfinishtime;
+    return channelFinishTime;
 }
 \end{cpp}
 
@@ -3197,44 +3206,113 @@ the \ttt{isDisabled}, \ttt{datarate}, \ttt{ber}, and \ttt{per} data
 members, which are also kept up to date with the help of
 \ffunc{handleParameterChange()}.
 
+An important detail is that non-packet messages (such as \cclass{cMessage}
+instances) pass through the channel without interfering with packet
+transmissions. They are only subject to the propagation delay, and are
+discarded if the channel is disabled.
+
 \begin{cpp}
 cChannel::Result cDatarateChannel::processMessage(cMessage *msg,
                     const SendOptions& options, simtime_t t)
 {
     Result result;
 
-    // if channel is disabled, signal that the message should be deleted
-    if (isDisabled) {
-        result.discard = true;
-        return result;
-    }
-
-    // datarate modeling
-    if (datarate != 0 && msg->isPacket()) {
-        simtime_t duration = ((cPacket *)msg)->getBitLength() / datarate;
-        result.duration = duration;
-        txfinishtime = t + duration;
+    if (msg->isPacket()) {
+        // packet transmission: disabled check, duration, error modeling
+        processPacket(static_cast<cPacket *>(msg), options, t, result);
     }
     else {
-        txfinishtime = t;
+        // non-packet messages: only subject to disabled check
+        if (isDisabled)
+            result.discard = true;
     }
 
     // propagation delay modeling
     result.delay = delay;
 
-    // bit error modeling
-    if ((ber != 0 || per != 0) && msg->isPacket()) {
-        cPacket *pkt = (cPacket *)msg;
-        if (ber != 0 && dblrand() < 1.0 - pow(1.0-ber, (double)pkt->getBitLength()))
-            pkt->setBitError(true);
-        if (per != 0 && dblrand() < per)
-            pkt->setBitError(true);
-    }
-
     return result;
 }
 \end{cpp}
 
+The \ffunc{processPacket()} helper function (not shown in full) handles
+computing the transmission duration, either from the packet's bit length
+and the channel's data rate, or from the explicit duration specified in
+\cclass{SendOptions}; bookkeeping of the transmission state including
+support for transmission updates; and bit error modeling.\footnote{The
+actual code is more complex than shown here. Refer to the source file
+\ttt{cdataratechannel.cc} for the full implementation.}
+
+
+\subsection{cDatarateChannel Operating Modes}
+\label{sec:simple-modules:dataratechannel-modes}
+
+\cclass{cDatarateChannel} supports three operating modes, selectable via the
+\ffunc{setMode()} method. The mode determines how the channel handles
+overlapping transmissions, and affects the behavior of the
+\ffunc{isBusy()} and \ffunc{getTransmissionFinishTime()} methods.
+
+\begin{itemize}
+  \item \ttt{SINGLE} (the default): At most one transmission can be active at
+    any given time. If a module attempts to send a packet while the channel is
+    still busy with a previous transmission, a runtime error is raised. This
+    is the traditional behavior, and it is appropriate for simple point-to-point
+    links. The \ffunc{isBusy()} and \ffunc{getTransmissionFinishTime()} methods
+    report the state of the single ongoing transmission.
+
+  \item \ttt{MULTI}: Multiple concurrent transmissions are allowed, and the
+    channel tracks all of them individually. This is useful for modeling a channel
+    with multiple subchannels or carriers. Transmission updates must refer to an
+    existing and still active transmission via the transmission ID.
+    The \ffunc{isBusy()} method returns \ttt{true} if any of the tracked
+    transmissions is still in progress, and \ffunc{getTransmissionFinishTime()}
+    returns the latest finish time among all active transmissions.
+
+  \item \ttt{UNCHECKED}: Multiple concurrent transmissions are allowed, but
+    the channel does not keep track of ongoing transmissions. This is the
+    low-overhead version of \ttt{MULTI}. As a consequence, no consistency
+    checks are performed, the \ffunc{isBusy()} and
+    \ffunc{getTransmissionFinishTime()} methods are not supported (they throw
+    an error if called), and the channel does not emit \ttt{channelBusy}
+    signals. In this mode, both \ttt{duration} and \ttt{remainingDuration}
+    must be explicitly specified in \cclass{SendOptions} for transmission updates,
+    because the channel has no state to compute the missing value from.
+\end{itemize}
+
+The mode can be set programmatically using \ffunc{setMode()}:
+
+\begin{cpp}
+cDatarateChannel *ch = check_and_cast<cDatarateChannel *>(
+    gate("out")->getTransmissionChannel());
+ch->setMode(cDatarateChannel::MULTI);
+\end{cpp}
+
+\begin{note}
+  The mode should be set before the channel starts being used for transmissions.
+  Switching the operating mode while transmissions are in progress is not
+  allowed and will result in a runtime error.
+\end{note}
+
+
+\subsection{Optional Data Rate in cDatarateChannel}
+\label{sec:simple-modules:optional-datarate}
+
+The data rate of a \cclass{cDatarateChannel} is optional: it can be set to
+\ttt{0} or \ttt{nan} (in NED) to leave it unspecified. When the data rate is
+unspecified, the channel cannot compute the transmission duration from the
+packet length, so the sender must explicitly provide it in the send call
+via \cclass{SendOptions}:
+
+\begin{cpp}
+simtime_t duration = pkt->getBitLength() / selectedBitrate;
+send(pkt, SendOptions().duration(duration), "out");
+\end{cpp}
+
+This feature is useful for modeling links where the data rate can vary on a
+per-packet basis, such as wireless links with adaptive modulation and coding
+schemes, or multi-rate Ethernet.
+
+If neither the channel data rate nor an explicit duration is specified, a
+runtime error will be raised.
 
 
 \section{Stopping the Simulation}
