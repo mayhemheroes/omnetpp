@@ -97,19 +97,19 @@ void CanvasViewer::contextMenuEvent(QContextMenuEvent *event)
 FigureRenderingHints CanvasViewer::makeFigureRenderingHints()
 {
     FigureRenderingHints hints;
-    QString prefName = object->getFullName() + QString(":") + INSP_DEFAULT + ":zoomfactor";
+    QString prefName = object->getFullName() + QString(":") + QString::number((int)INSP_DEFAULT) + ":zoomfactor";
     QVariant variant = getQtenv()->getPref(prefName);
     hints.defaultZoom = variant.isValid() ? variant.value<double>() : 1;
 /*
-    prefName = object->getFullName() + QString(":") + INSP_DEFAULT + ":imagesizefactor";
+    prefName = object->getFullName() + QString(":") + QString::number((int)INSP_DEFAULT) + ":imagesizefactor";
     variant = getQtenv()->getPref(prefName);
     hints->iconMagnification = variant.isValid() ? variant.value<double>() : 1;
 
-    prefName = object->getFullName() + QString(":") + INSP_DEFAULT + ":showlabels";
+    prefName = object->getFullName() + QString(":") + QString::number((int)INSP_DEFAULT) + ":showlabels";
     variant = getQtenv()->getPref(prefName);
     hints->showSubmoduleLabels = variant.isValid() ? variant.value<bool>() : true;
 
-    prefName = object->getFullName() + QString(":") + INSP_DEFAULT + ":showarrowheads";
+    prefName = object->getFullName() + QString(":") + QString::number((int)INSP_DEFAULT) + ":showarrowheads";
     variant = getQtenv()->getPref(prefName);
     hints->showArrowheads = variant.isValid() ? variant.value<bool>() : false;
 */

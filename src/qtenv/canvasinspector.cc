@@ -97,7 +97,7 @@ void CanvasInspector::doSetObject(cObject *obj)
 
     if (object) {
         canvasViewer->setObject(getCanvas());
-        QVariant zoomFactorVariant = getQtenv()->getPref(object->getFullName() + QString(":") + INSP_DEFAULT + ":zoomfactor");
+        QVariant zoomFactorVariant = getQtenv()->getPref(object->getFullName() + QString(":") + QString::number((int)INSP_DEFAULT) + ":zoomfactor");
         double zoomFactor = zoomFactorVariant.isValid() ? zoomFactorVariant.value<double>() : 1;
         canvasViewer->setZoomFactor(zoomFactor);
     }
@@ -145,7 +145,7 @@ void CanvasInspector::zoomOut()
 void CanvasInspector::zoomBy(double mult)
 {
     QString objName = object->getFullName();
-    QString prefName = objName + ":" + INSP_DEFAULT + ":zoomfactor";
+    QString prefName = objName + ":" + QString::number((int)INSP_DEFAULT) + ":zoomfactor";
     QVariant variant = getQtenv()->getPref(prefName);
     double zoomFactor = variant.isValid() ? variant.value<double>() : 1;
 
