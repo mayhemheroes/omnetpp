@@ -26,6 +26,8 @@
 #include "common/enumstr.h"
 #include "common/stringutil.h"
 #include "common/stringtokenizer.h"
+#include "common/memutil.h"
+#include "common/unitconversion.h"
 #include "envir/appreg.h"
 #include "envir/args.h"
 #include "envir/speedometer.h"
@@ -492,7 +494,8 @@ void Cmdenv::printEventBanner(cEvent *event)
         out << "   Elapsed: " << timeToStr(getElapsedSecs())
             << "   Messages: created: " << cMessage::getTotalMessageCount()
             << "  present: " << cMessage::getLiveMessageCount()
-            << "  in FES: " << getSimulation()->getFES()->getLength() << "\n"; // note: "\n" not endl, because we don't want auto-flush on each event
+            << "  in FES: " << getSimulation()->getFES()->getLength()
+            << "  Memory: " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << "\n"; // note: "\n" not endl, because we don't want auto-flush on each event
     }
 }
 
@@ -513,13 +516,15 @@ void Cmdenv::doStatusUpdate(Speedometer& speedometer)
 
         out << "     Messages:  created: " << cMessage::getTotalMessageCount()
             << "   present: " << cMessage::getLiveMessageCount()
-            << "   in FES: " << getSimulation()->getFES()->getLength() << endl;
+            << "   in FES: " << getSimulation()->getFES()->getLength()
+            << "   Memory: " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
     }
     else {
         out << "** Event #" << getSimulation()->getEventNumber() << "   t=" << getSimulation()->getSimTime()
             << "   Elapsed: " << timeToStr(getElapsedSecs())
             << progressPercentage() // note: IDE launcher uses this to track progress
-            << "   ev/sec=" << speedometer.getEventsPerSec() << endl;
+            << "   ev/sec=" << speedometer.getEventsPerSec()
+            << "   Memory: " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
     }
 
     // status update is always autoflushed (not only if opt->autoflush is on)

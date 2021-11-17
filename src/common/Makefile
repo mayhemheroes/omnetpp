@@ -26,9 +26,13 @@ O=$(OMNETPP_OUT_DIR)/$(CONFIGNAME)/src/common
 
 INCL_FLAGS= -I"$(OMNETPP_INCL_DIR)" -I"$(OMNETPP_SRC_DIR)"
 
+ifeq ($(PLATFORM),win32)
+  PSAPI_LIB=-lpsapi
+endif
+
 COPTS=-Wno-unused-function $(CFLAGS) $(LIBXML_CFLAGS) $(INCL_FLAGS)
 
-IMPLIBS= $(LIBXML_LIBS)
+IMPLIBS= $(LIBXML_LIBS) $(PSAPI_LIB)
 
 OBJS= $O/lcgrandom.o $O/filelock.o $O/filereader.o $O/linetokenizer.o \
       $O/stringpool.o $O/pooledstring.o $O/stringtokenizer.o $O/fnamelisttokenizer.o \
@@ -41,6 +45,7 @@ OBJS= $O/lcgrandom.o $O/filelock.o $O/filereader.o $O/linetokenizer.o \
       $O/sqlitescalarfilewriter.o  $O/sqlitevectorfilewriter.o \
       $O/omnetppscalarfilewriter.o $O/omnetppvectorfilewriter.o \
       $O/exprnode.o $O/exprnodes.o $O/exprvalue.o $O/intutil.o $O/any_ptr.o \
+      $O/memutil.o \
       $O/saxparser_default.o $O/saxparser_libxml.o $O/saxparser_yxml.o $O/yxml.o
 
 GENERATED_SOURCES= expression.tab.h expression.tab.cc expression.lex.cc expression.lex.h \

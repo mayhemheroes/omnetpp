@@ -40,6 +40,8 @@
 #include "omnetpp/cscheduler.h"
 #include "common/stringutil.h"
 #include "common/fileutil.h"
+#include "common/memutil.h"
+#include "common/unitconversion.h"
 #include "common/ver.h"
 
 #include "runselectiondialog.h"
@@ -712,6 +714,7 @@ void MainWindow::updateSimtimeDisplay()
     ui->labelMessageStats->setText("Msg stats: " + QString::number(getSimulation()->getFES()->getLength())
             +" scheduled / " + QString::number(cMessage::getLiveMessageCount())
             +" existing / " + QString::number(cMessage::getTotalMessageCount()) + " created");
+    ui->labelMemory->setText("Memory: " + QString::fromStdString(UnitConversion::formatInBestUnit(opp_memory_usage(), "B")));
 }
 
 void MainWindow::updatePerformanceDisplay()

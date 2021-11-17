@@ -240,6 +240,12 @@
       </property>
       <item>
        <widget class="omnetpp::qtenv::ElidingLabel" name="labelConfigName">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>3</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="toolTip">
          <string>Current inifile configuration, run number, network name, and potential scheduler information</string>
         </property>
@@ -256,6 +262,12 @@
       </item>
       <item>
        <widget class="omnetpp::qtenv::ElidingLabel" name="labelMessageStats">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="toolTip">
          <string>Number of events (messages) currently scheduled /
 Number of existing message objects, including scheduled ones /
@@ -266,6 +278,28 @@ Total number of messages created since start of the simulation</string>
         </property>
         <property name="text">
          <string>Msg stats: 0 scheduled / 0 existing / 0 created</string>
+        </property>
+        <property name="margin">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="omnetpp::qtenv::ElidingLabel" name="labelMemory">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Virtual memory size used by the current process</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel { border: 1px solid palette(mid); }</string>
+        </property>
+        <property name="text">
+         <string>Memory: 0B</string>
         </property>
         <property name="margin">
          <number>1</number>
