@@ -1926,26 +1926,64 @@ easy to misinterpret. For example, it is not obvious whether \ttt{10dB+10dB}
 considering that such quantities would often be hidden behind parameter names
 where the unit is not obvious.
 
-\subsection{Referencing Parameters and Loop Variables}
+
+\subsection{Referencing Parameters, Gates and Loop Variables}
 \label{sec:ned-ref:referencing-parameters-and-loop-variables}
 
-Identifiers in expressions occurring \textit{anywhere} in component definitions
-are interpreted as referring to parameters of the given component. For example,
-identifiers inside submodule bodies refer to the parameters of the
-\textit{compound} module.
+Expressions may refer to parameters, gates, and other submodules using the
+\fkeyword{this} or the \fkeyword{parent} qualifier, or without a qualifier.
+Unqualified identifiers refer to the parameters, gates or submodules of the
+(nearest) block in which they are defined: the submodule or the module/channel.
+In connection \fkeyword{for} loops, if an identifier matches a previously
+defined loop variable, it refers to that loop variable.
+Namely:\footnote{The scoping rules for unqualified identifiers inside submodule
+and connection blocks changed in {\opp} 6.0. In 5.x, unqualified names resolved
+to the enclosing compound module's items; since 6.0, they resolve to the local
+submodule or channel's items. To write NED compatible with both versions, qualify
+all references within submodule and connection blocks with explicit
+\fkeyword{parent} or \fkeyword{this}, and require {\opp} 5.7 or later.}
+
+\begin{description}
+  \item[Outside submodule and connection blocks:] Unqualified identifiers refer
+    to parameters, gates, and submodules of the compound module being defined.
+  \item[Inside submodule and connection blocks:] Unqualified identifiers refer
+    to items of (or within) the \textit{local} submodule or channel object, not
+    to items of the enclosing compound module. To refer to the compound module's
+    items from within a submodule or connection block, use the
+    \fkeyword{parent} qualifier. To make references to the local submodule or
+    channel explicit, use the \fkeyword{this} qualifier.
+\end{description}
+
+Example demonstrating the semantics:
+
+\begin{ned}
+network Network {
+  parameters:
+      int foo;
+  submodules:
+    node1: { ... }
+    node2: Node {
+      foo = foo; // ERROR: self-reference! Change to 'foo = parent.foo'.
+      bar = this.foo;  // OK: refers to node2.foo
+      baz = node1.foo;  // ERROR: refers to yet-uncreated submodule this.node1!
+      bax = parent.node1.foo;  // OK: refers to Network.node1.foo
+    }
+}
+\end{ned}
 
 Expressions may also refer to parameters of submodules defined earlier in the
-NED file using the \ttt{submoduleName.paramName} or the
-\ttt{submoduleName[index].paramName} syntax. To refer to parameters of the local
-module/channel inside a submodule or channel body, use the \fkeyword{this}
-qualifier: \ttt{this.destAddress}. To make a reference to a parameter of the
-compound module from within a submodule or channel body explicit, use the
-\fkeyword{parent} qualifier: \ttt{parent.destAddress}.\footnote{The
-\fkeyword{parent} qualifier is available from {\opp} 5.7.}
+NED file using the \ttt{parent.submoduleName.paramName} or
+\ttt{parent.submoduleName[index].paramName} syntax from within a submodule block.
 
-Exception: if an identifier occurs in a connection \fkeyword{for} loop and names
-a previously defined loop variable, it is understood as referring to the loop
-variable.
+\begin{note}
+Referencing a submodule's submodule from NED (i.e., the \ttt{a.b} or
+\ttt{this.a.b} syntax within a submodule block) is generally wrong, because the
+network is built top-down and submodules are only created after parameters have
+already been set up. An exception is using such references in the values of
+\fkeyword{volatile} parameters, because they are evaluated later, at access time.
+\end{note}
+
+
 
 \subsection{The \fkeyword{typename} Operator}
 \label{sec:ned-ref:typename-operator}
@@ -1977,28 +2015,35 @@ yields the index of the submodule instance.
 \subsection{The \fkeyword{exists()} Operator}
 \label{sec:ned-ref:exists-operator}
 
-The \fkeyword{exists()} operator takes one identifier as an argument and is only
-accepted in compound module definitions. The identifier must name a previously
-defined submodule, which will typically be a conditional submodule. The operator
-returns \fkeyword{true} if the given submodule exists (has been created), and
-\fkeyword{false} otherwise.
+The \fkeyword{exists()} operator is only accepted in compound module definitions.
+It returns \fkeyword{true} if the specified item exists, and \fkeyword{false}
+otherwise.
+
+The operator accepts various forms of arguments:
+
+\begin{itemize}
+  \item \ttt{exists(submoduleName)} -- checks if a (typically conditional) submodule exists
+  \item \ttt{exists(submoduleName[index])} -- checks if an element in a submodule vector exists
+        (useful with submodule vectors that may contain holes due to \ttt{@omittedTypename})
+  \item \ttt{exists(parent.submoduleName)} -- explicitly refers to the parent module's submodule
+  \item \ttt{exists(this.submoduleName)} -- checks for a submodule within the current submodule
+        (generally only useful in \fkeyword{volatile} parameter expressions)
+\end{itemize}
+
 
 \subsection{The \fkeyword{sizeof()} Operator}
 \label{sec:ned-ref:sizeof-operator}
 
 The \fkeyword{sizeof()} operator expects one argument and is only accepted in
-compound module definitions.
+compound module definitions. It returns the size of a submodule vector or gate
+vector. The usual scoping rules apply to the argument (see
+\ref{sec:ned-ref:referencing-parameters-and-loop-variables}): use the
+\fkeyword{this} and \fkeyword{parent} qualifiers to disambiguate.
 
-The \ttt{sizeof(identifier)} syntax occurring \textit{anywhere} in a compound
-module yields the size of the named submodule or gate vector of the
-compound module.
-
-Inside submodule bodies, the size of a gate vector of the same submodule
-can be referred to with the \fkeyword{this} qualifier: \ttt{sizeof(this.out)}.
-
-To refer to the size of a submodule's gate vector defined earlier in the
-NED file, use the \ttt{sizeof(submoduleName.gateVectorName)} or
-\ttt{sizeof(submoduleName[index].gate\-Vector\-Name)} syntax.
+In particular, to refer to the size of a sibling submodule's gate vector, use
+the \ttt{sizeof(parent.submoduleName.gateVectorName)} or
+\ttt{sizeof(parent.submoduleName[index].gateVectorName)} syntax from within a
+submodule block.
 
 
 \subsection{The \fkeyword{expr()} Operator}

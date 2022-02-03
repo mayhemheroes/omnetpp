@@ -1034,50 +1034,36 @@ etc.).
 \label{sec:ned-lang:parameter-references}
 
 Expressions may refer to parameters of the compound module being defined,
-parameters of the current module, and parameters of already defined submodules,
-with the syntax \ttt{submodule.parametername} (or
+parameters of the current submodule or channel, and parameters of already
+defined submodules, with the syntax \ttt{submodule.parametername} (or
 \ttt{submodule[index].parametername}).
 
-Unqualified parameter names refer to a parameter of the compound module,
-wherever it occurs within the compound module definition. For example, all
-\ttt{foo} references in the following example refer to the network's \ttt{foo}
-parameter.
+Unqualified parameter names refer to the nearest enclosing scope: inside a
+submodule or channel block they refer to the submodule's or channel's own
+parameters; outside, they refer to parameters of the compound
+module.\footnote{In {\opp} 5.x, unqualified names inside submodule blocks
+referred to the enclosing compound module. The current scoping rules are in
+effect since {\opp} 6.0.} Use the \fkeyword{parent} qualifier to refer to
+the compound module's parameters from within a submodule block, and the
+\fkeyword{this} qualifier to make a reference to the local submodule explicit.
 
 \begin{ned}
 network Network
 {
     parameters:
         double foo;
-        double bar = foo;
+        double bar = foo;  // refers to Network.foo
     submodules:
         node[10]: Node {
-            baz = foo;
+            baz = parent.foo;  // refers to Network.foo
+            datarate = amount / duration;  // refers to node[i]'s params
         }
     ...
 }
 \end{ned}
 
-Use the \fkeyword{this} qualifier to refer to another parameter of the same submodule.
-
-\begin{ned}
-    submodules:
-        node: Node {
-            datarate = this.amount / this.duration;
-    }
-\end{ned}
-
-From {\opp} 5.7 onwards, there is also a \fkeyword{parent} qualifier with the obvious meaning.
-
-\begin{note}
-    The interpretation of names which are not qualified with either
-    \fkeyword{this} or \fkeyword{parent} and occur within submodule/channel
-    blocks is going to change in {\opp} 6.0: An unqualified name \ttt{foo} is
-    going to refer to the parameter of the submodule itself, i.e., will be
-    interpreted as \ttt{this.foo}. To create NED files which are compatible with
-    both versions, make those parameter references explicit by using the
-    \fkeyword{parent} qualifier: \ttt{parent.foo}. A similar rule applies to the
-    arguments of \fkeyword{sizeof} and \fkeyword{exists}.
-\end{note}
+For the full scoping rules (including gates, submodule references, and loop
+variables), see \ref{sec:ned-ref:referencing-parameters-and-loop-variables}.
 
 
 \subsection{Volatile Parameters}
@@ -1723,8 +1709,8 @@ module Node
             parameters:   // this keyword is optional
                 routingTable = "routingtable.txt"; // assign parameter
             gates:
-                in[sizeof(port)];  // set gate vector size
-                out[sizeof(port)];
+                in[sizeof(parent.port)];  // set gate vector size
+                out[sizeof(parent.port)];
         }
         queue[sizeof(port)]: Queue {
             @display("t=queue id $id"); // modify display string
@@ -2090,8 +2076,8 @@ module RandomGraph {
     submodules:
         node[count]: Node {
             gates:
-                in[count];
-                out[count];
+                in[parent.count];
+                out[parent.count];
         }
     connections allowunconnected:
         for i=0..count-1, for j=0..count-1 {
