@@ -1,0 +1,21 @@
+FROM --platform=linux/amd64 ubuntu:22.04 as builder
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential clang lld gdb bison flex perl \
+    python3 python3-pip qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools \
+    libqt5opengl5-dev libxml2-dev zlib1g-dev doxygen graphviz libwebkit2gtk-4.0-37
+RUN pip3 install --user --upgrade numpy pandas matplotlib scipy seaborn posix_ipc
+
+COPY . /omnetpp
+WORKDIR /omnetpp
+RUN source ./setenv -f && ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no && make -j8
+
+RUN mkdir -p /deps
+RUN ldd /omnetapp/bin/opp_msgtool | tr -s '[:blank:]' '\n' | grep '^/' | xargs -I % sh -c 'cp % /deps;'
+
+FROM ubuntu:22.04 as package
+
+COPY --from=builder /deps /deps
+COPY --from=builder /omnetapp/bin/opp_msgtool /omnetapp/bin/opp_msgtool
+ENV LD_LIBRARY_PATH=/deps
