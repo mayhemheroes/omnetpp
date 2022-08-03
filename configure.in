@@ -85,10 +85,7 @@ AC_DEFUN(OPP_CHECK_LIB_NOLINK,[
 
    AC_MSG_CHECKING(for $1 with CFLAGS="$4")
 
-   AC_TRY_COMPILE(
-     [#include <$2>], [$3;],
-     [AC_MSG_RESULT(yes); $5=yes; $6],
-     [AC_MSG_RESULT(no); $5=no; $7])
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <$2>]], [[$3;]])],[AC_MSG_RESULT(yes); $5=yes; $6],[AC_MSG_RESULT(no); $5=no; $7])
 
    CXXFLAGS=$save_CXXFLAGS
 ])
@@ -743,7 +740,7 @@ rm -f conftest_a.* conftest_m.* libconftest_a.a conftest
 #----------------------
 # add RUNTIME_PATH option if supported, so that setting LD_LIBRARY_PATH is no longer needed when using shared libs.
 # Also, we add "." to rpath so that opp_run -L option does not need full path of the library
-# On Windows and macOS -rpath is not supported but throws a warning only so we test for a command line option 
+# On Windows and macOS -rpath is not supported but throws a warning only so we test for a command line option
 # that explicitly fails so we will not add -rpath onb Windows.
 AC_MSG_CHECKING(whether linker supports -rpath)
 LDFLAGS_SAVE="$LDFLAGS"
@@ -902,7 +899,6 @@ fi
 #   import seaborn
 
 SYS_LIBS=""
-
 #---------------------------------
 # Check for python cflags and libs
 #---------------------------------
@@ -916,22 +912,32 @@ if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
   # the full --cflags output is full of compiler flags we don't want nor need
   PYTHON_CFLAGS=$($PYTHON3 $PYTHON_CONFIG --includes)
 
-  # --libs is a subset of --ldflags, it seems, and --embed
-  # is needed to actually get the flag to link to libpython
-  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
+  # --libs is a subset of --ldflags, it seems, and we don't need to
+  # actually link to libpython (by adding --embed), because we're
+  # building a module, and not trying to embed the interpreter here.
+  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags)
 
-  OPP_CHECK_LIB(python3-dev, Python.h, Py_Initialize(), $PYTHON_CFLAGS, $PYTHON_LDFLAGS, python3_found)
+  OPP_CHECK_LIB_NOLINK(python3-dev, Python.h, PY_MAJOR_VERSION, $PYTHON_CFLAGS, python3_found)
 
   if test $python3_found != yes; then
     AC_MSG_ERROR([Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found.])
   fi
+
+  PYTHON_EMBED_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
+
+  OPP_CHECK_LIB(python3-embed, Python.h, Py_Initialize(), $PYTHON_CFLAGS, $PYTHON_EMBED_LDFLAGS, python3_found)
+
+  if test $python3_found != yes; then
+    AC_MSG_ERROR([Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found.])
+  fi
+
+  CFLAGS="$CFLAGS $PYTHON_CFLAGS"
+  SYS_LIBS="$SYS_LIBS $PYTHON_EMBED_LDFLAGS"
 fi
 
 #----------------------
 # Checks for standard libraries.
 #----------------------
-
-SYS_LIBS=""
 
 if test "$TOOLCHAIN_NAME" != "clang-msabi"; then
   # math functions
@@ -1311,6 +1317,10 @@ if test "$WITH_SYSTEMC" = "yes"; then
   AC_DEFINE([WITH_SYSTEMC], [], [])
 fi
 
+if test "$WITH_PYTHON" = "yes"; then
+  AC_DEFINE([WITH_PYTHON], [], [])
+fi
+
 
 if test "$HAVE_DLOPEN" = "1"; then
   AC_DEFINE([HAVE_DLOPEN], [1], [])
@@ -1425,6 +1435,7 @@ AC_SUBST(WITH_OSGEARTH)
 AC_SUBST(WITH_AKAROA)
 AC_SUBST(WITH_SYSTEMC)
 AC_SUBST(WITH_BACKTRACE)
+AC_SUBST(WITH_PYTHON)
 AC_SUBST(WITH_SCAVE_PYTHON_BINDINGS)
 AC_SUBST(PREFER_SQLITE_RESULT_FILES)
 

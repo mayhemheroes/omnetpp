@@ -612,6 +612,7 @@ ARCH
 PLATFORM
 PREFER_SQLITE_RESULT_FILES
 WITH_SCAVE_PYTHON_BINDINGS
+WITH_PYTHON
 WITH_BACKTRACE
 WITH_SYSTEMC
 WITH_AKAROA
@@ -5717,7 +5718,6 @@ fi
 #   import seaborn
 
 SYS_LIBS=""
-
 #---------------------------------
 # Check for python cflags and libs
 #---------------------------------
@@ -5731,19 +5731,58 @@ if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
   # the full --cflags output is full of compiler flags we don't want nor need
   PYTHON_CFLAGS=$($PYTHON3 $PYTHON_CONFIG --includes)
 
-  # --libs is a subset of --ldflags, it seems, and --embed
-  # is needed to actually get the flag to link to libpython
-  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
+  # --libs is a subset of --ldflags, it seems, and we don't need to
+  # actually link to libpython (by adding --embed), because we're
+  # building a module, and not trying to embed the interpreter here.
+  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags)
+
+
+   save_CXXFLAGS=$CXXFLAGS
+   CXXFLAGS="$PYTHON_CFLAGS"
+
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for python3-dev with CFLAGS=\"$PYTHON_CFLAGS\"" >&5
+printf %s "checking for python3-dev with CFLAGS=\"$PYTHON_CFLAGS\"... " >&6; }
+
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <Python.h>
+int
+main (void)
+{
+PY_MAJOR_VERSION;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }; python3_found=yes;
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }; python3_found=no;  ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+   CXXFLAGS=$save_CXXFLAGS
+
+
+  if test $python3_found != yes; then
+    as_fn_error $? "Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found." "$LINENO" 5
+  fi
+
+  PYTHON_EMBED_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
 
 
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
 
    CXXFLAGS="$PYTHON_CFLAGS"
-   LIBS="$PYTHON_LDFLAGS"
+   LIBS="$PYTHON_EMBED_LDFLAGS"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for python3-dev with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_LDFLAGS\"" >&5
-printf %s "checking for python3-dev with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_LDFLAGS\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for python3-embed with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"" >&5
+printf %s "checking for python3-embed with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -5775,13 +5814,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   if test $python3_found != yes; then
     as_fn_error $? "Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found." "$LINENO" 5
   fi
+
+  CFLAGS="$CFLAGS $PYTHON_CFLAGS"
+  SYS_LIBS="$SYS_LIBS $PYTHON_EMBED_LDFLAGS"
 fi
 
 #----------------------
 # Checks for standard libraries.
 #----------------------
-
-SYS_LIBS=""
 
 if test "$TOOLCHAIN_NAME" != "clang-msabi"; then
   # math functions
@@ -7566,6 +7606,11 @@ if test "$WITH_SYSTEMC" = "yes"; then
 
 fi
 
+if test "$WITH_PYTHON" = "yes"; then
+  printf "%s\n" "#define WITH_PYTHON /**/" >>confdefs.h
+
+fi
+
 
 if test "$HAVE_DLOPEN" = "1"; then
   printf "%s\n" "#define HAVE_DLOPEN 1" >>confdefs.h
@@ -7590,6 +7635,7 @@ ac_config_headers="$ac_config_headers include/omnetpp/platdep/config.h"
 #----------------------
 # Substitutions.
 #----------------------
+
 
 
 
