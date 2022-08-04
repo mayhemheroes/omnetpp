@@ -244,13 +244,11 @@ void MessageAnimator::endSend(cMessage *msg)
     ASSERT2(!(currentSending->hops.empty()), "No messageSendDirect() nor messageSendHop() was called between beginSend() and endSend()");
 
     bool isUpdatePacket = false;
-    txid_t transmissionId = -1;
     if (msg->isPacket()) {
         cPacket *packet = static_cast<cPacket *>(msg);
         if (packet->isUpdate()) {
             cutUpdatedPacketAnimation(packet);
             isUpdatePacket = true;
-            transmissionId = packet->getTransmissionId();
         }
     }
 
@@ -529,7 +527,7 @@ void MessageAnimator::updateNextEventMarkers()
             item->setVisible(true);
             item->setRect(mi->getSubmodRect(modParent).adjusted(-2, -2, 2, 2));
             item->setBrush(Qt::NoBrush);
-            item->setPen(QPen(QColor("red"), markedModule == modParent ? 2 : 1));
+            item->setPen(QPen(colors::RED, markedModule == modParent ? 2 : 1));
             item->setZValue(10);
         } else {
             item->setVisible(false);
@@ -739,6 +737,12 @@ void MessageAnimator::removeMessagePointer(cMessage *msg)
 
     if (deliveries)
         deliveries->removeMessagePointer(msg);
+}
+
+void MessageAnimator::dump()
+{
+    for (Animation *a : animations)
+        std::cout << a->str().toStdString() << std::endl;
 }
 
 }  // namespace qtenv

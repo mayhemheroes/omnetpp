@@ -398,11 +398,17 @@ void cDisplayString::doParse()
     char *s, *d;
     bool insideTagName = true;
     for (s = assembledString, d = buffer; *s; s++, d++) {
-        if (*s == '\\' && *(s+1)) {
+        if (*s == '\\') {
             // allow escaping display string special chars (=,;) with backslash.
             // No need to deal with "\t", "\n" etc here, since they already got
             // interpreted by opp_parsequotedstr().
-            *d = *++s;
+            if (*(s+1) == '\0')
+                throw cRuntimeError("Incomplete escape sequence in '%s'", assembledString);
+
+            if (strchr(",;=", *(s+1)) == nullptr)
+                throw cRuntimeError("Invalid escape sequence '\\%c' in '%s'", *(s+1), assembledString);
+            else
+                *d = *++s;
         }
         else if (*s == ';') {
             // new tag begins
@@ -413,6 +419,19 @@ void cDisplayString::doParse()
             for (auto & arg : tags[numTags-1].args)
                 arg = nullptr;
             insideTagName = true;
+        }
+        else if (*s == '$' && *(s+1) == '$' && !insideTagName) {
+            *d++ = *s++;
+            *d = *s;
+        }
+        else if (*s == '$' && *(s+1) == '{' && !insideTagName) {
+            // skip expression
+            const char *end = opp_findmatchingparen(s+1);
+            if (!end)
+                throw cRuntimeError("Unmatched '{' in '%s'", assembledString);
+            while (s != end)
+                *d++ = *s++;
+            *d = *s;
         }
         else if (*s == '=' && insideTagName) {
             // first argument of new tag begins
@@ -489,10 +508,26 @@ void cDisplayString::strcatescaped(char *d, const char *s)
 
     d += strlen(d);
     while (*s) {
-        // quoting \t, \n etc is the job of opp_quotestr()
-        if (*s == ';' || *s == ',' || *s == '=')
-            *d++ = '\\';
-        *d++ = *s++;
+        // skipping param refs
+        if (*s == '$' && *(s+1) == '$') {
+            *d++ = *s++;
+            *d++ = *s++;
+        }
+        else if (*s == '$' && *(s+1) == '{') {
+            const char *end = opp_findmatchingparen(s+1);
+            if (!end)
+                throw cRuntimeError("Unmatched '{' in '%s'", s);
+
+            while (s != end)
+                *d++ = *s++;
+            *d++ = *s++; // the }
+        }
+        else {
+            // quoting \t, \n etc is the job of opp_quotestr()
+            if (*s == ';' || *s == ',' || *s == '=')
+                *d++ = '\\';
+            *d++ = *s++;
+        }
     }
     *d = '\0';
 }

@@ -19,8 +19,12 @@
 #include <QtGui/QPen>
 #include "qtenv.h"
 #include "graphicsitems.h"
+#include "displaystringaccess.h"
 #include "omnetpp/cdisplaystring.h"
 #include "omnetpp/cpacket.h"
+#include "common/stringutil.h"
+
+using namespace omnetpp::common;
 
 namespace omnetpp {
 namespace qtenv {
@@ -47,6 +51,9 @@ void MessageItemUtil::setupLineFromDisplayString(LineMessageItem *mi, cMessage *
 {
     cDisplayString ds = msg->getDisplayString();
 
+    std::string buffer; // stores getTagArg return values after substitution
+    DisplayStringAccess dsa(&ds, nullptr);
+
     mi->setData(ITEMDATA_COBJECT, QVariant::fromValue((cObject *)msg));
 
     QtenvOptions *opt = getQtenv()->opt;
@@ -60,8 +67,8 @@ void MessageItemUtil::setupLineFromDisplayString(LineMessageItem *mi, cMessage *
         mi->setColor(color);
     }
     else {  // as defined in the dispstr
-        QString fillColorName = ds.getTagArg("b", 3);
-        QColor fillColor = fillColorName == "kind"
+        const char *fillColorName = dsa.getTagArg("b", 3, buffer);
+        QColor fillColor = opp_streq(fillColorName, "kind")
                             ? kindColor
                             : parseColor(fillColorName, "red");
         mi->setColor(fillColor);
@@ -71,6 +78,9 @@ void MessageItemUtil::setupLineFromDisplayString(LineMessageItem *mi, cMessage *
 void MessageItemUtil::setupSymbolFromDisplayString(SymbolMessageItem *mi, cMessage *msg, double imageSizeFactor)
 {
     cDisplayString ds = msg->getDisplayString();
+
+    std::string buffer; // stores getTagArg return values after substitution
+    DisplayStringAccess dsa(&ds, nullptr);
 
     mi->setData(ITEMDATA_COBJECT, QVariant::fromValue((cObject *)msg));
 
@@ -97,8 +107,8 @@ void MessageItemUtil::setupSymbolFromDisplayString(SymbolMessageItem *mi, cMessa
     }
     else {  // as defined in the dispstr
         bool widthOk, heightOk;
-        double shapeWidth = QString(ds.getTagArg("b", 0)).toDouble(&widthOk);
-        double shapeHeight = QString(ds.getTagArg("b", 1)).toDouble(&heightOk);
+        double shapeWidth = dsa.getTagArgAsDouble("b", 0, 0.0, &widthOk);
+        double shapeHeight = dsa.getTagArgAsDouble("b", 1, 0.0, &heightOk);
 
         if (!widthOk)
             shapeWidth = shapeHeight;
@@ -112,7 +122,7 @@ void MessageItemUtil::setupSymbolFromDisplayString(SymbolMessageItem *mi, cMessa
         mi->setWidth(shapeWidth);
         mi->setHeight(shapeHeight);
 
-        QString shapeName = QString(ds.getTagArg("b", 2)).toLower();
+        QString shapeName = QString(dsa.getTagArg("b", 2, buffer)).toLower();
 
         auto shape = (ds.getNumArgs("b") <= 0)
                        ? SymbolMessageItem::SHAPE_NONE
@@ -121,28 +131,27 @@ void MessageItemUtil::setupSymbolFromDisplayString(SymbolMessageItem *mi, cMessa
                            : SymbolMessageItem::SHAPE_OVAL; // if unknown, this is the default
         mi->setShape(shape);
 
-        QString fillColorName = ds.getTagArg("b", 3);
-        QColor fillColor = fillColorName == "kind"
+        const char *fillColorName = dsa.getTagArg("b", 3, buffer);
+        QColor fillColor = opp_streq(fillColorName, "kind")
                             ? kindColor
                             : parseColor(fillColorName, "red");
         mi->setFillColor(fillColor);
-        QString outlineColorName = ds.getTagArg("b", 4);
-        mi->setOutlineColor(outlineColorName == "kind"
+        const char *outlineColorName = dsa.getTagArg("b", 4, buffer);
+        mi->setOutlineColor(opp_streq(outlineColorName, "kind")
                              ? kindColor
                              : parseColor(outlineColorName, fillColor));
 
-        bool ok;
-        int outlineWidth = QString(ds.getTagArg("b", 5)).toInt(&ok);
-        mi->setOutlineWidth(ok ? outlineWidth : 2);
+        mi->setOutlineWidth(dsa.getTagArgAsLong("b", 5, 2));
 
-        const char *imageName = ds.getTagArg("i", 0);
-        mi->setImage(imageName[0] ? getQtenv()->icons.getImage(imageName, ds.getTagArg("is", 0)) : nullptr);
+        const char *imageName = dsa.getTagArg("i", 0, buffer);
+        std::string buffer2; // for imageSize while imageName is still needed
+        mi->setImage(imageName[0] ? getQtenv()->icons.getImage(imageName, dsa.getTagArg("is", 0, buffer2)) : nullptr);
 
-        QString imageColorName = ds.getTagArg("i", 1);
-        mi->setImageColor(imageColorName == "kind" ? kindColor : parseColor(imageColorName));
+        const char *imageColorName = dsa.getTagArg("i", 1, buffer);
+        mi->setImageColor(opp_streq(imageColorName, "kind") ? kindColor : parseColor(imageColorName));
         mi->setImageColorPercentage((ds.getNumArgs("i") == 2) // color given, but no percentage
                                       ? 30
-                                      : QString(ds.getTagArg("i", 2)).toDouble());
+                                      : dsa.getTagArgAsDouble("i", 2));
     }
 }
 
