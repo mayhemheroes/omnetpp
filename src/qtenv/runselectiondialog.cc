@@ -107,6 +107,8 @@ RunSelectionDialog::RunSelectionDialog(cConfigurationEx *configuration, const st
     // so far the horizontal policy was "MinimumExpanding" to make sure it will enlarge the dialog
     // if needed in adjustSize(), but now we want to allow the user to resize it to a smaller width
     ui->configName->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    ui->buttonBox->setFocus(Qt::PopupFocusReason);
 }
 
 RunSelectionDialog::~RunSelectionDialog()
