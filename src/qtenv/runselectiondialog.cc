@@ -109,7 +109,7 @@ RunSelectionDialog::RunSelectionDialog(cConfigurationEx *configuration, const st
     // if needed in adjustSize(), but now we want to allow the user to resize it to a smaller width
     ui->configName->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setFocus(Qt::PopupFocusReason);
+    ui->buttonBox->setFocus(Qt::PopupFocusReason);
 }
 
 RunSelectionDialog::~RunSelectionDialog()
