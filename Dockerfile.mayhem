@@ -4,7 +4,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential clang lld gdb bison flex perl \
     python3 python3-dev python3-pip qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools \
-    libqt5opengl5-dev libxml2-dev zlib1g-dev doxygen graphviz libwebkit2gtk-4.0-37
+    libqt5opengl5-dev libxml2-dev zlib1g-dev doxygen graphviz libwebkit2gtk-4.0-37 pkg-config
 RUN pip3 install --user --upgrade numpy pandas matplotlib scipy seaborn posix_ipc
 
 COPY . /omnetpp
