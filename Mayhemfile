@@ -1,0 +1,6 @@
+project: omnetpp
+target: opp-msgtool
+cmds:
+  - cmd: /opp_msgtool v @@
+    env:
+      DISABLE_SMOKETEST: '1'
