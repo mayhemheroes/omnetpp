@@ -50,6 +50,14 @@ std::ostream& CsvWriter::out()
     return *outp;
 }
 
+void CsvWriter::writeBool(bool value)
+{
+    Assert(!insideRaw);
+    writeSep();
+    out() << (value ? "true" : "false");
+    columnNumber++;
+}
+
 void CsvWriter::writeInt(int64_t value)
 {
     Assert(!insideRaw);

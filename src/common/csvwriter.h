@@ -74,6 +74,7 @@ public:
     QuoteEscapingMethod getQuoteEscapingMethod() const {return quoteEscapingMethod;}
 
     // writer methods
+    void writeBool(bool value);
     void writeInt(int64_t value);
     void writeDouble(double value);
     void writeBigDecimal(const BigDecimal& value);
