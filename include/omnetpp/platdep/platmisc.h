@@ -31,18 +31,25 @@
 // stack-frame pretty printer (backwards) and dumping stack frames are not needed
 // when we just simply want to drop into the debugger.
 //
-#if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
-  #define DEBUG_TRAP  __builtin_debugtrap()
-#elif defined(_MSC_VER)
-  #include <intrin.h>
-  #define DEBUG_TRAP  __debugbreak()  // Windows debug interrupt (MSVC compiler)
-#elif defined(__x86_64__)
-  #define DEBUG_TRAP  __asm__ __volatile__("int3")
-#elif defined(__aarch64__)
-  #define DEBUG_TRAP  __asm__ __volatile__("brk #0")
-#else
-  #include <csignal>
-  #define DEBUG_TRAP  ::raise(SIGTRAP) // last resort if compiler does not support __builtin_debugtrap
+#if defined(__has_builtin) 
+  #if __has_builtin(__builtin_debugtrap)
+    #define DEBUG_TRAP  __builtin_debugtrap()
+  #endif
+#endif
+
+// fallback if no __builtin_debugtrap is available
+#if !defined(DEBUG_TRAP)
+  #if defined(_MSC_VER)
+    #include <intrin.h>
+    #define DEBUG_TRAP  __debugbreak()  // Windows debug interrupt (MSVC compiler)
+  #elif defined(__x86_64__)
+    #define DEBUG_TRAP  __asm__ __volatile__("int3")
+  #elif defined(__aarch64__)
+    #define DEBUG_TRAP  __asm__ __volatile__("brk #0")
+  #else
+    #include <csignal>
+    #define DEBUG_TRAP  ::raise(SIGTRAP) // last resort if compiler does not support __builtin_debugtrap
+  #endif
 #endif
 
 //
