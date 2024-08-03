@@ -24,16 +24,25 @@
 //
 // Breaking into the debugger
 //
-#if defined(_MSC_VER)
-#include <intrin.h>
-#define DEBUG_TRAP  __debugbreak()  // Windows debug interrupt (MSVC/ClangC2)
-#elif defined(_WIN32) && defined(__GNUC__)
-#define DEBUG_TRAP  asm("int $3\n")  // MinGW or Cygwin: debug interrupt with GNU syntax
-#elif defined(__linux__) && (defined(__i386__) || defined(__x86_64__))
-#define DEBUG_TRAP  __asm__("int3")
+// NOTE: We prefer using builtin compiler methods as they are optimized for the
+// given platform. If not available, we fall back to assembly instructions to
+// directly break into the debugger.
+// Raising a signal is last effort because it can also invoke our built-in
+// stack-frame pretty printer (backwards) and dumping stack frames are not needed
+// when we just simply want to drop into the debugger.
+//
+#if defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
+  #define DEBUG_TRAP  __builtin_debugtrap()
+#elif defined(_MSC_VER)
+  #include <intrin.h>
+  #define DEBUG_TRAP  __debugbreak()  // Windows debug interrupt (MSVC compiler)
+#elif defined(__x86_64__)
+  #define DEBUG_TRAP  __asm__ __volatile__("int3")
+#elif defined(__aarch64__)
+  #define DEBUG_TRAP  __asm__ __volatile__("brk #0")
 #else
-#include <csignal>
-#define DEBUG_TRAP  ::raise(SIGTRAP)
+  #include <csignal>
+  #define DEBUG_TRAP  ::raise(SIGTRAP) // last resort if compiler does not support __builtin_debugtrap
 #endif
 
 //

@@ -795,7 +795,8 @@ void cSimpleModule::doMessageEvent(cMessage *msg)
         simulation->transferTo(this);
     }
     else {
-        // YOU ARE ABOUT TO ENTER THE handleMessage() CALL YOU REQUESTED -- SELECT "STEP INTO" IN YOUR DEBUGGER
+        // YOU ARE ABOUT TO ENTER THE handleMessage() CALL YOU REQUESTED
+        // SELECT "STEP INTO (F5)" IN YOUR DEBUGGER
         DEBUG_TRAP_IF_REQUESTED; handleMessage(msg);
     }
 }
