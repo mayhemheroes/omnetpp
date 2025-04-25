@@ -731,6 +731,7 @@ void EnvirBase::printHelp()
     out << "  -e <option>   Prints the value of the given configuration option in the\n";
     out << "                simulation run denoted by the -c and -r options. (The run filter\n";
     out << "                should match exactly one simulation run.)\n";
+    out << "  -X <option>   Experimental options that may come and go without notice\n";
     out << "  -h            Print this help and exit.\n";
     out << "  -h <category> Lists registered components:\n";
     out << "    -h config         Prints the list of available configuration options\n";

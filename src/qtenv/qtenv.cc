@@ -1980,6 +1980,16 @@ void Qtenv::initialSetUpConfiguration()
     mainWindow->reflectConfigOnUi();
 
     QTimer::singleShot(0, mainWindow, &MainWindow::activateWindow);
+
+    // limited "run until event" feature -- the "-Xev=123" option should cause Qtenv to run until event #123
+    std::string stopEventNumberString;
+    for (std::string xarg : args->optionValues('X'))
+        if (opp_stringbeginswith(xarg.c_str(), "ev="))
+            stopEventNumberString = xarg.substr(3); // no break -- choose last value
+    if (!stopEventNumberString.empty()) {
+        eventnumber_t stopEventNumber = opp_atoll(stopEventNumberString.c_str());
+        runSimulation(RUNMODE_FAST, 0, stopEventNumber, nullptr, nullptr);
+    }
 }
 
 void Qtenv::askParameter(cPar *par, bool unassigned)
