@@ -8,6 +8,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.omnetpp.common.locking.DeadlockDetector;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -24,6 +25,9 @@ public class CommonCorePlugin extends AbstractUIPlugin {
     // global preference store (per installation)
     private ScopedPreferenceStore configPreferenceStore;
 
+    // Deadlock detector and resolver
+    private DeadlockDetector deadlockDetector;
+
     /**
      * The constructor
      */
@@ -37,6 +41,11 @@ public class CommonCorePlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
+
+        if (System.getenv("OMNETPP_DISABLE_DEADLOCK_DETECTION") != null) {
+            deadlockDetector = new DeadlockDetector();
+            deadlockDetector.start();
+        }
     }
 
     /*
@@ -46,6 +55,11 @@ public class CommonCorePlugin extends AbstractUIPlugin {
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
+
+        if (deadlockDetector != null) {
+            deadlockDetector.stop();
+            deadlockDetector = null;
+        }
     }
 
     /**

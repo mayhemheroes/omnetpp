@@ -146,6 +146,7 @@ Export-Package: au.com.bytecode.opencsv,
    org.eclipse.ui.preferences",
  org.omnetpp.common.color;uses:="org.eclipse.jface.viewers,org.eclipse.swt.graphics",
  org.omnetpp.common.displaymodel;uses:="org.eclipse.draw2d.geometry",
+ org.omnetpp.common.locking,
  org.omnetpp.common.swt.custom;
   uses:="org.eclipse.swt.internal,
    org.eclipse.swt.printing,
