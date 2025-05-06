@@ -194,15 +194,19 @@ public class ImageFactory {
     private static int currentVersion = 0;
 
     // image search path: absolute path of directories
-    final IPath[] imagePath;
+    private final IPath[] imagePath;
+
     // the search continued in the fallback when not found in this cache
-    ImageFactory fallback;
+    private ImageFactory fallback;
+
     // for images and icons
-    ImageRegistry imageRegistry = new ImageRegistry(Display.getDefault());
+    private ImageRegistry imageRegistry = new ImageRegistry(Display.getDefault());
+
     // name of png and gif images in imagePath
-    List<String> imageNameList = null;
+    private List<String> imageNameList = null;
+
     // workspace folders in the imagePath
-    IContainer[] workspaceFoldersInPath;
+    private IContainer[] workspaceFoldersInPath;
 
     /**
      * Sets the global image directories as file system paths.
