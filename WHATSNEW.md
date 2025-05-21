@@ -6,8 +6,292 @@ simulation model compatibility, see doc/API-Changes. For more detailed info
 about all changes, see include/ChangeLog, src/*/ChangeLog, and ide/ChangeLog.
 
 
-OMNeT++ 6.1.1 (January 2025)
-----------------------------
+OMNeT++ 6.2 (June 2025)
+-----------------------
+
+Highlights of this release are the use of the LLDB debugger inside the IDE, as well
+as numerous Qtenv improvements: display of documentation brief in module/submodule
+tooltips, log filtering, and the display of an identicon.
+
+Simulation kernel:
+
+  - Added the `WATCH_EXPR()` and `WATCH_LAMBDA()` macros, to allow watching the
+    values of expressions during simulation runtime.
+
+  - `cTopology`: Added an overload of `extractFromNetwork()` that takes an
+    `std::function`, so that it can be used with lambda functions for more
+    flexible network topology extraction.
+
+  - `cComponentType`: Added `getDocumentation()` method to access component
+    documentation programmatically, mainly for Qtenv.
+
+  - `cAbstractTextFigure`: Added `getTextExtent()` and `getFontAscent()` methods to
+    improve text measurement capabilities.
+
+  - `cEnum`: Added `resolveName()` and `getNameForValue()` convenience functions to
+    simplify working with enumeration types.
+
+  - Added `str()` method to RNG classes (`cLCG32`, `cMersenneTwister`) to make
+    seed/state information inspectable at runtime.
+
+  - Fixed `preDelete()` being called multiple times during deletion of a network
+    or compound module, which could lead to unexpected behavior.
+
+  - Match expressions, e.g. `cMatchExpression`, now accept string literals
+    delimited with single quotes, too. For reference, NED and ini also accept
+    string literals with both single and double quotes.
+
+MSG files, `opp_msgtool`:
+
+  - Fixed issue #1351 regarding enum declarations not working. Example code that
+    demonstrates the issue:
+
+        enum Foo;  // declaration of an externally defined enum
+        class A {
+            Foo foo; //Error: unknown type 'Foo' for field 'foo' in 'A'
+        }
+
+    This fix allows corresponding workarounds to be removed from INET and
+    other models.
+
+Result Recording:
+
+  - Added `record-vector-results`, `record-scalar-results` options that
+    enable/disable writing a scalar/vector file. Previously it was not possible
+    to prevent the creation of `.sca` / `.vec` files, because even after
+    disabling the recording of scalar/statistic/vector items using per-object
+    options, empty files (just with the run header and vector declarations) were
+    still created.
+
+Cmdenv:
+
+  - Added `-S` option that suppresses all stdout output. The existing `-s` option
+    just made the output less verbose (it is also clarified now in the help).
+
+  - Improved "run info" line printed when running in non-verbose mode (-s option):
+    added run ID, and "#" in front of run number.
+
+  - Added boolean options for finer-grained control of when to log and when not:
+    `cmdenv-log-initialization`, `cmdenv-log-simulation`, `cmdenv-log-finalization`,
+    `cmdenv-log-cleanup`. Logging during cleanup (network deletion) is now disabled
+    by default.
+
+  - Added `cmdenv-progress-updates` option, which disables printing periodic
+    progress updates in express mode. Previously, a similar effect could only be
+    achieved by setting the update interval to a very high value.
+
+Qtenv:
+
+  - Module and channel tooltips now include a brief documentation of that
+    component, with the goal of facilitating understanding of the model's
+    operation for new users. The first paragraph of the component's NED comment
+    is shown. This feature can be turned off in the config dialog ("Show
+    component documentation in tooltips").
+
+  - Added "View NED Type's Source" item to component's context menu. The
+    relevant portion of the NED file is shown in a (read-only) editor window. An
+    important point is that the displayed source includes the component's full
+    NED comment (i.e. its documentation), not just the first paragraph shown in
+    the tooltip.
+
+  - Added simulation identicon and "Show Simulation Info" functionality. The
+    identicon is a programmatically generated geometric pattern that appears at
+    the right side of the toolbar, and its purpose is to help the user tell
+    apart Qtenv windows when several similar simulations open at the same time.
+
+    The identicon is drawn using a "simulation hash" as seed, which includes
+    the OMNeT++ version, the config name and run number, the inifile name, the
+    working directory, the configuration contents, the RNGs, module names,
+    their NED and C++ type names, their parameter names and values, etc.
+
+    There is also a `qtenv-identicon-seed` config option, which is useful to
+    force identical icons to be used for simulations that would otherwise have
+    different hashes.
+
+    The "Show Simulation Info" functionality displays a report of all values
+    that affect the simulation hash, and more.
+
+  - Added line filtering functionality to the Log inspector. One can specify a
+    string or a regex, and the log window will only display lines that contain
+    the filter string. This "live grep"-like feature vastly improves the
+    usefulness of the log when the user is looking at a certain aspect of the
+    model. An icon on the floating toolbar indicates when a filter is active.
+
+  - Many smaller improvements and bug fixes.
+
+Command-line Tools:
+
+  - `opp_featuretool`: Improved the detection and handling of inconsistent
+    feature enablements. This includes better validation of the `.oppfeatures`
+    file, and reporting inconsistent enablements as hard errors (instead of
+    correcting them automatically, which was misleading).
+
+  - `opp_charttool`: Surrounded chart names with quotes in verbose printouts
+    like "Exporting chart <name>...", for the reason that chart names may
+    contain spaces and may be quite long, resulting in confusing output. The
+    default resolution of raster output formats was increased from 96 DPI to 300
+    DPI.
+
+  - `opp_python_repl`: This is a new tool which starts IPython and imports the
+    `omnetpp.repl` package. This script is also used by the IDE Terminal View if
+    the INET script is not available.
+
+  - `opp_test`: Added the `%equals`, `%not-equals`, `%equals-regex`, and
+    `%not-equals-regex` entry types to complement the `%contains` family of
+    entry types, and also `%no-default-inifile` that disables adding
+    `_defaults.ini` to the simulation command line. Also, the bulk of the
+    `opp_test` code was factored out into a library under the `python` folder to
+    allow using its functionality from Python code.
+
+
+Simulation Launcher/debugging:
+
+  - Switched to using LLDB, the debugger of the LLVM project, for debugging
+    sessions. This change is expected to bring a major improvement in debugging
+    experience, as GDB was increasingly falling behind in terms of performance
+    and platform support. To support LLDB, we integrated the LSP4E project's DAP
+    (Debug Adapter Protocol) component, a more modern and extensible debugging
+    infrastructure.  The LSP4E DAP debugger also replaces LLDBMI2, our earlier
+    attempt to replace GDB with LLDB. The LLDB debugger is launched via the
+    `opp_dbgdap` helper script.
+
+  - The Simulation Launcher now converts library paths to absolute path when
+    specifying the `-l` option to the simulation. Using absolute path prevents
+    issues with LLDB not being able to set breakpoints in dynamically loaded
+    shared libs. This issue is present in LLDB 19 on Linux. See:
+    https://github.com/llvm/llvm-project/issues/124761
+
+  - In the Simulation Launcher, changed the variable substitution in the simulation
+    launch command line arguments to allow missing variables. References to
+    variables unknown to the IDE are now left unchanged. This allows arguments
+    like `--output-scalar-file=${resultdir}/foo.sca` to be specified to the
+    simulation program (`${resultdir}` is meant to be processed by the
+    simulation program, not the IDE).
+
+  - Enhanced OMNeT++-specific LLDB formatters (`omnetpp.lldb.formatters.omnetpp`)
+
+  - Switch to the Debug perspective when the IDE attaches to a simulation
+    process in response to the simulation process invoking the IDE with an
+    `omnetpp://` launcher URL.
+
+Python REPL:
+
+  - Added a Python REPL to the Terminal view. To open it, click the "Open
+    Terminal" button in the view and select "OMNeT++ Python REPL". The REPL
+    opens with the `omnetpp` libraries imported, and you can call
+    `read_result_files()`, `run_simulations()`, etc.
+
+NED editor:
+
+  - Ctrl+clicking NED type names within comments and string constants now work.
+
+  - The editor now removes trailing spaces from NED files on Save.
+
+  - Fixed wrong module class name resolution in NED editor (Ctrl+Tab did not
+    always go to the C++ class that implements that type), and several other
+    issues.
+
+  - Significantly improved the usability of the "NED Inheritance" view:
+      - only show full subtype hierarchy of selected type, not of its root type
+      - show inheritance chain of selected element
+      - reveal and select the input type (and try revealing the root too)
+      - child nodes were not sorted, making it hard to locate items
+      - it only showed content when the cursor was positioned *inside* the component
+        definition in the NED file
+
+Analysis Tool:
+
+  - Added support for measuring the horizontal and vertical distances between
+    two points on a plot. The delta measurement feature is activated using
+    keyboard shortcuts when the mouse cursor is over the plot area. The "A" key
+    selects the start point, the "D" selects the end point and shows the
+    distances; the "S" key shows the horizontal and vertical deltas for a line
+    segment; "X" clears the markers.
+
+  - Added "Zoom to Fit Data" action to native line plots, without also including
+    the origin. "Zoom to Fit" was renamed to "Restore Original View".
+
+  - Recognizing that plot navigation gestures (e.g. keyboard and mouse bindings
+    for zooming in and out) are not so easy to remember, we added a navigation
+    help button to plot toolbars. This opens the relevant section of the User
+    Guide in the Help view.
+
+  - Significantly improved "Export Charts" dialog:
+
+      - Clarify that charts must be designated for export by ticking their
+        checkboxes, not by making a list selection
+      - Improved hint about emulating native widgets with Matplotlib (e.g.
+        replaced "*" mark with "emulated*" in the tree)
+      - Add "Set Export Size" button.
+      - Show plot size in pixels as well as inches before export.
+      - Change the default chart export DPI from 96 to 300.
+
+  - "Save Image" dialog: Make the note about image formats more noticeable.
+    Save chart image as PNG by default.
+
+  - Several small bug fixes and improvements, such as better colors in dark mode
+    at certain places, and making zooming and panning affect only the X axis
+    on enum strips.
+
+IDE Misc:
+
+  - Project Features: Fix bug introduced in the previous release (version 6.1)
+    when the IDE does not write out the `.nedexclusions` file when the feature
+    enablements changed.
+
+  - Sequence Chart: To speed up parsing eventlog files from Java, replaced
+    the C++ `LineTokenizer` (accessed via JNI) with a pure Java variant.
+    This makes parsing of eventlog entries several times faster because the
+    C++/Java bridging to LineTokenizer is slow. The measurements were done
+    using a Java profiler.
+
+  - Fixed launching simulations from the IDE, sometimes there was an
+    exception related to immutable collection.
+
+  - Ini file form-based editor: fix wrong colors in dark mode (#1356)
+
+  - Associate ".d" files with the normal Eclipse text editor. They are
+    dependency files, generated by our makefiles in the `out/` dirs. Without
+    this change, they show up with an ugly oversized green icon in the Open
+    Resource dialog (observed on the Ubuntu 24.04 Gnome desktop).
+
+Python libraries:
+
+  - `requirements.txt`: Added IPython as a dependency (as the IDE now has an
+    IPython console).
+
+  - `requirements.txt`: Accept NumPy 2.x as well as 1.x as dependency
+
+  - Added the `omnetpp.repl` package which starts an interactive IPython
+    interpreter with the `omnetpp` packages loaded.
+
+  - Added the `omnetpp.test` package that contains the functionality of the
+    `opp_test` tool. This allows using the test code both as a python library
+    and as a standalone script.
+
+  - `omnetpp.scave`: Change the default chart export DPI from 96 to 300.
+
+  - Many bug fixes in the `omnetpp.scave` library.
+
+User Guide:
+
+  - The "Qtenv" chapter was significantly revised and expanded.
+
+  - In the "Result Analysis" chapter, the "Plot Navigation" section was expanded
+    to include all possible gestures in all the modes for both types of plots
+    (native/matplotlib), and also mention the function of the X and Y keys.
+
+Tests:
+
+  - New tests
+
+Build:
+
+  - Upgraded to Eclipse 2025-03.
+
+See ChangeLogs in individual folders for details.
+
+Bugs fixed: https://github.com/omnetpp/omnetpp/issues?q=is%3Aissue+is%3Aclosed+milestone%3A6.2
 
 
 OMNeT++ 6.1 (September 2024)
@@ -411,6 +695,10 @@ Documentation:
     updates, clarified volatile, list of supported NED properties, etc.
   - Fresh style for the OMNeT++ API documentation.
   - More proofreading and refinements.
+
+See ChangeLogs in individual folders for details.
+
+Bugs fixed: https://github.com/omnetpp/omnetpp/issues?q=is%3Aissue+is%3Aclosed+milestone%3A6.1
 
 
 OMNeT++ 6.0.3 (January 2024)
