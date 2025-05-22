@@ -9,9 +9,8 @@ if [ -f "/usr/share/bash-completion/completions/git" ] ; then
 fi
 if [ -f "/usr/share/git/git-prompt.sh" ] ; then
   source "/usr/share/git/git-prompt.sh"
+  export PS1='\[\e]0;\w\a\]\n\[\e[32m\]\[\e[33m\]$(__git_ps1 "(%s) ")\w\[\e[0m\]\$ '
 fi
-
-export PS1='\[\e]0;\w\a\]\n\[\e[32m\]\[\e[33m\]$(__git_ps1 "(%s) ")\w\[\e[0m\]\$ '
 
 if [ -f "$HOME/setenv" ] ; then
   source $HOME/setenv
