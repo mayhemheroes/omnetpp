@@ -188,6 +188,10 @@ inline double clip(double min, double v, double max)
     return std::min(std::max(v, min), max);
 }
 
+#ifdef _WIN32
+// This is part of POSIX.1-2008, but not available on Windows.
+extern "C" const char *strcasestr(const char *haystack, const char *needle);
+#endif
 
 }  // namespace qtenv
 }  // namespace omnetpp

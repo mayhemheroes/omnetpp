@@ -687,7 +687,7 @@ std::string stripSuffixes(const std::string& from, char suffix)
 
 #ifdef _WIN32
 // This is part of POSIX.1-2008, but not available on Windows.
-static const char *strcasestr(const char *haystack, const char *needle)
+extern "C" const char *strcasestr(const char *haystack, const char *needle)
 {
     if (!*needle) {
         return haystack;
