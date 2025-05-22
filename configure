@@ -5047,13 +5047,21 @@ rm -f conftest_a.* conftest_m.* libconftest_a.a conftest
 #----------------------
 # add RUNTIME_PATH option if supported, so that setting LD_LIBRARY_PATH is no longer needed when using shared libs.
 # Also, we add "." to rpath so that opp_run -L option does not need full path of the library
+# On Windows -rpath is not supported but throws a warning only so we test for a command line option
+# that explicitly fails so we will not add -rpath onb Windows.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether linker supports -rpath" >&5
 printf %s "checking whether linker supports -rpath... " >&6; }
 LDFLAGS_SAVE="$LDFLAGS"
-LDFLAGS="$LDFLAGS -Wl,-rpath,\$(OMNETPP_LIB_DIR) -Wl,-rpath,."
-if test -d "$OMNETPP_TOOLS_DIR/lib" ; then
-    LDFLAGS="$LDFLAGS -Wl,-rpath,\$(OMNETPP_TOOLS_DIR)/lib"
+
+if test "$PLATFORM" = "win32"; then
+  LDFLAGS="$LDFLAGS --intentionally-fail"
+else
+  LDFLAGS="$LDFLAGS -Wl,-rpath,\$(OMNETPP_LIB_DIR) -Wl,-rpath,."
+  if test -d "$OMNETPP_TOOLS_DIR/lib" ; then
+      LDFLAGS="$LDFLAGS -Wl,-rpath,\$(OMNETPP_TOOLS_DIR)/lib"
+  fi
 fi
+
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
