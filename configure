@@ -5784,7 +5784,7 @@ test -n "$PYTHON_CONFIG" || PYTHON_CONFIG="nope"
 
 
   # get extension suffix
-  PYTHON_EXT_SUFFIX=$($PYTHON_CONFIG --extension-suffix)
+  PYTHON_EXT_SUFFIX="$($PYTHON_CONFIG --extension-suffix | xargs)" # xargs needed to strip away extra spaces on msys2 (it's a workaround for a python-config bug)
 
   # Check if the extension suffix from python-config matches the one from sysconfig
   PYTHON_SYSCONFIG_EXT_SUFFIX=$($PYTHON3 -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
