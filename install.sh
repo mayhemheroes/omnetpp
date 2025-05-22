@@ -214,13 +214,14 @@ install_deps() {
         dash diffutils dos2unix doxygen file filesystem findutils flex gawk gcc-libs \
         git grep gzip inetutils info less lndir make man-db mintty msys2-keyring \
         msys2-launcher msys2-runtime ncurses p7zip pacman pacman-mirrors pactoys-git \
-        patch pax-git perl pkgfile rebase sed swig tar tftp-hpa time tzcode unzip \
+        patch pax-git perl pkgfile rebase sed tar tftp-hpa time tzcode unzip \
         util-linux which zip\
         $MINGW_PACKAGE_PREFIX-clang \
-        $MINGW_PACKAGE_PREFIX-pkg-config \
+        $MINGW_PACKAGE_PREFIX-pkgconf \
         $MINGW_PACKAGE_PREFIX-lld \
         $MINGW_PACKAGE_PREFIX-lldb \
         $MINGW_PACKAGE_PREFIX-gdb \
+        $MINGW_PACKAGE_PREFIX-gcc-compat \
         $MINGW_PACKAGE_PREFIX-libxml2 \
         $MINGW_PACKAGE_PREFIX-python \
         $MINGW_PACKAGE_PREFIX-python-pip \
@@ -228,7 +229,8 @@ install_deps() {
         $MINGW_PACKAGE_PREFIX-python-matplotlib \
         $MINGW_PACKAGE_PREFIX-python-pandas \
         $MINGW_PACKAGE_PREFIX-python-seaborn \
-        $MINGW_PACKAGE_PREFIX-python-scipy"
+        $MINGW_PACKAGE_PREFIX-python-scipy \
+        $MINGW_PACKAGE_PREFIX-python-ipython"
 
         # packages="$packages $MINGW_PACKAGE_PREFIX-graphviz" # temporarily disabled because of size
 
