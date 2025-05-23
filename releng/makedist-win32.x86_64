@@ -65,7 +65,10 @@ rm -rf ide/win32-x86_64 ide/linux-x86_64 ide/linux-aarch64 ide/macosx-x86_64 ide
 mkdir -p tools
 echo "Copying tools archive..."
 cp $TOOLS_DIR/$TOOLS_VERSION/win32.x86_64/7za.exe tools || { echo --- error copying 7za.exe extractor ---; exit 1;}
-cp $TOOLS_DIR/$TOOLS_VERSION/win32.x86_64/opp-tools-win32-x86_64-*.7z tools || { echo --- error copying opp-tools-win32-x86_64-XXXX.7z ---; exit 1;}
+7za x -aos -bb0 -bso0 -bsp1 -y -otools/win32.x86_64 $TOOLS_DIR/$TOOLS_VERSION/win32.x86_64/opp-tools-win32-x86_64-msys.7z
+rm tools/win32.x86_64/etc/mtab # remove this file as this is not needed and is a link pointing to an absolute path that causes security error when the 7z file is extracted
+cp $TOOLS_DIR/$TOOLS_VERSION/win32.x86_64/opp-tools-win32-x86_64-*-toolchain.7z tools || { echo --- error copying opp-tools-win32-x86_64-XXXX-toolchain.7z ---; exit 1;}
+cp $TOOLS_DIR/$TOOLS_VERSION/win32.x86_64/opp-tools-win32-x86_64-*-dependencies.7z tools || { echo --- error copying opp-tools-win32-x86_64-XXXX-dependencies.7z ---; exit 1;}
 
 # customized files for win32
 PATCH_DIR=$OMNETPP_ROOT/releng/overlay/win32.x86_64
