@@ -1,7 +1,19 @@
+2025-04-17  Attila Torok
+
+	* omnetpp.scave: Make scrolling on enum strip axes only zoom/pan horizontally
+
+2025-04-23  Attila Torok
+
+	* omnetpp.scave: Don't show data in status message for enum strips.
+
+2025-04-23  Attila Torok
+
+	* omnetpp.scave: Fix zoom level being lost when adding delta measurement
+	markers.
+
 2025-05-07  Levente Meszaros
 
-	* omnetpp.scave: Fixed disappearing labels on enum strips in Matplotlib charts.
-
+	* omnetpp.scave: Fixed disappearing labels on enum strips in MatPlotLib charts.
 	The label was not visible when the right side of the box was outside the
 	visible area.
 

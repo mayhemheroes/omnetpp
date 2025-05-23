@@ -1,3 +1,15 @@
+2025-05-09  Attila Torok
+
+	* Fix "Packet mode" icon (it was the wrong color).
+
+2025-05-13  Andras Varga
+
+	* Graphical module inspector: Display the NED typename for the compound
+	module, too, next to the module path (top left corner).
+
+	* Also, added a tooltip to display NED documentation brief when hovering
+	over the same label.
+
 2025-04-17  Andras Varga
 
 	* Implemented the "qtenv-identicon-seed" config option. It may be used

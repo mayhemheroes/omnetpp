@@ -1,3 +1,30 @@
+2025-05-19  Andras Varga
+
+	* Inifile Editor: Added support for the new config options, and made
+	a number of usability enhancements to the "Form" editor page:
+
+        - Split up the "Result Recording" page into separate "Scalar Results",
+	      "Vector Results" and "Declared Statistics" pages. The "Result directory"
+	      configuration part went to the "General" page.
+
+	    - The "Enable recording of scalars" config option checkbox was expanded
+	      to its table form that allows the setting be specified with per-section,
+	      per-object granularity, and it was renamed to "Scalars to record".
+	      Similarly, "Enable recording of vectors" and "Enable recording of @statistics"
+	      were also expended to tables, and renamed to "Vectors to record" and
+	      "Statistics to record", respectively. Other, similar settings were also
+	      expanded to tables to highlight their functionalities.
+
+	    - Hints were added (in the form of labels) to several form fields to
+	      clarify their purposes.
+
+	    - Table column headings were improved, e.g. "Value" columns changed to
+	      something more specific.
+
+	    - It is now possible to make a section abstract (see config option of
+	      the same name) in the Form editor, too, using the section edit dialog
+	      on the "Sections" page.
+
 2025-05-12  Rudolf Hornig
 
 	* Project Features: Fix bug introduced in the previous release (version 6.1)

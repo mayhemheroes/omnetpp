@@ -1,3 +1,12 @@
+2025-05-20  Andras Varga
+
+	* cTopology section: added lambda-based extractFromNetwork(); removed
+	outdated examples; revised.
+
+2025-05-20  Andras Varga
+
+	* Documented WATCH_EXPR() and WATCH_LAMBDA()
+
 2024-10-08  ------ omnetpp-6.1.0 released ------
 
 2020-01-05  Andras Varga
