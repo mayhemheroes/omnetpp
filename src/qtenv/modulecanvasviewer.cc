@@ -632,12 +632,8 @@ void ModuleCanvasViewer::recalcSceneRect(bool alignTopLeft)
         setSceneRect(rect);
 
         if (alignTopLeft) {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->maximum());
-            verticalScrollBar()->setValue(verticalScrollBar()->maximum());
-            // making sure the viewpoint is scrolled so the top left
-            // corners of the viewport and the compound module are aligned
             auto corner = compoundModuleItem->boundingRect().topLeft();
-            ensureVisible(corner.x(), corner.y(), 1, 1, margin, margin);
+            ensureVisible(corner.x()-margin, corner.y()-margin, width(), height(), 0, 0);
         }
     }
 }
