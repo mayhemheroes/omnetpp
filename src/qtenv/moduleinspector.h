@@ -83,7 +83,7 @@ private Q_SLOTS:
 
 protected:
     static const QString PREF_MODE; // 0 is 2D, 1 is OSG
-    static const QString PREF_CENTER; // of the viewport in the 2D scene
+    static const QString PREF_ANCHOR; // top-left corner of the viewport in the 2D scene (in unzoomed coords)
     static const QString PREF_ZOOMFACTOR;
     static const QString PREF_ZOOMBYFACTOR;
     static const QString PREF_ICONSCALE;
@@ -116,6 +116,8 @@ protected:
     ModuleCanvasViewer *canvasViewer;
     IOsgViewer *osgViewer = nullptr;
 
+    std::map<cComponent *, std::string> bubblesToShow;
+
 public Q_SLOTS:
     void onLayoutVisualizationStarts(cModule *module, QGraphicsScene *layoutingScene);
     void onLayoutVisualizationEnds(cModule *module);
@@ -137,8 +139,6 @@ protected:
     void zoomBy(double mult, bool snaptoone = false, int x = 0, int y = 0);
 
     void renderToPrinter(QPrinter &printer);
-
-    std::map<cComponent *, std::string> bubblesToShow;
 
     virtual void redraw();
 

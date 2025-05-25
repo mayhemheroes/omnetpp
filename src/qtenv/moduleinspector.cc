@@ -76,7 +76,7 @@ class ModuleInspectorFactory : public InspectorFactory
 Register_InspectorFactory(ModuleInspectorFactory);
 
 const QString ModuleInspector::PREF_MODE = "mode";
-const QString ModuleInspector::PREF_CENTER = "center";
+const QString ModuleInspector::PREF_ANCHOR = "anchor";
 const QString ModuleInspector::PREF_ZOOMFACTOR = "zoomfactor";
 const QString ModuleInspector::PREF_ZOOMBYFACTOR = "zoombyfactor";
 const QString ModuleInspector::PREF_ICONSCALE = "iconscale";
@@ -508,7 +508,9 @@ void ModuleInspector::zoomBy(double mult, bool snaptoone, int x, int y)
         auto center = oldModulePos * newZoomFactor - QPointF(x - cx, y - cy);
         canvasViewer->centerOn(center);
 
-        setPref(PREF_CENTER, center.toPoint());
+        // Store the viewport top-left coordinate directly
+        QPointF topLeft = canvasViewer->mapToScene(0, 0);
+        setPref(PREF_ANCHOR, topLeft.toPoint());
     }
 }
 
@@ -643,7 +645,9 @@ void ModuleInspector::doubleClick(QMouseEvent *event)
 
 void ModuleInspector::onViewerDragged(QPointF center)
 {
-    setPref(PREF_CENTER, center.toPoint());
+    // Store the viewport top-left coordinate directly
+    QPointF topLeft = canvasViewer->mapToScene(0, 0);
+    setPref(PREF_ANCHOR, topLeft.toPoint());
 }
 
 void ModuleInspector::onMarqueeZoom(QRectF rect)
@@ -667,7 +671,10 @@ void ModuleInspector::onMarqueeZoom(QRectF rect)
 
         center *= getZoomFactor();
         canvasViewer->centerOn(center);
-        setPref(PREF_CENTER, center);
+
+        // Store the viewport top-left coordinate directly
+        QPointF topLeft = canvasViewer->mapToScene(0, 0);
+        setPref(PREF_ANCHOR, topLeft.toPoint());
     }
 }
 
@@ -871,14 +878,15 @@ void ModuleInspector::switchToCanvasView()
     resetOsgViewAction->setVisible(false);
 
     if (object) {
-        QPointF center = getPref(PREF_CENTER, QPointF()).toPointF();
+        QPointF anchor = getPref(PREF_ANCHOR, QPointF()).toPointF();
 
-        // if couldn't read a valid center pref, aligning the top left corners
+        // if couldn't read a valid anchor pref, aligning the top left corners
         // (but if yes, it still has to be called, just with false)
-        canvasViewer->recalcSceneRect(center.isNull());
-        // otherwise restoring the viewport
-        if (!center.isNull())
-            canvasViewer->centerOn(center);
+        canvasViewer->recalcSceneRect(anchor.isNull());
+
+        // otherwise restoring the viewport using the anchor as top-left coordinate
+        if (!anchor.isNull())
+            canvasViewer->ensureVisible(anchor.x(), anchor.y(), canvasViewer->viewport()->width(), canvasViewer->viewport()->height(), 0, 0);
 
         setPref(PREF_MODE, 0);
     }
@@ -891,4 +899,3 @@ void ModuleInspector::switchToCanvasView()
 
 }  // namespace qtenv
 }  // namespace omnetpp
-
