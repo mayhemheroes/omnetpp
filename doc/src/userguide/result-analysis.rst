@@ -530,7 +530,7 @@ the plot area.
 When one or both points are selected, markers appear on the plot.
 If only one point is selected, its coordinates are displayed.
 If both points are selected, their coordinates and the delta
-values (:math:`\Delta`X, :math:`\Delta`Y) between them are displayed.
+values between them are displayed.
 The selection mechanism finds the nearest point or segment within a small
 threshold (around 10 pixels). For plots with step interpolation, the corners
 of the steps are also considered valid points for selection.
