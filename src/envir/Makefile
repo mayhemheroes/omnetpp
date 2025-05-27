@@ -131,12 +131,18 @@ $O/opp_run$(D)$(EXE_SUFFIX) : main.cc $(GENERATED_SOURCES) $(TARGET_LIB_FILES)
 $O/opp_run_release$(EXE_SUFFIX) : $O/opp_run$(EXE_SUFFIX)
 	$(Q)cp $< $@
 
-# copy files to the bin and lib directories from the out directory
-$(OMNETPP_BIN_DIR)/% $(OMNETPP_LIB_DIR)/%: $O/% $(CONFIGFILE)
-	@mkdir -p $(OMNETPP_BIN_DIR) $(OMNETPP_LIB_DIR)
+# copy files to the lib directories from the out directory
+$(OMNETPP_LIB_DIR)/%: $O/% $(CONFIGFILE)
+	@mkdir -p $(OMNETPP_LIB_DIR)
 	@echo Copying to: $@
 	$(Q)cp $< $@
 	$(Q)$(SHLIB_POSTPROCESS) $@
+
+# copy files to the bin directory from the out directory
+$(OMNETPP_BIN_DIR)/%: $O/% $(CONFIGFILE)
+	@mkdir -p $(OMNETPP_BIN_DIR)
+	@echo Copying to: $@
+	$(Q)cp $< $@
 
 $O/$(LIBNAME).pdb: $O/$(LIBNAME)$(DLL_LIB_SUFFIX)
 
