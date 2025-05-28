@@ -12,6 +12,7 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.omnetpp.common.canvas.ICoordsMapping;
 import org.omnetpp.common.color.ColorFactory;
@@ -30,6 +31,7 @@ import org.omnetpp.scave.charting.plotter.ILinePlotter;
 public class DeltaMeasurement {
 
     private final LinePlot parent;
+    private Font font;
 
     // How close the mouse must be to a point or line segment to be
     // considered "near", in pixels.
@@ -422,6 +424,13 @@ public class DeltaMeasurement {
     }
 
     /**
+     * Sets the font to use for delta measurement text.
+     */
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
+    /**
      * Clears the current measurement and removes all markers.
      */
     public void clearMeasurement() {
@@ -516,6 +525,7 @@ public class DeltaMeasurement {
         // Draw the delta information
         graphics.setForegroundColor(ColorFactory.BLACK);
         graphics.setBackgroundColor(CrossHair.TOOLTIP_COLOR);
+        if (font != null) graphics.setFont(font);
 
         Point textExtent = GraphicsUtils.getTextExtent(graphics, deltaInfo);
 

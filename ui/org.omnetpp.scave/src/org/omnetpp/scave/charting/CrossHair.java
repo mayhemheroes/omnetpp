@@ -180,6 +180,7 @@ class CrossHair {
 
     public void setFont(Font font) {
         this.font = font;
+        deltaMeasurement.setFont(font);
     }
 
     public void draw(Graphics graphics, ICoordsMapping coordsMapping) {
