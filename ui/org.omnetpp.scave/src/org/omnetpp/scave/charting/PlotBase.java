@@ -83,9 +83,6 @@ public abstract class PlotBase extends ZoomableCachingCanvas implements IPlotVie
             PROP_Y_AXIS_MAX
     };
 
-    // when displaying confidence intervals, XXX chart parameter?
-    protected static final double CONFIDENCE_LEVEL = 0.95;
-
     protected boolean antialias;
     protected Color backgroundColor;
     protected Color insetsBackgroundColor;
@@ -790,12 +787,6 @@ public abstract class PlotBase extends ZoomableCachingCanvas implements IPlotVie
 
     protected void drawRubberband(Graphics graphics) {
         mouseSupport.drawRubberband(graphics);
-    }
-
-    protected String formatValue(double value, double halfInterval) {
-        return !Double.isNaN(halfInterval) && halfInterval > 0.0 ?
-                String.format("%.3g\u00b1%.3g", value, halfInterval) :
-                String.format("%g", value);
     }
 
     public ZoomableCachingCanvas getCanvas() {
