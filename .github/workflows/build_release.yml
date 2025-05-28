@@ -60,7 +60,8 @@ jobs:
 
       - name: Extract artifact
         if: matrix.os == 'windows-latest'
-        run: Expand-Archive -Path *${{ matrix.build }}* -DestinationPath .
+        shell: cmd # Because I had some trouble with pwsh.
+        run: '"C:/Program Files/7-Zip/7z.exe" x *${{ matrix.build }}*'
 
       - name: Extract tools
         if: matrix.os == 'windows-latest'
@@ -68,20 +69,15 @@ jobs:
         shell: cmd # Because I had some trouble with pwsh.
         # Better use backslashes here for paths...
         run: |
-          7za.exe x -aos -y -owin32.x86_64 opp-tools-win32-x86_64-mingw64-toolchain.7z
-          del opp-tools-win32-x86_64-mingw64-toolchain.7z
-
-          7za.exe x -aos -y -owin32.x86_64\opt\mingw64 opp-tools-win32-x86_64-mingw64-dependencies.7z
-          del opp-tools-win32-x86_64-mingw64-dependencies.7z
-
-          win32.x86_64\opt\mingw64\bin\qtbinpatcher.exe --qt-dir=win32.x86_64\opt\mingw64
+          7za.exe x -aos -y -owin32.x86_64 opp-tools-win32-x86_64-clang64-toolchain.7z
+          del opp-tools-win32-x86_64-clang64-toolchain.7z
 
       - name: Install release (Windows)
         if: matrix.os == 'windows-latest'
         working-directory: omnetpp-6.2.0/tools
         # These are needed for the bundled MinGW bash to find the included binaries.
         env:
-          MSYSTEM: MINGW64
+          MSYSTEM: CLANG64
           MSYSCON: defterm
         # GitHub doesn't reliably provide the repo name on its own anywhere,
         # so we have to extract it from the username/repository slug.
