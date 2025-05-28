@@ -605,6 +605,7 @@ public class LinePlot extends PlotBase {
         Assert.isNotNull(font);
         xAxis.setTickFont(font);
         yAxis.setTickFont(font);
+        crosshair.setFont(font);
         chartChanged();
     }
 

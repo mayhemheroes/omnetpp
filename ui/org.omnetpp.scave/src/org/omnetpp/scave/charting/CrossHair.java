@@ -48,14 +48,13 @@ import org.omnetpp.scave.charting.properties.PlotProperty.LineStyle;
  */
 class CrossHair {
     public static final Cursor CROSS_CURSOR = new Cursor(null, SWT.CURSOR_CROSS);
-    public static final Font CROSSHAIR_NORMAL_FONT = new Font(null, "Arial", 8, SWT.NORMAL);
-    public static final Font CROSSHAIR_BOLD_FONT = new Font(null, "Arial", 8, SWT.BOLD);
     public static final Color TOOLTIP_COLOR = new Color(255, 255, 225);
 
     private static final int MAXCOUNT = 100;
     private static final int HALO = 3;
 
     private final LinePlot parent;
+    private Font font;
 
     private boolean detailedTooltip = false; // turned on while hovering
 
@@ -179,6 +178,10 @@ class CrossHair {
         return new Point(canvasX, canvasY);
     }
 
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
     public void draw(Graphics graphics, ICoordsMapping coordsMapping) {
         if (plotArea != null) {
             graphics.pushState();
@@ -217,7 +220,8 @@ class CrossHair {
         graphics.setForegroundColor(ColorFactory.BLACK);
         graphics.setBackgroundColor(TOOLTIP_COLOR);
         graphics.setLineStyle(SWT.LINE_SOLID);
-        graphics.setFont(CROSSHAIR_NORMAL_FONT);
+        if (font != null)
+            graphics.setFont(font);
 
         if (dataPoints.isEmpty() || !detailedTooltip) {
             double x = parent.inverseTransformX(coordsMapping.fromCanvasX(canvasX));
