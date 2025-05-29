@@ -147,21 +147,6 @@ public:
     void setHaloEnabled(bool enabled);
 };
 
-// Label in the bottom right corner that display zoom factor
-class QTENV_API ZoomLabel : public QGraphicsSimpleTextItem
-{
-private:
-    double zoomFactor = NAN;
-
-protected:
-    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override;
-
-public:
-    ZoomLabel() { setText("ZoomLabel"); }
-
-    void setZoomFactor(double zoomFactor);
-};
-
 // XXX: Why not QGraphicsPathItem ?
 class QTENV_API BubbleItem : public QGraphicsObject {
     Q_OBJECT

@@ -67,7 +67,6 @@ ModuleCanvasViewer::ModuleCanvasViewer()
     figureLayer = new GraphicsLayer();
     animationLayer = new GraphicsLayer();
     bubbleLayer = new GraphicsLayer();
-    zoomLabelLayer = new GraphicsLayer();
 
     moduleScene = new QGraphicsScene();
 
@@ -82,17 +81,11 @@ ModuleCanvasViewer::ModuleCanvasViewer()
     moduleScene->addItem(backgroundLayer);
     moduleScene->addItem(figureLayer);
     moduleScene->addItem(bubbleLayer);
-    moduleScene->addItem(zoomLabelLayer);
 
     networkLayer = new GraphicsLayer();
     networkLayer->addItem(rangeLayer);
     networkLayer->addItem(submoduleLayer);
     networkLayer->addItem(animationLayer);
-
-    zoomLabel = new ZoomLabel();
-    zoomLabelLayer->addItem(zoomLabel);
-    zoomLabel->setZoomFactor(zoomFactor);
-    zoomLabel->setFont(getQtenv()->getCanvasFont());
 
     canvasRenderer = new CanvasRenderer();
     canvasRenderer->setLayer(figureLayer, nullptr, networkLayer);
@@ -128,18 +121,6 @@ void ModuleCanvasViewer::setObject(cModule *obj)
     cCanvas *canvas = object ? object->getCanvasIfExists() : nullptr;
     canvasRenderer->setCanvas(canvas);
     redraw();
-}
-
-void ModuleCanvasViewer::scrollContentsBy(int dx, int dy)
-{
-    QGraphicsView::scrollContentsBy(dx, dy);
-    updateZoomLabelPos();
-}
-
-void ModuleCanvasViewer::updateZoomLabelPos()
-{
-    QPointF size = mapToScene(viewport()->size().width(), viewport()->size().height());
-    zoomLabel->setPos(size.x() - zoomLabel->boundingRect().width() - 4, size.y() - zoomLabel->boundingRect().height() - 4);
 }
 
 QString ModuleCanvasViewer::tooltipAt(const QPoint &pos, int threshold)
@@ -204,11 +185,6 @@ QStringList ModuleCanvasViewer::gatherTooltips(const QList<QGraphicsItem*>& item
             tips += itemTip;
     }
     return tips;
-}
-
-void ModuleCanvasViewer::setZoomLabelVisible(bool visible)
-{
-    zoomLabel->setVisible(visible);
 }
 
 void ModuleCanvasViewer::displayStringChanged()
@@ -326,7 +302,6 @@ void ModuleCanvasViewer::resizeEvent(QResizeEvent *event)
 
     if (isEnabled())
         recalcSceneRect();
-    updateZoomLabelPos();
 }
 
 bool ModuleCanvasViewer::event(QEvent *event)
@@ -475,7 +450,6 @@ void ModuleCanvasViewer::renderToPaintDevice(QPaintDevice &printer, const QRectF
     scene()->setSceneRect(sceneRect);
 
     QPainter painter;
-    setZoomLabelVisible(false);
 
     // we have to disable caching to avoid the text items
     // (mainly cached OutlinedTextItem) being rasterized
@@ -493,8 +467,6 @@ void ModuleCanvasViewer::renderToPaintDevice(QPaintDevice &printer, const QRectF
     scene()->render(&painter, pageRect, viewport);
 
     painter.end();
-
-    setZoomLabelVisible(true);
 
     for (auto p : cacheModes)
         p.first->setCacheMode(p.second);
@@ -936,9 +908,6 @@ void ModuleCanvasViewer::redraw()
     if (object == nullptr)
         return;
 
-    zoomLabel->setFont(getQtenv()->getCanvasFont());
-    updateZoomLabelPos();
-
     try {
         refreshLayout();
         redrawModules();
@@ -1037,9 +1006,6 @@ void ModuleCanvasViewer::setZoomFactor(double zoomFactor)
             i->setPos(i->pos() * ratio);
 
         this->zoomFactor = zoomFactor;
-        zoomLabel->setZoomFactor(zoomFactor);
-        zoomLabel->setFont(getQtenv()->getCanvasFont());
-        updateZoomLabelPos();
 
         if (!object || notDrawn)
             return;

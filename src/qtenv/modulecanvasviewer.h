@@ -43,7 +43,6 @@ class SubmoduleItem;
 class ConnectionItem;
 struct FigureRenderingHints;
 class CanvasRenderer;
-class ZoomLabel;
 
 /**
  * Viewer for displaying network modules and their connections in a canvas.
@@ -91,15 +90,12 @@ private:
     GraphicsLayer *figureLayer;
     GraphicsLayer *animationLayer;
     GraphicsLayer *bubbleLayer;
-    GraphicsLayer *zoomLabelLayer;
 
     double zoomFactor = 1;
     double imageSizeFactor = 1;
     bool showModuleNames = true;
     bool showArrowHeads = true;
     SubmoduleNameFormat submoduleNameFormat = SubmoduleNameFormat::FMT_FULLNAME_AND_QDISPLAYNAME;
-
-    ZoomLabel *zoomLabel;
 
     // drawing methods:
     void redrawFigures();
@@ -111,8 +107,6 @@ private:
     void drawConnection(cGate *gate);
 
     FigureRenderingHints makeFigureRenderingHints();
-
-    void updateZoomLabelPos();
 
     QRectF askExportArea(); // returns a Null rectangle if the dialog was cancelled.
     void renderToPrinter(QPrinter& printer, const QRectF& sceneRect);
@@ -132,7 +126,6 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     bool event(QEvent *event) override; // for the alignTopLeft call in the PolishEvent
     void contextMenuEvent(QContextMenuEvent *event) override;
-    void scrollContentsBy(int dx, int dy) override;
 
     QRectF getSubmodulesRect();
 
@@ -200,8 +193,6 @@ public:
     void refreshConnection(cGate *gate);
     void refreshConnections(cModule *module); // only the ones starting at a gate of module, not the "incoming" ones
     void refreshConnections();
-
-    void setZoomLabelVisible(bool visible);
 
     void displayStringChanged();
     void displayStringChanged(cModule *submod);

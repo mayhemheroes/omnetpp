@@ -32,7 +32,6 @@ namespace qtenv {
 class CanvasRenderer;
 struct FigureRenderingHints;
 class GraphicsLayer;
-class ZoomLabel;
 
 class QTENV_API CanvasViewer : public QGraphicsView
 {
@@ -44,19 +43,13 @@ private:
     QRectF textRect;
 
     GraphicsLayer *figureLayer;
-    GraphicsLayer *zoomLabelLayer;
-
-    ZoomLabel *zoomLabel;
 
     FigureRenderingHints makeFigureRenderingHints();
     void clear();
-    void updateZoomLabelPos();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent * event) override;
-    void resizeEvent(QResizeEvent *event) override;
-    void scrollContentsBy(int dx, int dy) override;
 
 Q_SIGNALS:
     void click(QMouseEvent*);

@@ -158,32 +158,6 @@ void GraphicsLayer::clear()
 
 //---- end of GraphicsLayer ----
 
-//---- ZoomLabel implementation ----
-
-void ZoomLabel::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    QFont f = font();
-    f.setBold(true);
-    painter->setFont(f);
-    painter->setBrush(Qt::lightGray);
-    painter->setPen(Qt::lightGray);
-    painter->drawRect(boundingRect());
-
-    QGraphicsSimpleTextItem::paint(painter, option, widget);
-}
-
-void ZoomLabel::setZoomFactor(double zoomFactor)
-{
-    if (this->zoomFactor == zoomFactor)
-        return;
-
-    this->zoomFactor = zoomFactor;
-    setText(" Zoom:" + QString::number(zoomFactor, 'f', 2) + "x");
-    update();
-}
-
-//---- end of ZoomLabel ----
-
 //---- OutlinedTextItem implementation ----
 
 OutlinedTextItem::OutlinedTextItem(QGraphicsItem *parent)
