@@ -18,6 +18,8 @@
 #include "iosgviewer.h"
 #include "envir/fsutils.h"
 #include "common/ver.h"
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QGridLayout>
 
 namespace omnetpp {
 namespace qtenv {
@@ -123,6 +125,11 @@ void DummyOsgViewer::paintEvent(QPaintEvent *)
     painter.drawText(rect.adjusted(50, 50, -50, -50), // so the toolbar won't ob
                      "The OSG Viewer library could not be loaded.\n"
                      "(Was " OMNETPP_PRODUCT " compiled with OSG support enabled?)");
+}
+
+void DummyOsgViewer::setFloatingToolbar(QToolBar *toolbar)
+{
+    ((QGridLayout *)layout())->addWidget(toolbar, 0, 0, Qt::AlignRight | Qt::AlignTop);
 }
 
 } // qtenv

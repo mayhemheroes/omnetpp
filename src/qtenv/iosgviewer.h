@@ -61,6 +61,8 @@ class QTENV_API IOsgViewer : public QOpenGLWidget
     // default for OSG if there is actually a working viewer implementation loaded.
     static bool isOsgPreferred();
 
+    virtual void setFloatingToolbar(QToolBar *toolbar) = 0;
+
     virtual void setOsgCanvas(cOsgCanvas *canvas) = 0;
     virtual cOsgCanvas *getOsgCanvas() const = 0;
 
@@ -99,7 +101,14 @@ class QTENV_API DummyOsgViewer : public IOsgViewer
 
   public:
 
-    DummyOsgViewer(QWidget *parent = nullptr) : IOsgViewer(parent) {}
+    DummyOsgViewer(QWidget *parent = nullptr) : IOsgViewer(parent) {
+        new QGridLayout(this);
+
+        const int toolbarSpacing = 4;
+        // The osg viewer never displays scrollbars
+        layout()->setContentsMargins(toolbarSpacing, toolbarSpacing,
+                                     toolbarSpacing, toolbarSpacing);
+    }
 
     void setOsgCanvas(cOsgCanvas *) override {}
     cOsgCanvas *getOsgCanvas() const override { return nullptr; }
@@ -109,6 +118,8 @@ class QTENV_API DummyOsgViewer : public IOsgViewer
 
     void refresh() override {}
     void resetViewer() override {}
+
+    void setFloatingToolbar(QToolBar *toolbar) override;
 
     void paintEvent(QPaintEvent *) override;
 

@@ -79,7 +79,6 @@ private Q_SLOTS:
     void switchToCanvasView();
 
     void onFontChanged();
-    void updateToolbarLayout(); // mostly the margins, to prevent occluding the scrollbar
 
 protected:
     static const QString PREF_MODE; // 0 is 2D, 1 is OSG
@@ -91,8 +90,6 @@ protected:
     static const QString PREF_SHOWLABELS;
     static const QString PREF_SHOWARROWHEADS;
     static const QString PREF_SUBMODULENAMEFORMAT;
-
-    const int toolbarSpacing = 4; // from the edges, in pixels, the scrollbar size will be added to this
 
     QAction *switchToOsgViewAction;
     QAction *switchToCanvasViewAction;
@@ -110,7 +107,6 @@ protected:
     QAction *decreaseIconSizeAction;
 
     QStackedLayout *stackedLayout;
-    QGridLayout *toolbarLayout = nullptr; // not used in topLevel mode
     QToolBar *toolbar;
 
     ModuleCanvasViewer *canvasViewer;
@@ -135,7 +131,6 @@ protected:
 
     QSize sizeHint() const override { return QSize(600, 500); }
     void wheelEvent(QWheelEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
     void zoomBy(double mult, bool snaptoone = false, int x = 0, int y = 0);
 
     void renderToPrinter(QPrinter &printer);

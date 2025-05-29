@@ -19,6 +19,8 @@
 
 #include <map>
 #include <QtCore/QPointF>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QToolBar>
 #include <QtWidgets/QGraphicsView>
 #include <unordered_set>
 #include <QtPrintSupport/QPrinter>
@@ -61,6 +63,7 @@ private:
     CanvasRenderer *canvasRenderer;
     QRubberBand *rubberBand;
     QPoint rubberBandStartPos;
+    QLabel *zoomLabel;
 
     // If this is non-null, there is a submodule captured and moved under the
     // mouse cursor, due to the user previously Shift+clicking on it.
@@ -161,6 +164,8 @@ public:
 
     GraphicsLayer *getAnimationLayer() { return animationLayer; }
     CanvasRenderer *getCanvasRenderer() { return canvasRenderer; }
+
+    void setFloatingToolbar(QToolBar *toolbar);
 
     void refreshLayout();
 

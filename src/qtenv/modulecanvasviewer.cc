@@ -100,6 +100,31 @@ ModuleCanvasViewer::ModuleCanvasViewer()
 
     setMouseTracking(true);
 
+    // otherwise if the content fits exactly, these will disappear only for a moment during resizing
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    QGridLayout *overlayLayout = new QGridLayout(this);
+
+    // This has to be delayed until after the widget got shown/layouted/polished,
+    // because before that, the scollbar sizes are not known yet.
+    QTimer::singleShot(0, this, [this, overlayLayout]() {
+        const int toolbarSpacing = 4; // from the edges, in pixels, the scrollbar size will be added to this
+        overlayLayout->setContentsMargins(
+                toolbarSpacing, toolbarSpacing,
+                verticalScrollBar()->width() + toolbarSpacing,
+                horizontalScrollBar()->height() + toolbarSpacing);
+    });
+
+    zoomLabel = new QLabel(this);
+    zoomLabel->setAutoFillBackground(true);
+    zoomLabel->setBackgroundRole(QPalette::Mid);
+    zoomLabel->setContentsMargins(4, 2, 4, 2);
+    zoomLabel->setText("Zoom: " + QString::number(zoomFactor, 'f', 2) + "x");
+
+    // the optional floating toolbar will occupy the first row
+    overlayLayout->addWidget(zoomLabel, 1, 0, Qt::AlignRight | Qt::AlignBottom);
+
     rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
 #ifdef Q_WS_MAC
@@ -815,6 +840,11 @@ void ModuleCanvasViewer::clear()
     notDrawn = false;
 }
 
+void ModuleCanvasViewer::setFloatingToolbar(QToolBar *toolbar)
+{
+    ((QGridLayout *)layout())->addWidget(toolbar, 0, 0, Qt::AlignRight | Qt::AlignTop);
+}
+
 void ModuleCanvasViewer::refreshLayout()
 {
     getQtenv()->getModuleLayouter()->ensureLayouted(object);
@@ -1006,6 +1036,7 @@ void ModuleCanvasViewer::setZoomFactor(double zoomFactor)
             i->setPos(i->pos() * ratio);
 
         this->zoomFactor = zoomFactor;
+        zoomLabel->setText("Zoom: " + QString::number(zoomFactor, 'f', 2) + "x");
 
         if (!object || notDrawn)
             return;

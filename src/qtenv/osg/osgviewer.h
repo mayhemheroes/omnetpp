@@ -27,6 +27,8 @@
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QInputEvent>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QGridLayout>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/View>
 #include <osg/Camera>
@@ -148,6 +150,8 @@ class OsgViewer : public IOsgViewer
     void resetViewer() override;
 
     static void uninit();
+
+    void setFloatingToolbar(QToolBar *toolbar) override;
 
     // coordinates in local widget frame
     std::vector<cObject *> objectsAt(const QPoint &pos) override;

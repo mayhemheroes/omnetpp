@@ -27,6 +27,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QStackedLayout>
 #include <QtGui/QContextMenuEvent>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMenu>
 #include <QtCore/QDebug>
 #include <QtWidgets/QGraphicsItem>
@@ -143,10 +144,6 @@ void ModuleInspector::createViews(bool isTopLevel)
     canvasViewer = new ModuleCanvasViewer();
     canvasViewer->setRenderHints(QPainter::Antialiasing);
 
-    // otherwise if the content fits exactly, these will disappear only for a moment during resizing
-    canvasViewer->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    canvasViewer->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
     connect(canvasViewer, SIGNAL(back()), this, SLOT(goBack()));
     connect(canvasViewer, SIGNAL(forward()), this, SLOT(goForward()));
     connect(canvasViewer, SIGNAL(click(QMouseEvent *)), this, SLOT(click(QMouseEvent *)));
@@ -167,17 +164,12 @@ void ModuleInspector::createViews(bool isTopLevel)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    if (isTopLevel) {
+    if (isTopLevel)
         layout->addWidget(toolbar, 0, Qt::AlignLeft);
-        layout->addLayout(stackedLayout);
-    }
-    else {
-        toolbarLayout = new QGridLayout(canvasViewer);
-        canvasViewer->setLayout(toolbarLayout);
-        toolbarLayout->addWidget(toolbar, 0, 0, Qt::AlignRight | Qt::AlignTop);
+    else
+        canvasViewer->setFloatingToolbar(toolbar);
 
-        layout->addLayout(stackedLayout);
-    }
+    layout->addLayout(stackedLayout);
 }
 
 QToolBar *ModuleInspector::createToolbar(bool isTopLevel)
@@ -310,28 +302,6 @@ void ModuleInspector::onFontChanged()
     canvasViewer->setFont(getQtenv()->getCanvasFont());
 }
 
-void ModuleInspector::updateToolbarLayout()
-{
-    if (!toolbarLayout)
-        return;
-
-    if (stackedLayout->currentWidget() == canvasViewer) {
-        canvasViewer->setLayout(toolbarLayout);
-
-        toolbarLayout->setContentsMargins(
-                toolbarSpacing, toolbarSpacing,
-                canvasViewer->verticalScrollBar()->width() + toolbarSpacing,
-                canvasViewer->horizontalScrollBar()->height() + toolbarSpacing);
-    }
-    else {
-        if (osgViewer)
-            osgViewer->setLayout(toolbarLayout);
-        // the osg mode never displays scrollbars.
-        toolbarLayout->setContentsMargins(toolbarSpacing, toolbarSpacing,
-                                          toolbarSpacing, toolbarSpacing);
-    }
-}
-
 void ModuleInspector::onLayoutVisualizationStarts(cModule *module, QGraphicsScene *layoutingScene)
 {
     if ((cObject*)module == object)
@@ -391,12 +361,6 @@ void ModuleInspector::wheelEvent(QWheelEvent *event)
     else {
         Inspector::wheelEvent(event);
     }
-}
-
-void ModuleInspector::resizeEvent(QResizeEvent *event)
-{
-    Inspector::resizeEvent(event);
-    updateToolbarLayout();
 }
 
 void ModuleInspector::refresh()
@@ -840,14 +804,12 @@ void ModuleInspector::switchToOsgView()
 
         connect(resetOsgViewAction, SIGNAL(triggered()), osgViewer, SLOT(applyViewerHints()));
         osgViewer->setOsgCanvas(getOsgCanvas());
-
-        if (toolbarLayout)
-            osgViewer->setLayout(toolbarLayout);
     }
 
     stackedLayout->setCurrentWidget(osgViewer);
+    if (!isTopLevel())
+        osgViewer->setFloatingToolbar(toolbar);
     osgViewer->enable();
-    updateToolbarLayout();
 
     switchToCanvasViewAction->setChecked(false);
     switchToOsgViewAction->setChecked(true);
@@ -865,7 +827,8 @@ void ModuleInspector::switchToOsgView()
 void ModuleInspector::switchToCanvasView()
 {
     stackedLayout->setCurrentWidget(canvasViewer);
-    updateToolbarLayout();
+    if (!isTopLevel())
+        canvasViewer->setFloatingToolbar(toolbar);
 
     if (osgViewer)
         osgViewer->disable();

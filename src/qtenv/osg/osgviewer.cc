@@ -342,6 +342,13 @@ OsgViewer::OsgViewer(QWidget *parent): IOsgViewer(parent)
     // so the widget can receive focus, and forward the event to OSG
     setFocusPolicy(Qt::WheelFocus);
 
+    new QGridLayout(this);
+
+    const int toolbarSpacing = 4; // from the edges, in pixels, the scrollbar size will be added to this
+    // the osg mode never displays scrollbars.
+    layout()->setContentsMargins(toolbarSpacing, toolbarSpacing,
+                                 toolbarSpacing, toolbarSpacing);
+
     QActionGroup *cameraManipulatorActionGroup = new QActionGroup(this); // will provide radiobutton functionality
     connect(cameraManipulatorActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCameraManipulator(QAction*)));
 
@@ -537,6 +544,11 @@ void OsgViewer::uninit()
 {
     HeartBeat::stop();
     viewer = nullptr;
+}
+
+void OsgViewer::setFloatingToolbar(QToolBar *toolbar)
+{
+    ((QGridLayout *)layout())->addWidget(toolbar, 0, 0, Qt::AlignRight | Qt::AlignTop);
 }
 
 std::vector<cObject *> OsgViewer::objectsAt(const QPoint &pos)
