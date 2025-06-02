@@ -890,7 +890,9 @@ void Qtenv::runSimulation(RunMode mode, simtime_t until_time, eventnumber_t unti
         finishSimulation();
     }
 
+    messageAnimator->updateAnimations();
     updateStatusDisplay();
+    callRefreshDisplaySafe();
     callRefreshInspectors();
 }
 
