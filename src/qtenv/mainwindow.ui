@@ -68,7 +68,7 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QLabel" name="nextEventLabel">
+       <widget class="omnetpp::qtenv::ElidingLabel" name="nextEventLabel">
         <property name="styleSheet">
          <string notr="true">QLabel { border: 1px solid palette(mid); }</string>
         </property>
@@ -81,7 +81,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="nextModuleLabel">
+       <widget class="omnetpp::qtenv::ElidingLabel" name="nextModuleLabel">
         <property name="styleSheet">
          <string notr="true">QLabel { border: 1px solid palette(mid); }</string>
         </property>
@@ -94,7 +94,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="nextTimeLabel">
+       <widget class="omnetpp::qtenv::ElidingLabel" name="nextTimeLabel">
         <property name="styleSheet">
          <string notr="true">QLabel { border: 1px solid palette(mid); }</string>
         </property>
@@ -239,7 +239,7 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QLabel" name="labelConfigName">
+       <widget class="omnetpp::qtenv::ElidingLabel" name="labelConfigName">
         <property name="toolTip">
          <string>Current inifile configuration, run number, network name, and potential scheduler information</string>
         </property>
@@ -255,7 +255,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="labelMessageStats">
+       <widget class="omnetpp::qtenv::ElidingLabel" name="labelMessageStats">
         <property name="toolTip">
          <string>Number of events (messages) currently scheduled /
 Number of existing message objects, including scheduled ones /
@@ -282,7 +282,7 @@ Total number of messages created since start of the simulation</string>
      <x>0</x>
      <y>0</y>
      <width>939</width>
-     <height>26</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -898,6 +898,13 @@ Total number of messages created since start of the simulation</string>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>omnetpp::qtenv::ElidingLabel</class>
+   <extends>QLabel</extends>
+   <header>elidinglabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="icons.qrc"/>
  </resources>
