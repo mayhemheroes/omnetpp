@@ -55,12 +55,12 @@ PREFER_LLD=yes
 #LDFLAGS_COVERAGE=$CFLAGS_COVERAGE
 
 #
-# C++ specific compiler options. As OMNeT++ requires C++14 or later, this is
-# the place to specify -std=c++14 or a similar option if your compiler's
-# default language compliance level is lower than C++14. These options will be
+# C++ specific compiler options. As OMNeT++ requires C++17 or later, this is
+# the place to specify -std=c++17 or a similar option if your compiler's
+# default language compliance level is lower than C++17. These options will be
 # used when compiling OMNeT++ and also when compiling simulation models.
 #
-#CXXFLAGS=-std=c++17
+CXXFLAGS=-std=c++17
 
 #
 # Linker switches used for linking.
