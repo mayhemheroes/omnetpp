@@ -110,12 +110,12 @@ install_deps() {
         fi
 
         # detect the package manager
-        if [[ "$(command -v apt)" != "" ]]; then # e.g. ID=ubuntu
+        if [[ "$(command -v apt)" != "" ]]; then # e.g. ID=ubuntu (tested versions: 22.04, 24.04, 25.04)
             # apt-get is used on debian (i.e. Ubuntu,  etc.)
             packages="make diffutils pkg-config ccache clang lld gdb lldb bison flex perl sed gawk python3 python3-pip python3-venv python3-dev libxml2-dev zlib1g-dev doxygen graphviz xdg-utils libdw-dev"
 
             if ! $no_gui; then
-                packages="$packages qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools qtwayland5 libqt5opengl5-dev libwebkit2gtk-4.1-0"
+                packages="$packages qt6-base-dev qt6-base-dev-tools qmake6 libqt6svg6 qt6-wayland libwebkit2gtk-4.1-0"
             fi
 
             if ! $no_3d; then
@@ -124,12 +124,12 @@ install_deps() {
 
             echo_root_run "DEBIAN_FRONTEND=noninteractive apt install -y $packages ; apt clean"
 
-        elif [[ "$(command -v dnf)" != "" && "$ID" == "fedora" ]]; then # e.g. ID=fedora
+        elif [[ "$(command -v dnf)" != "" && "$ID" == "fedora" ]]; then # e.g. ID=fedora (tested versions: 42)
             # dnf is used on fedora
             packages="make ccache clang awk lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdwarf-devel"
 
             if ! $no_gui; then
-                packages="$packages qt5-qtbase-devel qt5-qtsvg webkit2gtk4.1"
+                packages="$packages qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg qt6-qtwayland webkit2gtk4.1"
             fi
 
             if ! $no_3d; then
@@ -139,10 +139,10 @@ install_deps() {
             echo_root_run "dnf install -y $packages ; dnf clean packages"
 
         elif [[ "$(command -v dnf)" != "" &&  ( "$ID" == "almalinux" || "$ID" == "rhel" ) ]]; then
-            packages="make clang lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel graphviz xdg-utils elfutils-devel"
+            packages="make ccache clang lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel graphviz xdg-utils elfutils-devel"
 
             if ! $no_gui; then
-                packages="$packages qt5-qtbase-devel qt5-qtsvg qt5-qtwayland webkit2gtk3"
+                packages="$packages qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg qt6-qtwayland" # 10: webkit2gtk4.1 9:webkit2gtk3
             fi
 
             if ! $no_3d; then
@@ -150,18 +150,18 @@ install_deps() {
                 exit 1
             fi
 
-            echo_root_run "dnf install -y $packages ; dnf clean packages"
+            echo_root_run "dnf install -y epel-release && dnf install -y $packages ; dnf clean packages"
 
         elif [[ "$(command -v zypper)" != "" && "$ID" == "opensuse-tumbleweed" ]]; then
             # zypper is used on OpenSUSE. leap is not supported because of old (3.6) python
             packages="make ccache clang lld lldb gdb bison gawk flex perl python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdw-devel"
 
             if ! $no_gui; then
-                packages="$packages libqt5-qtbase-devel libqt5-qtwayland libQt5Svg5 libwebkit2gtk-4_1-0"
+                packages="$packages qt6-base-devel qt6-wayland libQt6Svg6 libwebkit2gtk-4_1-0"
             fi
 
             if ! $no_3d; then
-                packages="$packages libOpenSceneGraph-devel"
+                packages="$packages libOpenSceneGraph-devel OpenSceneGraph-plugins"
             fi
 
             echo_root_run "zypper install -y $packages ; zypper clean"
@@ -171,7 +171,7 @@ install_deps() {
             packages="make diffutils ccache clang pkgconf lld lldb gdb bison gawk flex perl python python-pip libxml2 zlib doxygen graphviz xdg-utils libdwarf"
 
             if ! $no_gui; then
-                packages="$packages qt5-base qt5-svg qt5-wayland webkit2gtk"
+                packages="$packages qt6-base qt6-svg qt6-wayland webkit2gtk"
             fi
 
             if ! $no_3d; then
@@ -197,7 +197,7 @@ install_deps() {
         packages="bison ccache flex perl python@3 make pkg-config doxygen graphviz"
 
         if ! $no_gui; then
-            packages="$packages qt@5"
+            packages="$packages qt@6"
         fi
 
         if ! $no_3d; then
@@ -235,7 +235,7 @@ install_deps() {
         # packages="$packages $MINGW_PACKAGE_PREFIX-graphviz" # temporarily disabled because of size
 
         if ! $no_gui; then
-            packages="$packages $MINGW_PACKAGE_PREFIX-qt5-base $MINGW_PACKAGE_PREFIX-qt5-svg $MINGW_PACKAGE_PREFIX-qt5-imageformats"
+            packages="$packages $MINGW_PACKAGE_PREFIX-qt6-base $MINGW_PACKAGE_PREFIX-qt6-svg $MINGW_PACKAGE_PREFIX-qt6-imageformats"
         fi
 
         if ! $no_3d; then
@@ -289,10 +289,10 @@ It will attempt to detect your operating system and package manager,
 install the required dependencies, install a python virtual environment
 and then configure and build OMNeT++.
 
-Supported operating systems [and package managers]: 
-- Linux: Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL9 [dnf], 
-         OpenSuse-tumbleweed [zypper], Arch Linux [pacman]
-- macOS 14 [homebrew]
+Supported operating systems [and package managers]:
+- Linux: Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL [dnf],
+         OpenSuse-tumbleweed [zypper], ArchLinux [pacman]
+- macOS 15 [homebrew]
 - Windows 11/Msys2 [pacman]
 
 ${BLUE}NOTE: This is an experimental script. If it doesn't work, please open
