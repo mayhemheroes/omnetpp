@@ -9,6 +9,9 @@ This file only describes changes that affect compiling and running models;
 for other changes or new features see WHATSNEW, and per source directory
 ChangeLog files.
 
+Note: C++ class names and other identifiers should all be understood to be 
+inside the omnetpp namespace, unless otherwise noted.
+
 Legend:
 (+)     new feature
 (!!!)   incompatible change (old code will not compile or work as previously)
@@ -38,7 +41,7 @@ OMNeT++ 6.2
 (+)     cEnum: Added resolveName() and getNameForValue() template functions
         for convenience, with the template parameter being the enum type.
 
-(+)     Added the getTerminationExceptionTypeInfoPointer() global function.
+(+)     Added the getTerminationExceptionTypeInfoPointer() standalone function.
 
 
 OMNeT++ 6.1
