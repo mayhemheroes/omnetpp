@@ -618,19 +618,18 @@ This menu item toggles whether a debug breakpoint is executed when the simulatio
 runtime error. This setting corresponds to the ``debug-on-errors`` configuration option. The state of this menu item is
 reset to the value of ``debug-on-errors`` whenever a new simulation starts.
 
-Debug Next Event
-~~~~~~~~~~~~~~~~
+Debug Next Step
+~~~~~~~~~~~~~~~
 
 Performs one simulation event similar to :guilabel:`Step`, but executes a debugger trap just before entering the module's
 event handling code (``handleMessage()`` or ``activity()``). This causes the debugger to stop the program at that point,
 allowing you to examine state variables, single-step through code, and more. When you resume execution, Qtenv regains control and
 becomes responsive again.
 
-Debug Now
-~~~~~~~~~
+Break into Debugger
+~~~~~~~~~~~~~~~~~~~
 
 Triggers a debug trap immediately.
-
 
 Recording the Simulation
 ------------------------
