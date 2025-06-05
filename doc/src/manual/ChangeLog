@@ -1,3 +1,5 @@
+2025-06-05  ------ omnetpp-6.2.0pre1 released ------
+
 2025-05-20  Andras Varga
 
 	* cTopology section: added lambda-based extractFromNetwork(); removed

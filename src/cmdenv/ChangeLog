@@ -1,3 +1,5 @@
+2025-06-05  ------ omnetpp-6.2.0pre1 released ------
+
 2025-02-19  Levente Meszaros
 
 	* Added Cmdenv::setMatchEventCondition(), a non-public function that

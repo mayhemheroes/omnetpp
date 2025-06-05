@@ -1,3 +1,5 @@
+2025-06-05  ------ omnetpp-6.2.0pre1 released ------
+
 2025-05-05  Andras Varga
 
 	* python: fix c++23 compile warning in embedded nanobind code

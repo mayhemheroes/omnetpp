@@ -1,3 +1,5 @@
+2025-06-05  ------ omnetpp-6.2.0pre1 released ------
+
 2025-05-14  Andras Varga
 
 	* UnitConversion: Removed const modifier from UnitConversion::unitTable,

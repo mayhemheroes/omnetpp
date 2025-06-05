@@ -1,3 +1,5 @@
+2025-06-05  ------ omnetpp-6.2.0pre1 released ------
+
 2025-05-07  Andras Varga
 
 	* core: added test for #1369 "Inifile iteration variable does not accept underscore": inifile_iteration_4.test
