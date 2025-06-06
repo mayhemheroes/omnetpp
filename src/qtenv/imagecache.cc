@@ -212,8 +212,8 @@ QPixmap ImageCache::makeTintedPixmap(QImage *image, const QColor &tintColor, dou
 
 QImage *ImageCache::getImage(const char *name, const char *size)
 {
-    static QRegularExpression revs("v.*s.*", QRegularExpression::OptimizeOnFirstUsageOption);
-    static QRegularExpression revl("v[^s]*l.*", QRegularExpression::OptimizeOnFirstUsageOption);
+    static QRegularExpression revs("v.*s.*");
+    static QRegularExpression revl("v[^s]*l.*");
 
     IconSize imageSize = NORMAL;
     if (size && size[0]) {

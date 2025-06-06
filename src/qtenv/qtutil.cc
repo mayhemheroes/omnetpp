@@ -166,7 +166,7 @@ const QString& stripNamespace(const char *className, StripNamespace stripMode)
             if (it != allStrippedCache.end())
                 return it->second;
             else {
-                static QRegularExpression regExp("\\w*::", QRegularExpression::OptimizeOnFirstUsageOption);
+                static QRegularExpression regExp("\\w*::");
                 auto stripped = QString(className).replace(regExp, "");
                 allStrippedCache[className] = stripped;
                 // have to use the instance in the container, not 'stripped' directly, that will be destructed
@@ -181,7 +181,7 @@ const QString& stripNamespace(const char *className, StripNamespace stripMode)
             else {
                 // replacing either at the start of the string,
                 // or if it's not nested, nor the suffix of the name of a different namespace
-                static QRegularExpression regExp("((^omnetpp::)|((?<![\\w:])omnetpp::))", QRegularExpression::OptimizeOnFirstUsageOption);
+                static QRegularExpression regExp("((^omnetpp::)|((?<![\\w:])omnetpp::))");
                 auto stripped = QString(className).replace(regExp, "");
                 omnetppStrippedCache[className] = stripped;
                 // have to use the instance in the container, not 'stripped' directly, that will be destructed
