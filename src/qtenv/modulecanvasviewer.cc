@@ -321,6 +321,8 @@ void ModuleCanvasViewer::wheelEvent(QWheelEvent *event)
 
 void ModuleCanvasViewer::resizeEvent(QResizeEvent *event)
 {
+    QGraphicsView::resizeEvent(event);
+
     if (isEnabled())
         recalcSceneRect();
     updateZoomLabelPos();
