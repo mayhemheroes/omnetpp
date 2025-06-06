@@ -1397,8 +1397,11 @@ void MsgCodeGenerator::generateDescriptorClass(const ClassInfo& classInfo)
     for (size_t i = 0; i < numFields; i++) {
         const FieldInfo& field = classInfo.fieldList[i];
         if (field.isPointer) {
+            std::string value = classInfo.isClass ?
+                    makeFuncall("pp", true, field.getter, field.isArray) :
+                    (str("pp->") + field.var + (field.isArray ? "[i]" : ""));
             CC << "        case " << field.symbolicConstant << ": ";
-            CC << "{ " << field.returnType << " value = " << makeFuncall("pp", true, field.getter, field.isArray) << "; ";
+            CC << "{ " << field.returnType << " value = " << value << "; ";
             if (field.isConst)
                 CC << "return omnetpp::opp_typename(typeid(*const_cast<" << field.mutableReturnType << ">(value))); }\n";
             else
