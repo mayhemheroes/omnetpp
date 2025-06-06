@@ -310,7 +310,7 @@ void TextViewerWidget::find(const std::string& text, SearchFlags flags)
         QMessageBox::information(this, "Not found", "No match for \"" + QString::fromStdString(text) + "\".");
     }
 
-    setCursor(QCursor(Qt::IBeamCursor));
+    setCursor(QCursor(Qt::ArrowCursor));
     viewport()->update();
 }
 
