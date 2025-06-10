@@ -39,8 +39,8 @@ LayersDialog::LayersDialog(ModuleCanvasViewer *canvasViewer, QWidget *parent) :
     originalEnabledTags = canvasRenderer->getEnabledTags().c_str();
     originalExceptTags = canvasRenderer->getExceptTags().c_str();
 
-    enabledTags = originalEnabledTags.split(' ', QString::SkipEmptyParts);
-    exceptTags = originalExceptTags.split(' ', QString::SkipEmptyParts);
+    enabledTags = originalEnabledTags.split(' ', Qt::SkipEmptyParts);
+    exceptTags = originalExceptTags.split(' ', Qt::SkipEmptyParts);
 
     auto allTags = canvasRenderer->getAllTagsAsVector();
 
