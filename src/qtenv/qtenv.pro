@@ -50,142 +50,148 @@ QMAKE_MOC += $$(OPP_DEFINES)
 # add QT modules
 QT *= core gui opengl widgets printsupport
 
-SOURCES += mainwindow.cc \
+SOURCES += animationcontrollerdialog.cc \
     areaselectordialog.cc \
     arrow.cc \
-    figurerenderers.cc \
-    histograminspector.cc \
-    logbuffer.cc \
-    outputvectorinspector.cc \
     canvasinspector.cc \
-    inspector.cc \
-    loginspector.cc \
-    qtenv.cc \
-    watchinspector.cc \
     canvasrenderer.cc \
-    genericobjectinspector.cc \
-    inspectorfactory.cc \
-    moduleinspector.cc \
-    componenthistory.cc \
-    layouterenv.cc \
-    stopdialog.cc \
-    runselectiondialog.cc \
-    imagecache.cc \
-    treeitemmodel.cc \
-    genericobjecttreemodel.cc \
-    qtutil.cc \
-    inspectorutil.cc \
-    textviewerwidget.cc \
-    textviewerproviders.cc \
-    logfinddialog.cc \
-    logfilterdialog.cc \
-    timelinegraphicsview.cc \
-    timelineinspector.cc \
-    preferencesdialog.cc \
-    objecttreeinspector.cc \
-    osgcanvasinspector.cc \
-    rununtildialog.cc \
-    submoduleitem.cc \
-    modulecanvasviewer.cc \
+    canvasviewer.cc \
+    chartgriditem.cc \
+    charttickdecimal.cc \
     comboselectiondialog.cc \
+    componenthistory.cc \
     compoundmoduleitem.cc \
     connectionitem.cc \
-    messageitem.cc \
-    canvasviewer.cc \
-    layersdialog.cc \
-    fileeditor.cc \
-    animationcontrollerdialog.cc \
-    messageanimator.cc \
+    displaystringaccess.cc \
     displayupdatecontroller.cc \
-    messageanimations.cc \
+    elidinglabel.cc \
+    exponentialspinbox.cc \
+    figurerenderers.cc \
+    fileeditor.cc \
+    findobjectsdialog.cc \
+    genericobjectinspector.cc \
+    genericobjecttreemodel.cc \
+    genericobjecttreenodes.cc \
     graphicsitems.cc \
+    highlighteritemdelegate.cc \
+    histograminspector.cc \
+    histograminspectorconfigdialog.cc \
+    histogramview.cc \
+    imagecache.cc \
+    inspector.cc \
+    inspectorfactory.cc \
+    inspectorutil.cc \
+    iosgviewer.cc \
+    layersdialog.cc \
+    layouterenv.cc \
+    logbuffer.cc \
+    logfilterdialog.cc \
+    logfinddialog.cc \
+    loginspector.cc \
+    mainwindow.cc \
+    messageanimations.cc \
+    messageanimator.cc \
+    messageitem.cc \
+    messageprintertagsdialog.cc \
+    modulecanvasviewer.cc \
+    moduleinspector.cc \
     modulelayouter.cc \
     objectlistmodel.cc \
     objectlistview.cc \
-    findobjectsdialog.cc \
+    objecttreeinspector.cc \
+    osgcanvasinspector.cc \
+    outputvectorinspector.cc \
     outputvectorinspectorconfigdialog.cc \
     outputvectorview.cc \
-    histogramview.cc \
-    histograminspectorconfigdialog.cc \
-    chartgriditem.cc \
+    preferencesdialog.cc \
+    qtenv.cc \
+    qtutil.cc \
+    randomicongen.cc \
+    runselectiondialog.cc \
+    rununtildialog.cc \
+    stopdialog.cc \
+    submoduleitem.cc \
+    textviewerproviders.cc \
+    textviewerwidget.cc \
+    timelinegraphicsview.cc \
+    timelineinspector.cc \
     vectorplotitem.cc \
-    charttickdecimal.cc \
-    exponentialspinbox.cc \
-    genericobjecttreenodes.cc \
-    highlighteritemdelegate.cc \
-    iosgviewer.cc \
-    messageprintertagsdialog.cc \
-    videorecordingdialog.cc
+    videorecordingdialog.cc \
+    watchinspector.cc
 
-HEADERS += mainwindow.h \
+
+HEADERS += animationcontrollerdialog.h \
     areaselectordialog.h \
     arrow.h \
-    componenthistory.h \
-    layouterenv.h \
-    moduleinspector.h \
-    qtenv.h \
-    watchinspector.h \
     canvasinspector.h \
-    figurerenderers.h \
-    histograminspector.h \
-    logbuffer.h \
-    outputvectorinspector.h \
     canvasrenderer.h \
-    inspectorfactory.h \
-    loginspector.h \
+    canvasviewer.h \
+    chartgriditem.h \
+    charttickdecimal.h \
     circularbuffer.h \
-    genericobjectinspector.h \
-    inspector.h \
-    qtenvdefs.h \
-    runselectiondialog.h \
-    treeitemmodel.h \
-    stopdialog.h \
-    imagecache.h \
-    genericobjecttreemodel.h \
-    qtutil.h \
-    inspectorutil.h \
-    textviewerwidget.h \
-    textviewerproviders.h \
-    logfinddialog.h \
-    logfilterdialog.h \
-    timelinegraphicsview.h \
-    timelineinspector.h \
-    preferencesdialog.h \
-    objecttreeinspector.h \
-    osgcanvasinspector.h \
-    rununtildialog.h \
-    submoduleitem.h \
-    modulecanvasviewer.h \
     comboselectiondialog.h \
+    componenthistory.h \
     compoundmoduleitem.h \
     connectionitem.h \
-    messageitem.h \
-    canvasviewer.h \
-    layersdialog.h \
-    fileeditor.h \
-    animationcontrollerdialog.h \
-    messageanimator.h \
+    displaystringaccess.h \
     displayupdatecontroller.h \
-    messageanimations.h \
+    elidinglabel.h \
+    exponentialspinbox.h \
+    figurerenderers.h \
+    fileeditor.h \
+    findobjectsdialog.h \
+    genericobjectinspector.h \
+    genericobjecttreemodel.h \
+    genericobjecttreenodes.h \
     graphicsitems.h \
+    highlighteritemdelegate.h \
+    histograminspectorconfigdialog.h \
+    histograminspector.h \
+    histogramview.h \
+    imagecache.h \
+    inspectorfactory.h \
+    inspector.h \
+    inspectorutil.h \
+    inspectorutiltypes.h \
+    iosgviewer.h \
+    layersdialog.h \
+    layouterenv.h \
+    logbuffer.h \
+    logfilterdialog.h \
+    logfinddialog.h \
+    loginspector.h \
+    mainwindow.h \
+    messageanimations.h \
+    messageanimator.h \
+    messageitem.h \
+    messageprintertagsdialog.h \
+    modulecanvasviewer.h \
+    moduleinspector.h \
     modulelayouter.h \
     objectlistmodel.h \
     objectlistview.h \
-    findobjectsdialog.h \
+    objecttreeinspector.h \
+    osgcanvasinspector.h \
     outputvectorinspectorconfigdialog.h \
+    outputvectorinspector.h \
     outputvectorview.h \
-    histogramview.h \
-    inspectorutiltypes.h \
-    histograminspectorconfigdialog.h \
-    chartgriditem.h \
+    preferencesdialog.h \
+    qtenvdefs.h \
+    qtenv.h \
+    qtutil.h \
+    randomicongen.h \
+    runselectiondialog.h \
+    rununtildialog.h \
+    stopdialog.h \
+    submoduleitem.h \
+    textviewerproviders.h \
+    textviewerwidget.h \
+    timelinegraphicsview.h \
+    timelineinspector.h \
     vectorplotitem.h \
-    charttickdecimal.h \
-    exponentialspinbox.h \
-    genericobjecttreenodes.h \
-    highlighteritemdelegate.h \
-    iosgviewer.h \
-    messageprintertagsdialog.h \
-    videorecordingdialog.h
+    videorecordingdialog.h \
+    watchinspector.h
+
 
 # include path is relative to the current build directory (e.g. out/src/gcc-debug/qtenv)
 INCLUDEPATH += ../../../../src ../../../../include
@@ -193,22 +199,22 @@ INCLUDEPATH += ../../../../src ../../../../include
 # next line is for the QtCreator only to be able to show the OMNeT++ sources (not needed for the actual build process)
 INCLUDEPATH += .. ../../include
 
-FORMS += mainwindow.ui \
+FORMS += animationcontrollerdialog.ui \
     areaselectordialog.ui \
-    runselectiondialog.ui \
-    stopdialog.ui \
-    logfinddialog.ui \
-    logfilterdialog.ui \
-    preferencesdialog.ui \
-    rununtildialog.ui \
     comboselectiondialog.ui \
-    layersdialog.ui \
     fileeditor.ui \
-    animationcontrollerdialog.ui \
     findobjectsdialog.ui \
-    outputvectorinspectorconfigdialog.ui \
     histograminspectorconfigdialog.ui \
+    layersdialog.ui \
+    logfilterdialog.ui \
+    logfinddialog.ui \
+    mainwindow.ui \
     messageprintertagsdialog.ui \
+    outputvectorinspectorconfigdialog.ui \
+    preferencesdialog.ui \
+    runselectiondialog.ui \
+    rununtildialog.ui \
+    stopdialog.ui \
     videorecordingdialog.ui
 
 RESOURCES += \
