@@ -47,6 +47,7 @@
 #include <QtWidgets/QToolTip>
 #include <QtPrintSupport/QPrinter>
 #include <QtGui/QImageWriter>
+#include <QtGui/QPageSize>
 #include <QtPrintSupport/QPrintDialog>
 #include <QtWidgets/QFileDialog>
 
@@ -463,10 +464,10 @@ QRectF ModuleCanvasViewer::askExportArea()
 void ModuleCanvasViewer::renderToPrinter(QPrinter &printer, const QRectF& sceneRect)
 {
     printer.setPageMargins(QMargins(0, 0, 0, 0));
-    printer.setPaperSize(sceneRect.size() / printer.resolution(), QPrinter::Inch);
+    printer.setPageSize(QPageSize(sceneRect.size() / printer.resolution(), QPageSize::Inch));
     printer.setFullPage(true);
 
-    renderToPaintDevice(printer, sceneRect, printer.pageRect());
+    renderToPaintDevice(printer, sceneRect, printer.pageRect(QPrinter::DevicePixel));
 }
 
 void ModuleCanvasViewer::renderToPaintDevice(QPaintDevice &printer, const QRectF& sceneRect, const QRectF& pageRect)
