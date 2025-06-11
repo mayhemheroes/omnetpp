@@ -218,7 +218,7 @@ void OutputVectorInspector::yRangeCorrection()
 
 void OutputVectorInspector::onOptionsDialogTriggerd()
 {
-    configDialog = new OutputVectorInspectorConfigDialog(view->getPlottingMode());
+    configDialog = new OutputVectorInspectorConfigDialog(view->getPlottingMode(), this);
 
     if (!isMinYAutoscaled)
         configDialog->setMinY(minY);

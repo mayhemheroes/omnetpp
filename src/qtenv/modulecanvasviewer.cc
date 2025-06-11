@@ -423,7 +423,7 @@ void ModuleCanvasViewer::print()
     // the user can override this in the dialog...
     printer.setColorMode(QPrinter::Color);
 
-    QPrintDialog printDialog(&printer);
+    QPrintDialog printDialog(&printer, this);
     printDialog.setOptions(QAbstractPrintDialog::PrintToFile);
     if (printDialog.exec() != QDialog::Accepted)
         return;

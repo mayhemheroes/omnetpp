@@ -366,7 +366,7 @@ void HistogramInspector::setConfig()
 
 void HistogramInspector::onOptionsTriggered()
 {
-    configDialog = new HistogramInspectorConfigDialog(drawingStyle);
+    configDialog = new HistogramInspectorConfigDialog(drawingStyle, this);
 
     bool isMinYAutoscaled, isMaxYAutoscaled, isMinXAutoscaled, isMaxXAutoscaled;
     double minYVal, maxYVal, minXVal, maxXVal;

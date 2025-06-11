@@ -1121,7 +1121,7 @@ void MainWindow::configureNetwork()
     // pop up dialog, with current network as default
     cModuleType *networkType = getSimulation()->getNetworkType();
     const char *netName = networkType ? networkType->getName() : nullptr;
-    ComboSelectionDialog comboDialog(netName, localNetworkNames);
+    ComboSelectionDialog comboDialog(netName, localNetworkNames, this);
     if (comboDialog.exec() == QDialog::Accepted) {
         busy("Setting up network...");
         //TODO
@@ -1179,7 +1179,7 @@ void MainWindow::on_actionFlipWindowLayout_triggered()
 
 void MainWindow::on_actionAbout_OMNeT_Qtenv_triggered()
 {
-    QDialog *about = new QDialog();
+    QDialog *about = new QDialog(this);
     about->setWindowTitle("About OMNeT++");
     QVBoxLayout *layout = new QVBoxLayout();
     about->setLayout(layout);
