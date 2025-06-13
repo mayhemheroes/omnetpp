@@ -48,7 +48,7 @@ cMessage msg;
 
 // Get the descriptor for the problematic function: getFieldDynamicTypeString
 // This function contains the bug that was fixed
-cClassDescriptor *desc = cClassDescriptor::getDescriptorFor("msg_struct_pointer::Foo");
+cClassDescriptor *desc = cClassDescriptor::getDescriptorFor("@TESTNAME@::Foo");
 ASSERT(desc);
 
 // Test 1: nullptr
