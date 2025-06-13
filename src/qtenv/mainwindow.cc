@@ -954,6 +954,13 @@ void MainWindow::restoreGeometry()
         defaultSizes.append(ui->splitter_2->height() / 4);
         restoreSplitter("mainwin-right-splittersizes-vert", ui->splitter_2, defaultSizes);
     }
+    else {
+        // The factory default orientation is vertical.
+        // If no preference was stored (on first start),
+        // this makes the action state on the toolbar
+        // consistent with the state of the window.
+        ui->actionVerticalLayout->setChecked(true);
+    }
 
     // initialize timeline
     bool isSunken = getQtenv()->getPref("display-timeline", true).value<bool>();
