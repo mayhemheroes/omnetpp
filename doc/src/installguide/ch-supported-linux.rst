@@ -4,15 +4,25 @@ Linux
 Supported Linux Distributions
 -----------------------------
 
-This chapter provides instructions for installing |omnet++| on selected Linux distributions:
+This guide provides installation instructions for |omnet++| on various Linux distributions. The ``install.sh`` script, included with |omnet++|, automates much of this process.
 
--  Ubuntu 22.04 and 24.4 LTS
--  Fedora Workstation 31
--  Red Hat Enterprise Linux Desktop Workstation 8.x
--  OpenSUSE Leap 15.3
+The following distributions and versions are explicitly covered by the ``install.sh`` script and have dedicated chapters or sections in this guide:
 
-This chapter describes the overall process. Distro-specific information, such as how to install the prerequisite
-packages, are covered by distro-specific chapters.
+-  **Ubuntu**: 22.04 LTS, 24.04 LTS, 25.04 (and derivatives like Linux Mint)
+-  **Fedora**: 42 (and similar RPM-based distributions)
+-  **Red Hat Enterprise Linux (RHEL) / AlmaLinux**: 9.x and 10.x (and compatible distributions like Rocky Linux, CentOS Stream)
+-  **OpenSUSE**: Tumbleweed (rolling release)
+-  **Arch Linux**: (rolling release)
+
+This chapter describes the general installation process common to these distributions. For distribution-specific details, particularly regarding the installation of prerequisite system packages, please refer to the relevant chapter:
+
+-  :ref:`ch-ubuntu`
+-  :ref:`ch-fedora`
+-  :ref:`ch-redhat`
+-  :ref:`ch-opensuse`
+-  :ref:`ch-archlinux`
+
+If you are using the ``install.sh`` script, it will attempt to auto-detect your distribution and install the necessary system packages.
 
 .. note::
 
@@ -66,6 +76,40 @@ This will create an ``|omnetpp|-|version|`` subdirectory with the |omnet++| file
 .. note::
 
    On how to open a terminal on your Linux installation, see the chapter specific to your Linux distribution.
+
+Setting up the Python Virtual Environment
+-----------------------------------------
+
+|omnet++| uses Python for various tools and scripts. It is highly recommended to use a Python virtual environment to manage dependencies and avoid conflicts with system-wide Python packages.
+
+The ``install.sh`` script automates the creation and setup of this virtual environment for most Linux distributions.
+
+If you are installing manually or want to understand the process, the typical steps performed by the script (after system packages, including ``python3`` and ``python3-venv``, are installed) are:
+
+1.  Navigate to the |omnet++| root directory (e.g., ``cd |omnetpp|-|version|``).
+2.  Create the virtual environment (this example uses ``.venv`` as the directory name):
+
+    .. code:: bash
+
+       $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+
+3.  Activate the virtual environment:
+
+    .. code:: bash
+
+       $ source .venv/bin/activate
+
+4.  Install required Python packages using ``pip``. It's also common to upgrade ``pip`` itself:
+
+    .. code:: bash
+
+       $ python3 -m pip install --upgrade pip
+       $ python3 -m pip install -r python/requirements.txt
+
+Once the virtual environment is active, your shell prompt will usually change, and calls to ``python`` and ``pip`` will use the versions within the ``.venv`` directory.
+
+.. note::
+   If you use the ``install.sh`` script, these steps are generally handled for you.
 
 Environment Variables
 ---------------------

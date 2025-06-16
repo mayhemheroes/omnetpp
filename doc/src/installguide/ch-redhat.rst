@@ -1,59 +1,71 @@
-Red Hat
-=======
+Red Hat Enterprise Linux (RHEL) and AlmaLinux
+=============================================
 
 Supported Releases
 ------------------
 
-This chapter provides additional information for installing |omnet++| on Red Hat Enterprise Linux installations. The
-overall installation procedure is described in the *Linux* chapter.
-
-The following Red Hat release is covered:
-
--  Red Hat Enterprise Linux Desktop Workstation 8.x
-
-It was tested on the following architectures:
-
--  Intel 64-bit
-
-Opening a Terminal
-------------------
-
-Choose *Applications > Accessories > Terminal* from the menu.
+This chapter provides additional information for installing |omnet++| on
+Red Hat Enterprise Linux (RHEL) and AlmaLinux distributions. 
 
 Installing the Prerequisite Packages
 ------------------------------------
-
-You can perform the installation using the graphical user interface or from the terminal, whichever you prefer.
 
 .. note::
 
    You will need Red Hat Enterprise Linux Desktop Workstation for |omnet++|. The *Desktop Client* version does not
    contain development tools.
 
-Command-Line Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
+To install the required packages, type in the terminal. You may need ``sudo``
+privileges for these commands.
 
-To install the required packages, change into the root of the |omnet++| installation 
-and type in the terminal:
+First, enable the EPEL (Extra Packages for Enterprise Linux) repository,
+which provides additional packages:
 
 .. code::
 
-   $ su -c 'yum install make gcc gcc-c++ clang lld bison flex perl \
-       python3-devel python3-pip qt5-qtbase-devel libxml2-devel \
-       zlib-devel doxygen graphviz xdg-utils libdwarf-devel'
-   $ python3 -m venv .venv && source .venv/bin/activate
-   $ python3 -m pip install -r python/requirements.txt
+   $ sudo dnf install -y epel-release
 
-To use 3D visualization support in Qtenv (recommended), you should install the OpenSceneGraph-devel (3.2 or later) and
-osgEarth-devel (2.7 or later) packages. These packages are not available from the official RedHat repository so you may
-need to get them from different sources (e.g. rpmfind.net).
+Then, install the core development tools and libraries:
+
+.. code::
+
+   $ sudo dnf install -y make ccache clang lld lldb gdb bison flex perl \
+       python3-devel python3-pip libxml2-devel zlib-devel graphviz \
+       xdg-utils elfutils-devel
+
+Next, install packages for the graphical environment (Qtenv and IDE). If you
+do not need GUI support, you can skip this step and later configure |omnet++|
+with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo dnf install -y qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg qt6-qtwayland
+
+.. warning::
+
+   **3D Visualization (OpenSceneGraph) Support**
+
+   OpenSceneGraph is generally **not available or easily installable** on RHEL/AlmaLinux distributions from standard repositories. Therefore, it is strongly recommended to build |omnet++| **without** 3D support on these systems.
+
+   You should configure |omnet++| with the ``WITH_OSG=no`` option. If you are using the ``install.sh`` script, it will prompt you or you can use the ``--no-3d`` flag.
+
+Next, set up a Python virtual environment for |omnet++|. In the root directory of your |omnet++| download:
+
+.. code::
+
+   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ source .venv/bin/activate
+
+Then, install the required Python packages into the virtual environment:
+
+.. code::
+
+   $ python3 -m pip install -r python/requirements.txt
 
 .. note::
 
-   You may opt to use gcc instead of the clang compiler and/or use the system default linker instead of *lld* by setting
-   the ``PREFER_CLANG`` and ``PREFER_LLD`` variables in the *configure.user* file. In this case, you don’t have to
-   install the ``clang`` and ``lld`` packages. If you do not need the 3D visualization capabilities, you can disable
-   them in the *configure.user* file, too.
+   The commands above install Clang as the C++ compiler and LLD as the linker. If you prefer to use GCC and the system's default linker, you can adjust the package list accordingly (e.g., replace ``clang`` with ``g++`` and omit ``lld``) and set the ``PREFER_CLANG=no`` and ``PREFER_LLD=no`` options in the ``configure.user`` file or during the ``./configure`` step.
+   If you skip the GUI packages or due to the lack of OpenSceneGraph, remember to disable the corresponding features (``WITH_QTENV=no``, ``WITH_OSG=no``) in ``configure.user`` or during the ``./configure`` step.
 
 To install additional (optional) packages for parallel simulation, type:
 
@@ -67,9 +79,9 @@ Note that *openmpi* will not be available by default, it needs to be activated i
 
    $ module load openmpi_<arch>
 
-command, where ``<arch>`` is your architecture (usually ``i386`` or ``x86_64``). When in doubt, use ``module avail`` to
+command, where ``<arch>`` is your architecture (usually ``x86_64``). When in doubt, use ``module avail`` to
 display the list of available modules. If you need MPI in every session, you may add the ``module load`` command to your
-startup script (``.bashrc``).\`
+startup script (``.bashrc``).
 
 SELinux
 -------

@@ -11,12 +11,13 @@ Installation Guide
    :maxdepth: 2
 
    ch-intro
-   ch-windows-|omnetpp|
+   ch-windows-omnetpp
    ch-macos
    ch-supported-linux
    ch-ubuntu
    ch-fedora
    ch-redhat
    ch-opensuse
+   ch-archlinux
    ch-generic-unix
    ch-build-options

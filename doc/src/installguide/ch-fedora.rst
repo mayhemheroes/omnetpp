@@ -1,5 +1,5 @@
-Fedora 33
-=========
+Fedora
+======
 
 Supported Releases
 ------------------
@@ -7,50 +7,59 @@ Supported Releases
 This chapter provides additional information for installing |omnet++| on Fedora installations. The overall installation
 procedure is described in the *Linux* chapter.
 
-The following Fedora release is covered:
+The following Fedora release is known to work:
 
--  Fedora 40
-
-It was tested on the following architectures:
-
--  Intel 64-bit
-
-Opening a Terminal
-------------------
-
-Open the Search bar, and type *Terminal*.
+-  Fedora 42 (and likely newer versions)
 
 Installing the Prerequisite Packages
 ------------------------------------
 
-You can perform the installation using the graphical user interface or from the terminal, whichever you prefer.
+To install the required packages, type in the terminal.
 
-Command-Line Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To install the required packages, type in the terminal:
+First, install the core development tools and libraries:
 
 .. code::
 
-   $ sudo dnf install make gcc gcc-c++ clang lld bison flex perl \
-       python3-devel python3-pip qt5-qtbase-devel libxml2-devel \
-       zlib-devel doxygen graphviz xdg-utils libdwarf-devel webkit2gtk4.1
-   $ python3 -m venv .venv && source .venv/bin/activate
+   $ sudo dnf install -y make ccache clang awk lld lldb gdb bison flex perl \
+       python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz \
+       xdg-utils libdwarf-devel
+
+Next, install packages for the graphical environment (Qtenv and IDE). If you do not need GUI support (e.g., for a server installation), you can skip this step and later configure |omnet++| with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo dnf install -y qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg \
+       qt6-qtwayland webkit2gtk4.1
+
+For 3D visualization support in Qtenv, install the OpenSceneGraph development package. If you do not need 3D support, you can skip this step and later configure |omnet++| with ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo dnf install -y OpenSceneGraph-devel
+
+After installing system packages, it's good practice to clean the local repository of retrieved package files:
+
+.. code::
+
+   $ sudo dnf clean packages
+
+Next, set up a Python virtual environment for |omnet++|. In the root directory of your |omnet++| download:
+
+.. code::
+
+   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ source .venv/bin/activate
+
+Then, install the required Python packages into the virtual environment:
+
+.. code::
+
    $ python3 -m pip install -r python/requirements.txt
-
-To use 3D visualization support in Qtenv, you should install OpenSceneGraph 3.2 or later and osgEarth 2.7 or later
-(recommended):
-
-.. code::
-
-   $ sudo dnf install OpenSceneGraph-devel osgearth-devel
 
 .. note::
 
-   You may opt to use gcc instead of the clang compiler and/or use the system default linker instead of *lld* by setting
-   the ``PREFER_CLANG`` and ``PREFER_LLD`` variables in the *configure.user* file. In this case, you don’t have to
-   install the ``clang`` and ``lld`` packages. If you do not need the 3D visualization capabilities, you can disable
-   them in the *configure.user* file, too.
+   The commands above install Clang as the C++ compiler and LLD as the linker. If you prefer to use GCC and the system's default linker, you can adjust the package list accordingly (e.g., replace ``clang`` with ``g++`` and omit ``lld``) and set the ``PREFER_CLANG=no`` and ``PREFER_LLD=no`` options in the ``configure.user`` file or during the ``./configure`` step.
+   If you skip the GUI or 3D packages, remember to disable the corresponding features (``WITH_QTENV=no``, ``WITH_OSG=no``) in ``configure.user`` or during the ``./configure`` step.
 
 To enable the optional parallel simulation support you will need to install the MPI package:
 

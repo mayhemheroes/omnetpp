@@ -114,12 +114,8 @@ Using Different Compilers
 
 By default, the configure script detects the following compilers automatically in the path:
 
--  Intel compiler (icc, icpc)
--  GNU C/C++ (gcc, g++)
 -  Clang (clang, clang++)
--  Clang/C2 (from Microsoft Visual Studio)
--  Sun Studio (cc, cxx)
--  IBM compiler (xlc, xlC)
+-  GNU C/C++ (gcc, g++)
 
 If you want to use compilers other than the above ones, you should specify the compiler name in the ``CC`` and ``CXX``
 variables, and re-run the configuration script.

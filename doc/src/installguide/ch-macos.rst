@@ -6,9 +6,9 @@ Supported Releases
 
 This chapter provides additional information for installing |omnet++| on macOS.
 
-The following releases are covered:
+The following release is known to work:
 
--  macOS 14.x
+-  macOS 15 (and likely newer versions)
 
 Installing the Prerequisite Packages
 ------------------------------------
@@ -22,50 +22,57 @@ Install the command line developer tools for macOS (compiler, debugger, etc.)
 Installing additional packages will enable more functionality in |omnet++|; see the *Additional packages* section at the
 end of this chapter.
 
-Intel-based Macs
-~~~~~~~~~~~~~~~~
+Using Homebrew
+~~~~~~~~~~~~~~
 
-On an Intel-based Mac, |omnet++| is bundled with all the required external dependencies in the `tools` 
-directory of the archive, so no additional steps are needed. (You can still opt to install the external
-dependencies using Homebrew.)
+The ``install.sh`` script relies on Homebrew (https://brew.sh) for installing
+prerequisite packages on all modern macOS systems (both Intel and Apple-Silicon).
 
-Apple Silicon
-~~~~~~~~~~~~~
-
-On an Apple Silicon-based computer, external dependencies must be installed manually,
-using a 3rd party package manager like Homebrew. With Homebrew, you can install the packages
-with the following command:
-
-.. code::
-
-   $ brew install bison flex perl python@3 make qt@5 pkg-config \
-       doxygen graphviz openscenegraph
-
-Make sure that the following lines are sourced in your shell (e.g. add them to your `.zprofile`
-file or create a new file for them):
+If you don't have Homebrew installed, follow the instructions on its website.
+Once Homebrew is ready, ensure its environment is set up correctly in your shell.
+Typically, this involves adding a line to your shell profile 
+(e.g., ``.zprofile`` or ``.bash_profile``):
 
 .. code::
 
    eval "$(/opt/homebrew/bin/brew shellenv)"
 
-   export PATH="$(brew --prefix qt@5)/bin:$PATH"
-   export PATH="$(brew --prefix bison)/bin:$PATH"
-   export PATH="$(brew --prefix flex)/bin:$PATH"
-   export PATH="$(brew --prefix doxygen)/bin:$PATH"
-   export PATH="$(brew --prefix graphviz)/bin:$PATH"
-   export PATH="$(brew --prefix pkg-config)/bin:$PATH"
-   export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
-   export LDFLAGS="-L$(brew --prefix)/lib $LDFLAGS"
-   export CFLAGS="-I$(brew --prefix)/include $CFLAGS"
+Restart your terminal or source your profile script for the changes to take effect.
 
-Restart your shell to activate the above changes and make sure that you are using
-`python3` from Homebrew (`which python3`) and not the system's Python interpreter
-provided by macOS (`/usr/lib/python3`) and then install the Python dependencies:
+Install the core development tools and libraries using Homebrew:
 
 .. code::
 
-   $ python3 -m venv .venv && source .venv/bin/activate
+   $ brew install bison ccache flex perl python@3 make pkg-config doxygen graphviz
+
+Next, install packages for the graphical environment (Qtenv and IDE). If you do not need GUI support, you can skip this step and later configure |omnet++| with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
+
+.. code::
+
+   $ brew install qt@6
+
+For 3D visualization support in Qtenv, install the OpenSceneGraph package. If you do not need 3D support, you can skip this step and later configure |omnet++| with ``WITH_OSG=no``.
+
+.. code::
+
+   $ brew install openscenegraph
+
+After installing packages with Homebrew, set up a Python virtual environment for |omnet++|. In the root directory of your |omnet++| download:
+
+.. code::
+
+   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ source .venv/bin/activate
+
+Then, install the required Python packages into the virtual environment:
+
+.. code::
+
    $ python3 -m pip install -r python/requirements.txt
+
+.. note::
+   Make sure you are using ``python3`` from Homebrew (check with ``which python3``). The system Python provided by macOS should generally not be used for development with |omnet++|.
+   If you skip the GUI or 3D packages, remember to disable the corresponding features (``WITH_QTENV=no``, ``WITH_OSG=no``) in ``configure.user`` or during the ``./configure`` step.
 
 Enabling Development Mode in Terminal
 -------------------------------------
@@ -105,10 +112,9 @@ able to debug your unsigned simulation models.
 Additional Steps Required on macOS to Use the Debugger
 ------------------------------------------------------
 
-The Command Line Developer Tools package contains the ``lldb`` debugger. |omnet++| 6.0 and later contains the necessary
-driver binary (``lldbmi2``) that allows ``lldb`` to be used in the |omnet++| IDE. If you are upgrading from an earlier
+The Command Line Developer Tools package contains the ``lldb`` debugger. If you are upgrading from an earlier
 version of |omnet++|, be sure to delete and recreate all Launch Configurations in the IDE. This is required because
-older Launch Configurations were using ``gdb`` as the debugger, but the new IDE uses ``lldbmi2`` as the debugger
+older Launch Configurations were using ``gdb`` as the debugger, but the new IDE uses ``lldb-dap`` as the debugger
 executable.
 
 On the first debug session the OS may prompt you to allow debugging with the ``lldb`` executable.

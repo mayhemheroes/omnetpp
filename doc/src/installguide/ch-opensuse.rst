@@ -7,47 +7,64 @@ Supported Releases
 This chapter provides additional information for installing |omnet++| on openSUSE installations. The overall
 installation procedure is described in the *Linux* chapter.
 
-The following openSUSE release is covered:
+The following openSUSE release is supported:
 
--  openSUSE Leap 15.6
+-  openSUSE Tumbleweed
+
+.. note::
+
+   openSUSE Leap is generally not supported due to older Python versions.
 
 It was tested on the following architectures:
 
 -  Intel 64-bit
 
-Opening a Terminal
-------------------
-
-Open the Search bar, and type *Terminal*.
-
 Installing the Prerequisite Packages
 ------------------------------------
 
-You can perform the installation using the graphical user interface or from the terminal, whichever you prefer.
-
-Command-Line Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To install the required packages, type in the terminal:
+First, install the core development tools and libraries:
 
 .. code::
 
-   $ sudo zypper install make gcc gcc-c++ clang lld bison flex perl \
-       python3-devel python3-pip qt5-qtbase-devel libxml2-devel \
-       zlib-devel doxygen graphviz xdg-utils libdw-devel libwebkit2gtk-4_1-0
-   $ python3 -m venv .venv && source .venv/bin/activate
+   $ sudo zypper install -y make ccache clang lld lldb gdb bison gawk flex perl \
+       python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz \
+       xdg-utils libdw-devel
+
+Next, install packages for the graphical environment (Qtenv and IDE). If you do not need GUI support (e.g., for a server installation), you can skip this step and later configure |omnet++| with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo zypper install -y qt6-base-devel qt6-wayland libQt6Svg6 libwebkit2gtk-4_1-0
+
+For 3D visualization support in Qtenv, install the OpenSceneGraph development packages. If you do not need 3D support, you can skip this step and later configure |omnet++| with ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo zypper install -y libOpenSceneGraph-devel OpenSceneGraph-plugins
+
+After installing system packages, it's good practice to clean the local repository of retrieved package files:
+
+.. code::
+
+   $ sudo zypper clean
+
+Next, set up a Python virtual environment for |omnet++|. In the root directory of your |omnet++| download:
+
+.. code::
+
+   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ source .venv/bin/activate
+
+Then, install the required Python packages into the virtual environment:
+
+.. code::
+
    $ python3 -m pip install -r python/requirements.txt
 
 .. note::
 
-   You may opt to use gcc instead of the clang compiler and/or use the system default linker instead of *lld* by setting
-   the ``PREFER_CLANG`` and ``PREFER_LLD`` variables in the *configure.user* file. In this case, you don’t have to
-   install the ``clang`` and ``lld`` packages. If you do not need the 3D visualization capabilities, you can disable
-   them in the *configure.user* file, too.
-
-To use 3D visualization support in Qtenv (recommended), you should install the OpenSceneGraph-devel (3.2 or later) and
-osgEarth-devel (2.7 or later) packages. These packages are not available from the official RedHat repository so you may
-need to get them from different sources (e.g. rpmfind.net).
+   The commands above install Clang as the C++ compiler and LLD as the linker. If you prefer to use GCC and the system's default linker, you can adjust the package list accordingly (e.g., replace ``clang`` with ``g++`` and omit ``lld``) and set the ``PREFER_CLANG=no`` and ``PREFER_LLD=no`` options in the ``configure.user`` file or during the ``./configure`` step.
+   If you skip the GUI or 3D packages, remember to disable the corresponding features (``WITH_QTENV=no``, ``WITH_OSG=no``) in ``configure.user`` or during the ``./configure`` step.
 
 To enable the optional parallel simulation support you will need to install the MPI package:
 

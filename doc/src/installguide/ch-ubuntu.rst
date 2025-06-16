@@ -7,64 +7,75 @@ Supported Releases
 This chapter provides additional information for installing |omnet++| on Ubuntu Linux installations. The overall
 installation procedure is described in the *Linux* chapter.
 
-The following Ubuntu releases are covered:
+The following Ubuntu releases are known to work (based on the ``install.sh`` script):
 
--  Ubuntu 22.04 LTS or 24.04 LTS
+-  Ubuntu 22.04 LTS
+-  Ubuntu 24.04 LTS
+-  Ubuntu 25.04 (and likely newer versions)
 
 The instructions below assume that you use the default desktop and the bash shell. If you use another desktop
 environment or shell, you may need to adjust the instructions accordingly.
 
-Opening a Terminal
-------------------
-
-Type *terminal* in your program launcher and click on the Terminal icon.
-
 Installing the Prerequisite Packages
 ------------------------------------
 
-You can perform the installation using the graphical user interface or from the terminal, whichever you prefer.
-
-Command-Line Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Before starting the installation, refresh the database of available packages. Type in the terminal:
+Before starting the installation, it's a good practice to refresh the database of available
+packages. Type in the terminal:
 
 .. code::
 
-   $ sudo apt-get update
+   $ sudo apt update
 
-To install the required packages, change into the root of the |omnet++| installation 
-and type in the terminal:
+To install the required packages, ensure you are in the root directory of your |omnet++| download.
+The following commands will install the necessary dependencies.
+
+First, install the core development tools and libraries:
 
 .. code::
 
-   $ sudo apt-get install build-essential clang lld gdb bison flex perl \
-       python3 python3-pip libpython3-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools \
-       libqt5opengl5-dev libxml2-dev zlib1g-dev doxygen graphviz \
-       libwebkit2gtk-4.1-0 xdg-utils libdw-dev
-   $ python3 -m venv .venv && source .venv/bin/activate
+   $ sudo apt install -y make diffutils pkg-config ccache clang lld gdb lldb \
+       bison flex perl sed gawk python3 python3-pip python3-venv python3-dev \
+       libxml2-dev zlib1g-dev doxygen graphviz xdg-utils libdw-dev
+
+Next, install packages for the graphical environment (Qtenv and IDE). If you do not need
+GUI support (e.g., for a server installation), you can skip this step and later configure
+|omnet++| with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo apt install -y qt6-base-dev qt6-base-dev-tools qmake6 libqt6svg6 \
+       qt6-wayland libwebkit2gtk-4.1-0
+
+For 3D visualization support in Qtenv, install the OpenSceneGraph development package. If you
+do not need 3D support, you can skip this step and later configure |omnet++| with ``WITH_OSG=no``.
+
+.. code::
+
+   $ sudo apt install -y libopenscenegraph-dev
+
+After installing system packages, it's good practice to clean the local repository of retrieved package files:
+
+.. code::
+
+   $ sudo apt clean
+
+Next, set up a Python virtual environment for |omnet++|. In the root directory of your |omnet++| download:
+
+.. code::
+
+   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ source .venv/bin/activate
+
+Then, install the required Python packages into the virtual environment:
+
+.. code::
+
    $ python3 -m pip install -r python/requirements.txt
-
-To use Qtenv with 3D visualization support, install the development packages for OpenSceneGraph (3.4 or later) and the
-osgEarth (2.9 or later) packages. (You may need to enable the *Universe* software repository in Software Sources.
-and also enable `WITH_OSGEARTH` in `configure.user`.)
-
-.. code::
-
-   $ sudo apt-get install openscenegraph-plugin-osgearth libosgearth-dev
-
-.. warning::
-
-   Ubuntu 22.04 no longer provides the `libosgearth` package so osgEarth must be installed
-   from sources. OpenSceneGraph can still be installed using
-   `sudo apt-get install libopenscenegraph-dev`.
 
 .. note::
 
-   You may opt to use gcc instead of the clang compiler and/or use the system default linker instead of *lld* by setting
-   the ``PREFER_CLANG`` and ``PREFER_LLD`` variables in the *configure.user* file. In this case, you don’t have to
-   install the ``clang`` and ``lld`` packages. If you do not need the 3D visualization capabilities, you can disable
-   them in the *configure.user* file, too.
+   The commands above install Clang as the C++ compiler and LLD as the linker. If you prefer to use GCC and the system's default linker, you can adjust the package list accordingly (e.g., replace ``clang`` with ``g++`` and omit ``lld``) and set the ``PREFER_CLANG=no`` and ``PREFER_LLD=no`` options in the ``configure.user`` file or during the ``./configure`` step.
+   If you skip the GUI or 3D packages, remember to disable the corresponding features (``WITH_QTENV=no``, ``WITH_OSG=no``) in ``configure.user`` or during the ``./configure`` step.
 
 To enable the optional parallel simulation support you will need to install the MPI packages:
 
