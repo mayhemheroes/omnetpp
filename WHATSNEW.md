@@ -82,6 +82,10 @@ Cmdenv:
 
 Qtenv:
 
+  - Qtenv is now using Qt 6.x. Please note that because of this, the dependencies
+    have changed so you have to run the `install.sh` script when upgrading to
+    OMNeT++ 6.2.0.
+
   - Module and channel tooltips now include a brief documentation of that
     component, with the goal of facilitating understanding of the model's
     operation for new users. The first paragraph of the component's NED comment
