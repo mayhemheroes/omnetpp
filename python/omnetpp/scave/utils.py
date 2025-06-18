@@ -61,6 +61,8 @@ def _import_scave_bindings():
 
     return sb
 
+sb = _import_scave_bindings()
+uc = sb.UnitConversion
 
 from ._version import __version__
 
@@ -171,6 +173,30 @@ def _check_same_unit(df):
     return units[0]
 
 
+def _get_best_unit(values, current_unit):
+    if values.empty:
+        return current_unit
+    # values is a np.Series, with either float or np.ndarray values
+    min_value = values.apply(np.min).min()
+    max_value = values.apply(np.max).max()
+    mid_value = (min_value + max_value) / 2
+    return uc.getBestUnit(mid_value, current_unit)
+
+
+def _convert_to_unit(values, original_unit, target_unit):
+    if original_unit == target_unit:
+        return values
+    def conv(v):
+        if isinstance(v, np.ndarray):
+            clone = v.copy()
+            uc.convertUnitArray(clone, original_unit, target_unit)
+            return clone
+        else:
+            return uc.convertUnit(v, original_unit, target_unit)
+
+    return values.apply(conv)
+
+
 def convert_to_base_unit(df, columns_to_convert=["value", "min", "max", "mean", "stddev", "vecvalue", "binedges"]):
     """
     Converts results with units in the passed DataFrame to their base units in-place.
@@ -196,10 +222,6 @@ def convert_to_base_unit(df, columns_to_convert=["value", "min", "max", "mean", 
     ndarray_columns = [col for col in df.columns
                          if col in columns_to_convert
                            and isinstance(df[col].iloc[0], np.ndarray)]
-
-    # Importing late because it's only needed in this (rarely used) function
-    sb = _import_scave_bindings()
-    uc = sb.UnitConversion
 
     # Iterate through rows
     for index, row in df.iterrows():
@@ -1233,6 +1255,57 @@ def preconfigure_plot(props):
     _initialize_cycles(props)
 
 
+def _get_quantity(props, k, target_unit):
+    v = props.get(k)
+    if not target_unit:
+        return float(v)
+    try:
+        fv = float(v)
+        bu = uc.getBaseUnit(target_unit)
+        # there is a target unit, but the base of it is "" (e.g. for "pk"),
+        # so don't try to convert it to unitless
+        if not bu:
+            return fv
+        v += bu
+    except (ValueError, TypeError):
+        pass # most likely, v already has a unit appended
+    return uc.parseQuantity(v, target_unit)
+
+
+def _set_xlimits(p, props, target_unit):
+    if props.get("xaxis_min"):
+        p.xlim(left=_get_quantity(props, "xaxis_min", target_unit))
+    if props.get("xaxis_max"):
+        p.xlim(right=_get_quantity(props, "xaxis_max", target_unit))
+
+
+def _set_ylimits(p, props, target_unit):
+    if props.get("yaxis_min"):
+        p.ylim(bottom=_get_quantity(props, "yaxis_min", target_unit))
+    if props.get("yaxis_max"):
+        p.ylim(top=_get_quantity(props, "yaxis_max", target_unit))
+
+
+def _set_xlabel(p, props, unit, label):
+    if props.get("xaxis_title"):
+        label = props.get("xaxis_title")
+    if props.get("xaxis_unit") is not None and unit is not None and len(unit) > 0:
+        if len(label) > 0:
+            label += " "
+        label += f"[{unit}]"
+    p.xlabel(label)
+
+
+def _set_ylabel(p, props, unit, label):
+    if props.get("yaxis_title"):
+        label = props.get("yaxis_title")
+    if props.get("yaxis_unit") is not None and unit is not None and len(unit) > 0:
+        if len(label) > 0:
+            label += " "
+        label += f"[{unit}]"
+    p.ylabel(label)
+
+
 def _legend_loc_outside_args(loc):
     mapping = {
         "outside top left": ("lower left", (0, 1.05)),
@@ -1276,19 +1349,24 @@ def postconfigure_plot(props):
         return props[k] if k in props else None
 
     def setup():
-        if get_prop("xaxis_title"):
-            p.xlabel(get_prop("xaxis_title"))
-        if get_prop("yaxis_title"):
-            p.ylabel(get_prop("yaxis_title"))
+        # Backward compatibility: If the chart has no unit properties,
+        # it was created before unit conversion support was added, so
+        # keep the old behavior of setting (potentially overwriting)
+        # the axis labels/limits here.
+        if "xaxis_unit" not in props and "yaxis_unit" not in props:
+            if get_prop("xaxis_title"):
+                p.xlabel(get_prop("xaxis_title"))
+            if get_prop("yaxis_title"):
+                p.ylabel(get_prop("yaxis_title"))
 
-        if get_prop("xaxis_min"):
-            p.xlim(left=float(get_prop("xaxis_min")))
-        if get_prop("xaxis_max"):
-            p.xlim(right=float(get_prop("xaxis_max")))
-        if get_prop("yaxis_min"):
-            p.ylim(bottom=float(get_prop("yaxis_min")))
-        if get_prop("yaxis_max"):
-            p.ylim(top=float(get_prop("yaxis_max")))
+            if get_prop("xaxis_min"):
+                p.xlim(left=float(get_prop("xaxis_min")))
+            if get_prop("xaxis_max"):
+                p.xlim(right=float(get_prop("xaxis_max")))
+            if get_prop("yaxis_min"):
+                p.ylim(bottom=float(get_prop("yaxis_min")))
+            if get_prop("yaxis_max"):
+                p.ylim(top=float(get_prop("yaxis_max")))
 
         if get_prop("xaxis_log"):
             p.xscale("log" if _parse_optional_bool(get_prop("xaxis_log")) else "linear")
