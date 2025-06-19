@@ -18,6 +18,7 @@ network Test
 }
 
 %subst: /-nan/nan/
+%subst: /\(ind\)//
 
 %contains: results/General-#0.sca
 statistic Test.node hist_5bins:histogram
