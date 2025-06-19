@@ -144,6 +144,7 @@ class OppTest:
         'ignore-exitcode'    : '1v',
         'expected-failure'   : '1v',
         'no-default-inifile' : '1v',
+        'stacksize'          : '1v',
 
         'prerun-command'     : 'v',
         'postrun-command'    : 'v'
@@ -185,7 +186,7 @@ namespace @TESTNAME@ {
 class @MODULE@ : public cSimpleModule
 {
     public:
-        @MODULE@() : cSimpleModule(1024*1024) {}
+        @MODULE@() : cSimpleModule(@STACKSIZE@) {}
         virtual void activity();
 };
 
@@ -410,6 +411,7 @@ cmdenv-log-prefix = ""
             activity = self.bodies['activity(1)']
             includescode = self.bodies['includes(1)']
             globalcode = self.bodies['global(1)']
+            stacksize = self.values['stacksize(1)'] or 1024*1024
 
             # generate NED
             ned = self.ModuleNEDTemplate
@@ -422,6 +424,7 @@ cmdenv-log-prefix = ""
             cpp = self.ActivityCPPTemplate
             cpp = cpp.replace("@TESTNAME@", self.testname)
             cpp = cpp.replace("@MODULE@", module)
+            cpp = cpp.replace("@STACKSIZE@", stacksize)
             cpp = cpp.replace("@INCLUDES@", includescode)
             cpp = cpp.replace("@GLOBAL@", globalcode)
             cpp = cpp.replace("@ACTIVITY@", activity)
