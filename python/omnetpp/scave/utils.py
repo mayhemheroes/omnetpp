@@ -1400,6 +1400,10 @@ def export_image_if_needed(props):
 
             mode = PlotAreaCalculationMode.DATA_WITH_PADDING_AND_ORIGIN
 
+            # get original dimensions
+            original_min_x, original_max_x = ax.get_xlim()
+            original_min_y, original_max_y = ax.get_ylim()
+
             # start with a tight value bounding box
             ax.margins(0)
             ax.autoscale(True)
@@ -1453,11 +1457,11 @@ def export_image_if_needed(props):
                 min_y -= h * padding_bottom
                 max_y += h * padding_top
 
-            min_x = float(get_prop("xaxis_min") or min_x)
-            max_x = float(get_prop("xaxis_max") or max_x)
+            min_x = float(original_min_x if get_prop("xaxis_min") else min_x)
+            max_x = float(original_max_x if get_prop("xaxis_max") else max_x)
 
-            min_y = float(get_prop("yaxis_min") or min_y)
-            max_y = float(get_prop("yaxis_max") or max_y)
+            min_y = float(original_min_y if get_prop("yaxis_min") else min_y)
+            max_y = float(original_max_y if get_prop("yaxis_max") else max_y)
 
             ax.set_xlim(left=min_x, right=max_x)
             ax.set_ylim(bottom=min_y, top=max_y)
