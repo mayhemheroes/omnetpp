@@ -275,7 +275,13 @@ NB_MODULE(MODULENAME, m) {
 
     nb::class_<UnitConversion>(m, "UnitConversion")
         .def_static("getBaseUnit", [](const char *unitName) { auto baseUnit = UnitConversion::getBaseUnit(unitName); return opp_nulltoempty(baseUnit); })
-        //.def_static("getBestUnit", &UnitConversion::getBestUnit)
+        .def_static("getBestUnit",  nb::overload_cast<double, const char *>(&UnitConversion::getBestUnit))
+        .def_static("parseQuantity", nb::overload_cast<const char *, const char *>(&UnitConversion::parseQuantity))
+        .def_static("parseQuantity", [](const char *str) {
+            std::string actualUnit;
+            double value = UnitConversion::parseQuantity(str, actualUnit);
+            return nb::make_tuple(value, actualUnit);
+        })
         .def_static("convertUnit", &UnitConversion::convertUnit)
         .def_static("convertUnitArray", [](
                 nb::ndarray<double, nb::ndim<1>, nb::c_contig, nb::device::cpu> a,

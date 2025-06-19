@@ -267,6 +267,17 @@ class UnitConversion:
     def getBaseUnit(arg: str, /) -> str: ...
 
     @staticmethod
+    def getBestUnit(arg0: float, arg1: str, /) -> str: ...
+
+    @overload
+    @staticmethod
+    def parseQuantity(arg0: str, arg1: str, /) -> float: ...
+
+    @overload
+    @staticmethod
+    def parseQuantity(arg: str, /) -> tuple: ...
+
+    @staticmethod
     def convertUnit(arg0: float, arg1: str, arg2: str, /) -> float: ...
 
     @staticmethod
