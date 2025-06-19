@@ -411,7 +411,7 @@ cmdenv-log-prefix = ""
             activity = self.bodies['activity(1)']
             includescode = self.bodies['includes(1)']
             globalcode = self.bodies['global(1)']
-            stacksize = self.values['stacksize(1)'] or 1024*1024
+            stacksize = self.values.get('stacksize(1)', "1024*1024")
 
             # generate NED
             ned = self.ModuleNEDTemplate
@@ -703,11 +703,6 @@ Supported .test file entry types:
                 runCommands.append(f"{cmdline} \"$@\"")
                 exitcode = self.exec_program(cmdline, os.path.join(self.args.workdir,self.testname), outfname, errfname)
 
-            if exitcode == 127:
-                self.testerror(testfilename, "could not execute test program")
-                self.lprint(1, f"CMD: (cd {testworkdir} && {' && '.join(runCommands)})")
-                return
-
         # if stdout contains "#SKIPPED" or "#SKIPPED: some explanation", count this test as skipped;
         # must be done BEFORE checking the exit code
         with open(os.path.join(self.args.workdir, self.testname, outfname), 'r') as f:
@@ -738,7 +733,11 @@ Supported .test file entry types:
                 pass
 
             if exitCodeFail:
-                self.testfailed(testfilename, f"test program returned exit code {exitcode}{insteadOf}")
+                if exitcode == 127:
+                    self.testerror(testfilename, "could not execute test program")
+                else:
+                    self.testfailed(testfilename, f"test program returned exit code {exitcode}{insteadOf}")
+
                 if self.args.verbose > 0:
                     self.print_tail("stdout", os.path.join(testworkdir, outfname))
                     self.print_tail("stderr", os.path.join(testworkdir, errfname))
