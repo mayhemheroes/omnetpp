@@ -23,12 +23,18 @@ def _load_files_into(rfm : sb.ResultFileManager, input_patterns : Union[str, Lis
     if type(input_patterns) == str:
         input_patterns = [ input_patterns ]
 
-    input_patterns = list(set(input_patterns))  # make unique
+    input_patterns_unique = []
+    # A simple `list(set(input_patterns))` would not preserve the order of first occurrence.
+    # In fact, the order would be different on each run, due to "hash randomization"
+    # in Python 3.3+, resulting in different DataFrames later, when querying results.
+    for pattern in input_patterns:
+        if pattern not in input_patterns_unique:
+            input_patterns_unique.append(pattern)
 
     load_flags = sb.LoadFlags.LOADFLAGS_DEFAULTS
     # load_flags = RFM::NEVER_RELOAD | (indexingAllowed ? RFM::ALLOW_INDEXING : RFM::ALLOW_LOADING_WITHOUT_INDEX) | RFM::SKIP_IF_LOCKED | (verbose ? RFM::VERBOSE : 0);
 
-    for file_arg in input_patterns:
+    for file_arg in input_patterns_unique:
         files_to_load = []
 
         if os.path.isdir(file_arg):
@@ -37,6 +43,8 @@ def _load_files_into(rfm : sb.ResultFileManager, input_patterns : Union[str, Lis
             files_to_load = [os.path.join(file_arg, gr) for gr in matching_files]
         else: # even if it does not look like a glob pattern, nonexistent files shouldn't cause an error
             files_to_load = glob.glob(file_arg, recursive=True)
+
+        files_to_load.sort()  # sort to have a stable order: https://bugs.python.org/issue38764
 
         for file_name in files_to_load:
             rfm.loadFile(file_name, file_name, load_flags)
