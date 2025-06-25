@@ -116,14 +116,12 @@ class NedOutlinePage extends ContentOutlinePage implements INedChangeListener, I
     }
 
     public void setContents(Object contents) {
-        Debug.println("NedOutLinePage: starting setContents");
         long startTime = System.currentTimeMillis();
         getViewer().setContents(contents);
         Debug.println("NedOutLinePage: setContents: " + (System.currentTimeMillis()-startTime) + "ms");
     }
 
     private void refresh() {
-        Debug.println("NedOutLinePage: starting refresh");
         long startTime = System.currentTimeMillis();
         getViewer().getContents().refresh();
         Debug.println("NedOutLinePage: refresh: " + (System.currentTimeMillis()-startTime) + "ms");
