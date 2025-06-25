@@ -106,26 +106,15 @@ public class DisplayString implements IDisplayString {
          * missing or empty.
          */
         public boolean isEmpty() {
-            for (String value : args)
-                if (value != null && !value.equals(""))
-                    return false;
-            return true;
+            trim();
+            return args.isEmpty();
         }
 
         /**
          * Returns the values part of the tag
          */
         public String getArgsString() {
-
-            // check for the last non-default value
-            int endPos;
-            for (endPos = args.size() - 1; endPos>0; endPos--)
-                if (args.get(endPos) != null && !"".equals(args.get(endPos)))
-                    break;
-
-            // if there are unnecessary default values at the end, throw them away
-            if (endPos < args.size() - 1)
-                args.setSize(endPos + 1);
+            trim();
 
             StringBuffer sb = new StringBuffer(20);
             boolean firstArg = true;
@@ -139,6 +128,18 @@ public class DisplayString implements IDisplayString {
                     sb.append(value);   //FIXME quoting??? string may contain ";" or ","  --Andras
             }
             return sb.toString();
+        }
+
+        /** 
+         * Discard trailing empty values
+         */
+        protected void trim() {
+            int endPos;
+            for (endPos = args.size() - 1; endPos >= 0; endPos--)
+                if (!StringUtils.isEmpty(args.get(endPos)))
+                    break;
+            if (endPos < args.size() - 1)
+                args.setSize(endPos + 1);
         }
 
         /**
