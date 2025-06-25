@@ -360,7 +360,7 @@ public class NedCompletionProcessor extends AbstractNedCompletionProcessor {
                     catch (IllegalArgumentException e) {
                         // void
                     }
-                    tagPos = tagInstance.getArgSize();
+                    tagPos = tagInstance.getNumArgs();
                     prop = IDisplayString.Prop.findProp(tag, tagPos);
                 }
                 // add tag specific proposals

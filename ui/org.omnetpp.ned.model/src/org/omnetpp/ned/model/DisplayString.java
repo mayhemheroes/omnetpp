@@ -79,7 +79,7 @@ public class DisplayString implements IDisplayString {
             return Tag.valueOf(name);
         }
 
-        public int getArgSize() {
+        public int getNumArgs() {
             return args.size();
         }
 
@@ -115,8 +115,7 @@ public class DisplayString implements IDisplayString {
         /**
          * Returns the values part of the tag
          */
-        public String getArgString() {
-            StringBuffer sb = new StringBuffer(20);
+        public String getArgsString() {
 
             // check for the last non-default value
             int endPos;
@@ -128,29 +127,30 @@ public class DisplayString implements IDisplayString {
             if (endPos < args.size() - 1)
                 args.setSize(endPos + 1);
 
+            StringBuffer sb = new StringBuffer(20);
             boolean firstArg = true;
-            for (String val : args) {
+            for (String value : args) {
                 if (firstArg)
                     firstArg = false;
                 else
                     sb.append(',');
 
-                if (val != null)
-                    sb.append(val);
+                if (value != null)
+                    sb.append(value);   //FIXME quoting??? string may contain ";" or ","  --Andras
             }
             return sb.toString();
         }
 
         /**
          * Returns the string representation of the tag, or the empty string
-         * if all the args are empty
+         * if all args are empty
          */
         @Override
         public String toString() {
             // return an empty string if all the values are default
             if (isEmpty())
                 return "";
-            return getName() + "=" + getArgString();
+            return getName() + "=" + getArgsString();
         }
     }
 
@@ -386,11 +386,12 @@ public class DisplayString implements IDisplayString {
             boolean firstTag = true;
             for (TagInstance tag : tagMap.values()) {
                 String tagVal = tag.toString();
-                if (!tagVal.equals("")) {
-                    if (firstTag) firstTag = false;
-                    else sb.append(';');
-
-                    sb.append(tagVal); //FIXME quoting??? string may contain ";" or ","  --Andras
+                if (!tagVal.isEmpty()) {
+                    if (firstTag)
+                        firstTag = false;
+                    else
+                        sb.append(';');
+                    sb.append(tagVal);
                 }
             }
             cachedDisplayString = sb.toString();
