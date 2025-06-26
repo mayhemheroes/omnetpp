@@ -274,6 +274,9 @@ def make_legend_label(legend_cols, row, props={}):
     - Invalid group reference in the "replacement" parts of `legend_replacements` (`re.error`)
     """
 
+    if hasattr(row, 'legend'):
+        return row.legend
+
     def get_prop(k):
         return props[k] if k in props else None
 
@@ -288,9 +291,7 @@ def make_legend_label(legend_cols, row, props={}):
     legend_isautomatic = get_prop('legend_automatic')
     legend_format = get_prop('legend_format')
 
-    if hasattr(row, 'legend'):
-        legend = row.legend
-    elif legend_format and legend_isautomatic != "true":
+    if legend_format and legend_isautomatic != "true":
         legend = substitute_columns(legend_format, row, "in legend format string")
     else:
         def fmt(col):
