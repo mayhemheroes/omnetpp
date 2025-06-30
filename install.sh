@@ -206,6 +206,15 @@ install_deps() {
 
         echo_run "brew install $packages"
 
+        # Make sure that the packages just installed are available (and not some other versions that are also installed on the system)
+        # This is especially important because python3 might be already installed from a differenet source
+        # We must ensure the virtual environment is created by the python package just installed from homebrew
+        if [ $(uname -m) = "arm64" ]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        else
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
+
         install_python_deps
     fi
 

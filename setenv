@@ -39,9 +39,9 @@ if [ -f "$dir/.venv/bin/activate" ] ; then
 fi
 
 # check for HOMEBREW (on macOS) environment and activate dependent packages
-if [ "$(command -v brew)" != "" ]; then
-  echo "HOMEBREW detected, activating dependencies (qt@5, bison, flex, pkg-config, make)."
-  export PATH="$(brew --prefix qt@5)/bin:$PATH"
+if [ "$(uname)" = "Darwin" -a "$(command -v brew)" != "" ]; then
+  echo "HOMEBREW detected, activating dependencies (qt@6, bison, flex, pkg-config, make)."
+  export PATH="$(brew --prefix qt@6)/bin:$PATH"
   export PATH="$(brew --prefix bison)/bin:$PATH"
   export PATH="$(brew --prefix flex)/bin:$PATH"
   export PATH="$(brew --prefix pkg-config)/bin:$PATH"
