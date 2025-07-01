@@ -204,7 +204,7 @@ install_deps() {
             packages="$packages openscenegraph"
         fi
 
-        echo_run "brew install $packages"
+        echo_run "brew install --formula $packages"
 
         # Make sure that the packages just installed are available (and not some other versions that are also installed on the system)
         # This is especially important because python3 might be already installed from a differenet source
