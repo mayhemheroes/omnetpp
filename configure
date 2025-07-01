@@ -6368,7 +6368,7 @@ test -n "$RCC" || RCC="nope"
           as_fn_error $? "Could not find all of moc, rcc, and uic for Qt6 -- $MOC, $RCC, $UIC" "$LINENO" 5
         fi
 
-        QT_CFLAGS=${QT_CFLAGS:-"-I $QT_INSTALL_HEADERS"}
+        QT_CFLAGS=${QT_CFLAGS:-"-isystem $QT_INSTALL_HEADERS"}
         QT_LIBS=${QT_LIBS:-"-lQt6Gui -lQt6Core -lQt6Widgets -lQt6PrintSupport -lQt6OpenGL -lQt6OpenGLWidgets $LDFLAG_LIBPATH$QT_INSTALL_LIBS"}
         if test -z "$RPATH_UNSUPPORTED"; then
             QTENV_LDFLAGS="-Wl,-rpath,$QT_INSTALL_LIBS"
@@ -7216,11 +7216,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
 
-   CXXFLAGS="$CFLAGS -I/usr/include/libxml2"
+   CXXFLAGS="$CFLAGS -isystem /usr/include/libxml2"
    LIBS="-lxml2"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS -I/usr/include/libxml2\" LIBS=\"-lxml2\"" >&5
-printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS -I/usr/include/libxml2\" LIBS=\"-lxml2\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS -isystem /usr/include/libxml2\" LIBS=\"-lxml2\"" >&5
+printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS -isystem /usr/include/libxml2\" LIBS=\"-lxml2\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7236,7 +7236,7 @@ _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-I/usr/include/libxml2" LIBXML_LIBS="-lxml2"
+printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-isystem /usr/include/libxml2" LIBXML_LIBS="-lxml2"
 else case e in #(
   e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }; libxml_ok=no;  ;;
@@ -7256,11 +7256,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
 
-   CXXFLAGS="$CFLAGS -I$MSYSTEM_PREFIX/include/libxml2"
+   CXXFLAGS="$CFLAGS -isystem $MSYSTEM_PREFIX/include/libxml2"
    LIBS="-lxml2"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS -I$MSYSTEM_PREFIX/include/libxml2\" LIBS=\"-lxml2\"" >&5
-printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS -I$MSYSTEM_PREFIX/include/libxml2\" LIBS=\"-lxml2\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS -isystem $MSYSTEM_PREFIX/include/libxml2\" LIBS=\"-lxml2\"" >&5
+printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS -isystem $MSYSTEM_PREFIX/include/libxml2\" LIBS=\"-lxml2\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7276,7 +7276,7 @@ _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-I$MSYSTEM_PREFIX/include/libxml2" LIBXML_LIBS="-lxml2"
+printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-isystem $MSYSTEM_PREFIX/include/libxml2" LIBXML_LIBS="-lxml2"
 else case e in #(
   e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }; libxml_ok=no;  ;;
@@ -7295,11 +7295,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
 
-   CXXFLAGS="$CFLAGS_ARCH $CFLAGS -I/visualc/include/libxml2"
+   CXXFLAGS="$CFLAGS_ARCH $CFLAGS -isystem /visualc/include/libxml2"
    LIBS="$LDFLAGS_ARCH -llibxml2"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS_ARCH $CFLAGS -I/visualc/include/libxml2\" LIBS=\"$LDFLAGS_ARCH -llibxml2\"" >&5
-printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS_ARCH $CFLAGS -I/visualc/include/libxml2\" LIBS=\"$LDFLAGS_ARCH -llibxml2\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS_ARCH $CFLAGS -isystem /visualc/include/libxml2\" LIBS=\"$LDFLAGS_ARCH -llibxml2\"" >&5
+printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS_ARCH $CFLAGS -isystem /visualc/include/libxml2\" LIBS=\"$LDFLAGS_ARCH -llibxml2\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7315,7 +7315,7 @@ _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-I/visualc/include/libxml2" LIBXML_LIBS="-llibxml2"
+printf "%s\n" "yes" >&6; }; libxml_ok=yes; LIBXML_CFLAGS="-isystem /visualc/include/libxml2" LIBXML_LIBS="-llibxml2"
 else case e in #(
   e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }; libxml_ok=no;  ;;
@@ -7468,7 +7468,7 @@ fi
 # Check for Akaroa header and lib
 #----------------------
 if test "$WITH_AKAROA" = "yes"; then
-  AKAROA_CFLAGS=${AKAROA_CFLAGS:-"-I/usr/local/akaroa/include"}
+  AKAROA_CFLAGS=${AKAROA_CFLAGS:-"-isystem /usr/local/akaroa/include"}
   AKAROA_LIBS=${AKAROA_LIBS:-"-L/usr/local/akaroa/lib -lakaroa -lfl"}
 
 
