@@ -862,7 +862,6 @@ def try_import(name):
 try_import("difflib") # for opp_test and scave python tester
 
 # for the Analysis Tool:
-try_import("setuptools")
 try_import("numpy")
 try_import("scipy")
 try_import("pandas")
