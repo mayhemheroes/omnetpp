@@ -4367,7 +4367,7 @@ else
         ARCH=x86_64
         SO_LIB_SUFFIX=".dylib"
         JNI_LIB_SUFFIX=".jnilib"
-        LDFLAGS_ARCH="$LDFLAGS_ARCH -Wl,-headerpad_max_install_names"
+        LDFLAGS_ARCH="$LDFLAGS_ARCH -Wl,-headerpad_max_install_names -Wl,-no_warn_duplicate_libraries"
         OMNETPP_TOOLS_DIR=$OMNETPP_ROOT_DIR/tools/$PLATFORM.$ARCH
         if test -d "$OMNETPP_TOOLS_DIR/include" ; then
             CFLAGS_ARCH="$CFLAGS_ARCH -isystem \$(OMNETPP_TOOLS_DIR)/include"
@@ -4383,7 +4383,7 @@ else
         ARCH=aarch64
         SO_LIB_SUFFIX=".dylib"
         JNI_LIB_SUFFIX=".jnilib"
-        LDFLAGS_ARCH="$LDFLAGS_ARCH -Wl,-headerpad_max_install_names"
+        LDFLAGS_ARCH="$LDFLAGS_ARCH -Wl,-headerpad_max_install_names -Wl,-no_warn_duplicate_libraries"
         OMNETPP_TOOLS_DIR=$OMNETPP_ROOT_DIR/tools/$PLATFORM.$ARCH
         if test -d "$OMNETPP_TOOLS_DIR/include" ; then
             CFLAGS_ARCH="$CFLAGS_ARCH -isystem \$(OMNETPP_TOOLS_DIR)/include"
