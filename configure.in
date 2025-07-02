@@ -915,25 +915,17 @@ SYS_LIBS=""
 #---------------------------------
 
 if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
-  # ensure that the python-config version is matcing the main python's version number
-  PYTHONXY_CONFIG=python$($PYTHON3 -c 'import sysconfig; print(sysconfig.get_config_var("py_version_short"))')-config
-  AC_PATH_PROGS(PYTHON_CONFIG, $PYTHONXY_CONFIG python3-config python-config, nope)
+  PYTHON_CONFIG="python/python3-config"
 
   # get extension suffix
-  PYTHON_EXT_SUFFIX="$($PYTHON_CONFIG --extension-suffix | xargs)" # xargs needed to strip away extra spaces on msys2 (it's a workaround for a python-config bug)
-
-  # Check if the extension suffix from python-config matches the one from sysconfig
-  PYTHON_SYSCONFIG_EXT_SUFFIX=$($PYTHON3 -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
-  if test "$PYTHON_EXT_SUFFIX" != "$PYTHON_SYSCONFIG_EXT_SUFFIX"; then
-    AC_MSG_ERROR([Python extension suffix mismatch: $PYTHON_CONFIG reports '$PYTHON_EXT_SUFFIX', but $PYTHON3's sysconfig module reports '$PYTHON_SYSCONFIG_EXT_SUFFIX'. Please ensure that $PYTHON_CONFIG and $PYTHON3 are from the same Python installation.])
-  fi
+  PYTHON_EXT_SUFFIX="$($PYTHON3 $PYTHON_CONFIG --extension-suffix | xargs)" # xargs needed to strip away extra spaces on msys2 (it's a workaround for a python-config bug)
 
   # the full --cflags output is full of compiler flags we don't want nor need
-  PYTHON_CFLAGS=$($PYTHON_CONFIG --includes)
+  PYTHON_CFLAGS=$($PYTHON3 $PYTHON_CONFIG --includes)
 
   # --libs is a subset of --ldflags, it seems, and --embed
   # is needed to actually get the flag to link to libpython
-  PYTHON_LDFLAGS=$($PYTHON_CONFIG --ldflags --embed)
+  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
 
   OPP_CHECK_LIB(python3-dev, Python.h, Py_Initialize(), $PYTHON_CFLAGS, $PYTHON_LDFLAGS, python3_found)
 
