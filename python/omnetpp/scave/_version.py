@@ -25,12 +25,12 @@ def check_dependencies():
     If neither packaging nor pkg_resources is available, returns 0 (assume success).
     """
     requirements_file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../requirements.txt")
-    
+
     if USE_MODERN_PACKAGES:
         # Modern implementation using importlib.metadata and packaging
         with open(requirements_file_name, 'r') as f:
             req_text = f.read()
-        
+
         dependencies = []
         for line in req_text.splitlines():
             line = line.strip()
@@ -39,12 +39,15 @@ def check_dependencies():
                     dependencies.append(Requirement(line))
                 except InvalidVersion:
                     pass
-        
+
         for req in dependencies:
+            if req.marker and not req.marker.evaluate():
+                continue
+
             try:
                 dist = distribution(req.name)
                 # Check if installed version satisfies the requirement
-                if Version(dist.version) not in req.specifier and req.specifier:
+                if req.specifier and Version(dist.version) not in req.specifier:
                     print(f"'{req.name}=={dist.version}' was found, but '{req}' is required.\n")
                     return 1
             except PackageNotFoundError:
@@ -53,9 +56,9 @@ def check_dependencies():
     elif USE_LEGACY_PACKAGES:
         # Legacy implementation using pkg_resources
         dependencies = [str(req) for req in parse_requirements(open(requirements_file_name, 'r').read()) if req.name is not None]
-        
+
         try:
-            working_set.require(dependencies)
+            working_set.require(*dependencies)
         except VersionConflict as e:
             print(f"'{e.dist}' was found, but '{e.req}' is required.\n")
             return 1
@@ -63,7 +66,7 @@ def check_dependencies():
             print(f"'{e.req}' was not found.\n")
             return 1
 
-    # If neither packaging nor pkg_resources were available to properly test the dependencies, 
+    # If neither packaging nor pkg_resources were available to properly test the dependencies,
     # we just assume success and hope for the best
     return 0
 
