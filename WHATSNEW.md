@@ -291,7 +291,9 @@ Tests:
 
 Build:
 
-  - Upgraded to Eclipse 2025-03.
+  - Upgraded to Eclipse 2025-06.
+
+  - On Windows, the bundled MSYS2 installation is upgraded to the 2025-05-23 snapshot.
 
 See ChangeLogs in individual folders for details.
 
