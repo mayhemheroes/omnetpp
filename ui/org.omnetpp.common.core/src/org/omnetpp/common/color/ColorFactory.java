@@ -853,8 +853,8 @@ public class ColorFactory {
     /**
      * Returns a "good" light color.
      */
-    public static Color getGoodLightColor(int i) {
-        return goodLightColors[i % goodLightColors.length];
+    public static Color getGoodLightColor(long i) {
+        return goodLightColors[(int)(i % goodLightColors.length)];
     }
 
     public static Color[] getGoodDarkColors() {
