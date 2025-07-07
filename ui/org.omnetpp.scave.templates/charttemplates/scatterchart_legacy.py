@@ -2,7 +2,6 @@ from omnetpp.scave import results, chart, utils, ideplot
 import numpy as np
 import pandas as pd
 import re
-from distutils.util import strtobool
 
 props = chart.get_properties()
 utils.preconfigure_plot(props)
@@ -49,7 +48,7 @@ x_module, x_name, x_runattr = module_name_runattr_from_pattern(x_pattern)
 iso_pattern = props["iso_patterns"].split(";")[0]
 iso_module, iso_name, iso_runattr = module_name_runattr_from_pattern(iso_pattern)
 
-avg_repls = bool(strtobool(props['average_replications']))
+avg_repls = utils._parse_optional_bool(props['average_replications'])
 try:
     sc = results.get_scalars(filter_expression, include_fields=True, include_itervars=True, include_runattrs=True)
     iv = results.get_itervars("(" + filter_expression + ") AND NOT name =~ " + x_runattr, include_itervars=True, include_runattrs=True)
