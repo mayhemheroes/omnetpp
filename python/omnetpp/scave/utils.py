@@ -452,7 +452,7 @@ def plot_bars(df, errors_df=None, meta_df=None, props={}, sort=True):
     - `cycle_seed`: Alters the sequence in which colors are assigned to series.
     - `unit`: If present, it is required to be the same for all series, and it will be used in the automatic y axis label.
     """
-    unit = _check_same_unit(meta_df)
+    y_unit = _check_same_unit(meta_df)
     p = ideplot if chart.is_native_chart() else plt
 
     def get_prop(k):
@@ -502,6 +502,19 @@ def plot_bars(df, errors_df=None, meta_df=None, props={}, sort=True):
     if sort:
         df.sort_index(axis="columns", inplace=True)
         df.sort_index(axis="index", inplace=True)
+
+    # Y unit
+    target_y_unit = get_prop("yaxis_unit")
+    if target_y_unit is None:
+        target_y_unit = y_unit
+    elif target_y_unit == "" and y_unit:
+        combined_values = pd.concat([df[col] for col in df.columns])
+        target_y_unit = _get_best_unit(combined_values, y_unit)
+    if y_unit != target_y_unit:
+        if y_unit:
+            for col in df.columns:
+                df[col] = _convert_to_unit(df[col], y_unit, target_y_unit)
+        y_unit = target_y_unit
 
     if errors_df is not None:
         assert df.shape == errors_df.shape
@@ -564,9 +577,15 @@ def plot_bars(df, errors_df=None, meta_df=None, props={}, sort=True):
     # Add some text for labels, title and custom x-axis tick labels, etc.
     groups = df.columns.names
 
-    p.xlabel(_to_label(groups))
+    if "yaxis_unit" in props:
+        _set_xlabel(p, props, None, _to_label(groups))
+        _set_xlimits(p, props, None)
+    else:
+        # backward compatibility for old charts that don't have the yaxis_unit property yet
+        p.xlabel(_to_label(groups))
 
     title = get_prop("title")
+    ylabel = ""
     if meta_df is not None:
         meta_df = meta_df.reset_index()
         if get_prop("legend_prefer_result_titles") == "true" and "title" in meta_df:
@@ -578,12 +597,19 @@ def plot_bars(df, errors_df=None, meta_df=None, props={}, sort=True):
         ylabel = title_names[0]
         if len(title_names) > 1:
             ylabel += ", etc."
-        if unit is not None and len(unit) > 0:
-            ylabel += f" [{unit}]"
-        p.ylabel(ylabel)
+
+        if "yaxis_unit" not in props:
+            # backward compatibility for old charts that don't have the yaxis_unit property yet
+            if y_unit is not None and len(y_unit) > 0:
+                ylabel += f" [{y_unit}]"
+            p.ylabel(ylabel)
 
         if title is None:
             title = make_chart_title(meta_df, title_cols)
+
+    if "yaxis_unit" in props:
+        _set_ylabel(p, props, y_unit, ylabel)
+        _set_ylimits(p, props, y_unit)
 
     if title is not None:
         set_plot_title(title)
