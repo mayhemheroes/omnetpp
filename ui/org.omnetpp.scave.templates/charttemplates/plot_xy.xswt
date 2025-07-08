@@ -41,6 +41,11 @@
       <layoutData x:class="GridData" horizontalAlignment="FILL" grabExcessHorizontalSpace="true"/>
     </text>
 
+    <label text="Unit:"/>
+    <text x:id="xaxis_unit" x:style="BORDER">
+      <layoutData x:class="GridData" horizontalAlignment="FILL" grabExcessHorizontalSpace="true"/>
+    </text>
+
     <label text="Min:"/>
     <text x:id="xaxis_min" x:style="BORDER">
       <layoutData x:class="GridData" horizontalAlignment="FILL" grabExcessHorizontalSpace="true"/>
@@ -67,6 +72,11 @@
 
     <label text="Label:"/>
     <text x:id="yaxis_title" x:style="BORDER">
+      <layoutData x:class="GridData" horizontalAlignment="FILL" grabExcessHorizontalSpace="true"/>
+    </text>
+
+    <label text="Unit:"/>
+    <text x:id="yaxis_unit" x:style="BORDER">
       <layoutData x:class="GridData" horizontalAlignment="FILL" grabExcessHorizontalSpace="true"/>
     </text>
 

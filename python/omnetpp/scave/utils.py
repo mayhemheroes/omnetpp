@@ -653,7 +653,8 @@ def plot_vectors(df, props, legend_func=make_legend_label, sort=True):
     - `cycle_seed`: Alters the sequence in which colors and markers are assigned to series.
     - `unit`: If present, it is required to be the same for all series, and it will be used in the automatic y axis label.
     """
-    unit = _check_same_unit(df)
+    x_unit = "s" # vectime is always simtime
+    y_unit = _check_same_unit(df)
     p = ideplot if chart.is_native_chart() else plt
 
     def get_prop(k):
@@ -664,6 +665,27 @@ def plot_vectors(df, props, legend_func=make_legend_label, sort=True):
     if sort:
         df.sort_values(by=legend_cols, inplace=True)
 
+    # X unit
+    target_x_unit = get_prop("xaxis_unit")
+    if target_x_unit is None:
+        target_x_unit = x_unit
+    elif target_x_unit == "" and x_unit:
+        target_x_unit = _get_best_unit(df.vectime, x_unit)
+    if x_unit != target_x_unit and x_unit:
+        df.vectime = _convert_to_unit(df.vectime, x_unit, target_x_unit)
+        x_unit = target_x_unit
+
+    # Y unit
+    target_y_unit = get_prop("yaxis_unit")
+    if target_y_unit is None:
+        target_y_unit = y_unit
+    elif target_y_unit == "" and y_unit:
+        target_y_unit = _get_best_unit(df.vecvalue, y_unit)
+    if y_unit != target_y_unit and y_unit:
+        df.vecvalue = _convert_to_unit(df.vecvalue, y_unit, target_y_unit)
+        y_unit = target_y_unit
+        df["unit"] = target_y_unit
+
     for t in df.itertuples(index=False):
         style = _make_line_args(props, t, df)
         p.plot(t.vectime, t.vecvalue, label=legend_func(legend_cols, t, props), **style)
@@ -671,11 +693,18 @@ def plot_vectors(df, props, legend_func=make_legend_label, sort=True):
     title = get_prop("title") or make_chart_title(df, title_cols)
     set_plot_title(title)
 
-    p.xlabel("Simulation Time [s]")
     ylabel = make_chart_title(df, ["title"])
-    if unit is not None:
-        ylabel += f" [{unit}]"
-    p.ylabel(ylabel)
+    if "xaxis_unit" in props or "yaxis_unit" in props:
+        _set_xlabel(p, props, x_unit, "Simulation Time")
+        _set_xlimits(p, props, x_unit)
+        _set_ylabel(p, props, y_unit, ylabel)
+        _set_ylimits(p, props, y_unit)
+    else:
+        # backward compatibility for old charts that don't have the xaxis_unit and yaxis_unit properties yet
+        p.xlabel("Simulation Time [s]")
+        if y_unit is not None:
+            ylabel += f" [{y_unit}]"
+        p.ylabel(ylabel)
 
     if not ideplot.is_native_plot():
         plt.gca().delta_measurement = delta_measurement.DeltaMeasurement(plt.gcf(), plt.gca())
@@ -696,13 +725,24 @@ def plot_vectors_separate(df, props, legend_func=make_legend_label, sort=True):
     if sort:
         df.sort_values(by=legend_cols, inplace=True)
 
+    x_unit = "s"
+
+    # X unit
+    target_x_unit = get_prop("xaxis_unit")
+    if target_x_unit is None:
+        target_x_unit = x_unit
+    elif target_x_unit == "" and x_unit:
+        target_x_unit = _get_best_unit(df.vectime, x_unit)
+    if x_unit != target_x_unit and x_unit:
+        df.vectime = _convert_to_unit(df.vectime, x_unit, target_x_unit)
+        x_unit = target_x_unit
+
     # compute endtime as the maximum timestamp in all vectors, or the upper limit of X axis
     # TODO take the simulation duration instead, or the maximum of vector close times when they become available
     endtimes = [t.vectime[-1] for t in df.itertuples(index=False) if t.vectime.size > 0]
     endtime = np.max(endtimes) if endtimes else math.nan
-    xmax_prop = get_prop("xaxis_max")
-    if xmax_prop:
-        endtime = max(endtime, float(xmax_prop))
+    if props.get("xaxis_max"):
+        endtime = max(endtime, _get_quantity(props, "xaxis_max", x_unit))
 
     fig = plt.gcf()
 
@@ -735,7 +775,13 @@ def plot_vectors_separate(df, props, legend_func=make_legend_label, sort=True):
     title = get_prop("title") or make_chart_title(df, title_cols)
     set_plot_title(title)
 
-    plt.xlabel("Simulation Time [s]")
+    if "xaxis_unit" in props or "yaxis_unit" in props:
+        plt.axes(ax)
+        _set_xlabel(plt, props, x_unit, "Simulation Time")
+        _set_xlimits(plt, props, x_unit)
+    else:
+        # backward compatibility for old charts that don't have the xaxis_unit property yet
+        plt.xlabel("Simulation Time [s]")
 
 
 def _parse_enum_spec(enum_spec, reverse_mapping=False):
@@ -1076,9 +1122,12 @@ def plot_lines(df, props, legend_func=make_legend_label, sort=True):
 
     title = get_prop("title") or make_chart_title(df, title_cols)
     set_plot_title(title)
-
-    if unit is not None:
-        p.ylabel(f"[{unit}]")
+    if "xaxis_unit" in props or "yaxis_unit" in props:
+        _set_ylabel(p, props, unit, "")
+    else:
+        # backward compatibility for old charts that don't have the yaxis_unit property yet
+        if unit is not None:
+            p.ylabel(f"[{unit}]")
 
 
 def plot_boxwhiskers(df, props, legend_func=make_legend_label, sort=True):
