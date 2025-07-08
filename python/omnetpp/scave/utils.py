@@ -929,7 +929,8 @@ def plot_histograms(df, props, legend_func=make_legend_label, sort=True):
     - `cycle_seed`: Alters the sequence in which colors and markers are assigned to series.
     - `unit`: If present, it is required to be the same for all series and will be used in the automatic x-axis label.
     """
-    unit = _check_same_unit(df)
+    x_unit = _check_same_unit(df)
+    y_unit = props.get("yaxis_unit")
     p = ideplot if chart.is_native_chart() else plt
 
     has_overflow_columns = "min" in df and "max" in df and "underflows" in df and "overflows" in df
@@ -945,6 +946,16 @@ def plot_histograms(df, props, legend_func=make_legend_label, sort=True):
 
     if sort:
         df.sort_values(by=legend_cols, inplace=True)
+
+    # X unit
+    target_x_unit = get_prop("xaxis_unit")
+    if target_x_unit is None:
+        target_x_unit = x_unit
+    elif target_x_unit == "" and x_unit:
+        target_x_unit = _get_best_unit(df.binedges, x_unit)
+    if x_unit != target_x_unit and x_unit:
+        df.binedges = _convert_to_unit(df.binedges, x_unit, target_x_unit)
+        x_unit = target_x_unit
 
     for t in df.itertuples(index=False):
         style = _make_histline_args(props, t, df)
@@ -981,8 +992,15 @@ def plot_histograms(df, props, legend_func=make_legend_label, sort=True):
     title = get_prop("title") or make_chart_title(df, title_cols)
     set_plot_title(title)
 
-    if unit is not None:
-        p.xlabel(f"[{unit}]")
+    if "xaxis_unit" in props or "yaxis_unit" in props:
+        _set_xlabel(p, props, x_unit, "")
+        _set_xlimits(p, props, x_unit)
+        _set_ylabel(p, props, y_unit, "")
+        _set_ylimits(p, props, y_unit)
+    else:
+        # backward compatibility for old charts that don't have the xaxis_unit property yet
+        if x_unit is not None:
+            p.xlabel(f"[{x_unit}]")
 
 
 def plot_lines(df, props, legend_func=make_legend_label, sort=True):
@@ -1122,8 +1140,8 @@ def plot_boxwhiskers(df, props, legend_func=make_legend_label, sort=True):
         title = props["title"]
     set_plot_title(title)
 
-    if unit is not None:
-        plt.ylabel(f"[{unit}]")
+    _set_ylabel(plt, props, unit, "")
+    _set_ylimits(plt, props, unit)
 
 
 # source: https://stackoverflow.com/a/39789718/635587
