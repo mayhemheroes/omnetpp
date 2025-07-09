@@ -174,11 +174,12 @@ def _check_same_unit(df):
 
 
 def _get_best_unit(values, current_unit):
-    if values.empty:
+    # Handle empty arrays by filtering them out (NumPy min/max doesn't like them)
+    non_empty_values = values[values.apply(lambda x: not isinstance(x, np.ndarray) or x.size > 0)]
+    if non_empty_values.empty:
         return current_unit
-    # values is a np.Series, with either float or np.ndarray values
-    min_value = values.apply(np.min).min()
-    max_value = values.apply(np.max).max()
+    min_value = non_empty_values.apply(np.min).min()
+    max_value = non_empty_values.apply(np.max).max()
     mid_value = (min_value + max_value) / 2
     return uc.getBestUnit(mid_value, current_unit)
 
