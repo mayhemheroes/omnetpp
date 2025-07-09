@@ -925,7 +925,7 @@ if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
 
   # --libs is a subset of --ldflags, it seems, and --embed
   # is needed to actually get the flag to link to libpython
-  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --libs --embed)
+  PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
 
   OPP_CHECK_LIB(python3-dev, Python.h, Py_Initialize(), $PYTHON_CFLAGS, $PYTHON_LDFLAGS, python3_found)
 
