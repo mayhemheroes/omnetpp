@@ -58,7 +58,7 @@ check-signals = true
 
 %contains: stdout
 t=0s: emit "foo" type=long value=99
-ERROR: Undeclared signal 'foo' emitted (@signal missing from NED file?)
+ERROR: Undeclared signal 'foo' emitted (@signal missing from NED declaration of 'Test'?)
 t=0s: emit "bogusSignal" type=long value=99
 ERROR: Wrong type 'foo' in the @signal[bogusSignal] property in the 'Test' NED type, should be one of: long, unsigned long, double, simtime_t, string, or a registered class name optionally followed by a question mark
 t=0s: emit "longSignal" type=unsigned long value=153

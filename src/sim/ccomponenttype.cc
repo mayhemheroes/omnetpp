@@ -169,7 +169,7 @@ void cComponentType::checkSignal(simsignal_t signalID, SimsignalType type, cObje
         const char *signalName = cComponent::getSignalName(signalID);
         cProperty *prop = getSignalDeclaration(signalName);
         if (!prop)
-            throw cRuntimeError("Undeclared signal '%s' emitted (@signal missing from NED file?)", signalName);
+            throw cRuntimeError("Undeclared signal '%s' emitted (@signal missing from NED declaration of '%s'?)", signalName, getFullName());
 
         // found; extract info from it, and add signal to signalsSeen
         SignalDesc& desc = signalsSeen[signalID];
