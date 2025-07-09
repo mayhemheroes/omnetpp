@@ -152,9 +152,10 @@ install_deps() {
 
             echo_root_run "dnf install -y epel-release && dnf install -y $packages ; dnf clean packages"
 
-        elif [[ "$(command -v zypper)" != "" && "$ID" == "opensuse-tumbleweed" ]]; then
-            # zypper is used on OpenSUSE. leap is not supported because of old (3.6) python
-            packages="make ccache clang lld lldb gdb bison gawk flex perl python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdw-devel"
+        elif [[ "$(command -v zypper)" != "" && "$ID" == "opensuse-leap" ]]; then
+            # zypper is used on OpenSUSE. Force using python 3.11 because the default python version is 3.6 on older versions of leap
+            packages="make ccache clang lld lldb gdb bison gawk flex perl python311-devel python311-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdw-devel"
+            PYTHON3="python3.11"
 
             if ! $no_gui; then
                 packages="$packages qt6-base-devel qt6-wayland libQt6Svg6 libwebkit2gtk-4_1-0"
