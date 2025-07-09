@@ -1,3 +1,77 @@
+2025-05-29  Attila Torok
+
+	* Module inspectors: Improved zoom label implementation
+
+2025-06-13  Attila Torok
+
+	* Fix: Set the vertical main window layout button to be checked on first
+	start.
+
+2020-10-07  Attila Torok
+
+	* Migrated to Qt 6.
+
+2025-06-11  Rudolf Hornig
+
+	* Pass in a parent widget for all opened dialogs.
+
+	This resolves the issue where these dialogs had their own separate taskbar
+	entry, and were positioned unintuitively (not in the middle of the parent
+	window, but on some available free space on the desktop).
+
+2025-06-06  Attila Torok
+
+	* LogInspector: Restore the proper cursor shape after using "Find".
+
+	The IBeamCursor is only set (and never changed) on the viewport(). This
+	way, the cursor was wrongly set to IBeam for the entire widget, including
+	the header, the floating toolbar, and the scrollbars.
+
+2025-06-04  Attila Torok
+
+	* Rename actions: "Debug Now" -> "Break into Debugger", "Debug
+	Simulation" -> "Debug Next Step".
+
+	The "Debug Now" action is useful less often, so a "less inviting" name
+	was chosen for it. And "Debug Simulation" was nearly reverted to "Debug
+	Next Event", which it was called previously, but now that it also breaks
+	when resuming from a pausePoint(), this is more fitting. See:
+	42c21134f4e4e5eb158a42e452cf7536cd74b473
+
+2025-06-02  Attila Torok
+
+	* Update animations and call refreshDisplay after stopping the
+	simulation
+
+	When stopping the simulation (especially after running in "Fast" mode,
+	with rare display updates), the visualizations could stay lagged behind
+	(as they were at the time of the last display update), showing info
+	inconsistent with eg. the simulation time label. This should prevent that
+	from happening.
+
+2025-06-02  Attila Torok
+
+	* Add ElidingLabel for the status line labels
+
+	With larger (presentation-compatible) UI font sizes, these labels often
+	put a minimum width constraint on the main window, sometimes even forcing
+	it to be resized while a simulation was runnning, due to the changing
+	content in them. In extreme cases, this could even force the main window
+	to always be wider than the screen, breaking the "maximize"
+	functionality. Understandably, this was deemed undesirable. Now the
+	labels will only have a minimum width to contain the ellipsis ("..."). If
+	there isn't enough space to display the full text, it will be elided.
+
+2025-04-25  Levente Meszaros
+
+	* Added -Xev=<num> option. It causes Qtenv to run the simulation in Fast
+	mode until event #<num>. Note: -X options are experimental ones that may
+	come and go without notice.
+
+2025-05-25  Andras Varga
+
+	* Fix issue #1377 "Qtenv: wrong compound module position on entering a submodule"
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-05-09  Attila Torok

@@ -1,3 +1,7 @@
+2025-07-04  Andras Varga
+
+	* Fix: Refuse running an abstract configuration.
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-02-19  Levente Meszaros

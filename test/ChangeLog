@@ -1,3 +1,26 @@
+2025-06-19  Rudolf Hornig
+
+	* Fix two failing test cases on Windows: cModule_deleteModule_n2.test,
+	statistic_histogram_3.test (failed due to floating point print formats,
+	nan, inf).
+
+2025-06-19  Rudolf Hornig
+
+	* Fix failing cLog_4.test on macOS because of stack overflow
+
+2025-06-13  Andras Varga
+
+	* Fix msg_struct_pointer_1.test after rename
+
+2025-06-06  Zoltan Bojthe
+
+	* Added msg_struct_pointer_1.test to demonstrate fix for: 'MSGC: fix:
+	pointer in struct was generated compiler error in _m.cc'
+
+2025-05-29  TÖRÖK Attila
+
+	* makemake2: Update expected outputs
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-05-07  Andras Varga

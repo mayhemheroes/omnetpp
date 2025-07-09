@@ -1,3 +1,12 @@
+2025-06-16  Rudolf Hornig
+
+	* updated to match the current install.sh.
+
+	- added ArchLinux chapter
+	- heavily rewritten Windows chapter to include up-to-date WSL info
+	  and preferred opp_env.wsl install method
+	- updated package list on all Linux distros
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2024-10-08  ------ omnetpp-6.1.0 released ------

@@ -1,3 +1,13 @@
+2025-06-06  Zoltan Bojthe
+
+	* opp_msgtool: fix issue #1389 "wrong code generated for pointer fields in structs"
+
+	Here is the test MSG content for demonstrates this ERROR:
+
+	    struct Foo {
+	        cObject * payload;
+	    };
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-04-08  Andras Varga

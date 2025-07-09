@@ -1,3 +1,39 @@
+2025-07-08  Attila Torok
+
+	* Analysis Tool: Add unit conversion support for vector, histogram,
+	box-whiskers and bar charts. It is now possible to specify a measurement
+	unit (e.g. kB, Mbps, us) for axes. (Until now, the base unit was used unless
+	the user manually customized the chart.) If no unit is specified in the
+	dialog, the "best" unit is chosen automatically, based on the range of
+	the actual values displayed.
+
+2025-06-18  Rudolf Hornig
+
+	* Help: removed the WhatsNew page from the IDE internal help plugin.
+	It was redundant and had a different format than the main WHATSNEW file
+	so it had to be always updated by hand.
+
+2025-06-12  Rudolf Hornig
+
+	* Updated to Eclipse 2025-06
+
+2025-05-29  Andras Varga
+
+	* Analysis Tool: delta measurement label's font to follow plot "crosshair" font
+
+2025-05-28  Andras Varga
+
+	* Analysis Tool: crosshair font to follow axis title font
+
+2025-05-28  Attila Torok
+
+	* Analysis Tool: Remove disused CONFIDENCE_LEVEL and formatValue from PlotBase.
+	The confidence interval is now a configurable chart property.
+
+2025-05-28  Andras Varga
+
+	* Inifile Editor: added missing icon for abstract sections
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-05-19  Andras Varga

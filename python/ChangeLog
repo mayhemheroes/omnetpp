@@ -1,3 +1,40 @@
+2025-07-08  Attila Torok
+
+	* omnetpp.scave: Implemented unit conversion support for vector, histogram, bar
+	and box-whiskers charts. This affects the operation of plot_vectors() and
+	similar plot_*(), and postconfigure_plot() functions.
+
+2025-06-24  Attila Torok
+
+	* omnetpp.scave: Make result file loading order deterministic (sort list
+	before loading). This makes the order of rows in returned returned
+	dataframes deterministic.
+
+2025-07-03  Rudolf Hornig
+
+	* python/requirements.txt: changed to use `setuptools` on Windows and
+	`packaging` on all other platforms.
+
+2025-07-02  Rudolf Hornig
+
+	* Improved Python detection: bundle a python3-config script directly instead
+	of using the system package.
+
+2025-07-01  Rudolf Hornig
+
+	* omnetpp.scave: Rewritten dependency check - setuptools is soon
+	to be deprecated.
+
+2025-06-19  Rudolf Hornig
+
+	* opp_test: fixes for confused exit code handling on Windows for cases when
+	the test program calls abort(). (To opp_test, test program calling abort()
+	looked like the program could not be started at all).
+
+2025-06-19  Rudolf Hornig
+
+	* opp_test: added %stacksize directive (default stacksize is still 1MB)
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-04-17  Attila Torok

@@ -1,3 +1,14 @@
+2025-06-02  Rudolf Hornig
+
+	* IDE: Remove crash workaround used on Eclipse 24.03.
+	This bug caused a crash in webkit on Eclipse 24.03. We are now bundling
+	25.03 so this is no longer needed.
+
+2025-06-02  Rudolf Hornig
+
+	* IDE: The IDE now writes its error log into the XDG_STATE_HOME folder
+	($HOME/.local/state/omnetpp/ide-error.log) by default.
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-04-24  Andras Varga

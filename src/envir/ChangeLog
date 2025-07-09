@@ -1,3 +1,11 @@
+2025-04-25  Levente Meszaros
+
+	* Added -Xev=<num> experimental option. Causes Qtenv to run the simulation
+	in Fast mode until event #<num>.
+
+	Note: -X options are experimental ones that may come and go without
+	notice.
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-04-15  Levente Meszaros

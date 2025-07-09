@@ -1,3 +1,7 @@
+2025-06-19  Attila Torok
+
+	* python: Add Python bindings to more unit conversion functions
+
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 
 2025-05-05  Andras Varga
