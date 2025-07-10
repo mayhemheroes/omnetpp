@@ -6,7 +6,7 @@ simulation model compatibility, see doc/API-Changes. For more detailed info
 about all changes, see include/ChangeLog, src/*/ChangeLog, and ide/ChangeLog.
 
 
-OMNeT++ 6.2 (June 2025)
+OMNeT++ 6.2 (July 2025)
 -----------------------
 
 Highlights of this release are the use of the LLDB debugger inside the IDE, as well
@@ -183,7 +183,8 @@ Python REPL:
   - Added a Python REPL to the Terminal view. To open it, click the "Open
     Terminal" button in the view and select "OMNeT++ Python REPL". The REPL
     opens with the `omnetpp` libraries imported, and you can call
-    `read_result_files()`, `run_simulations()`, etc.
+    `read_result_files()`, `run_simulations()`, etc. You can use
+    `opp_python_repl` from the command line to start the Python REPL.
 
 NED editor:
 
@@ -237,6 +238,9 @@ Analysis Tool:
     at certain places, and making zooming and panning affect only the X axis
     on enum strips.
 
+  - Changed XYArray length and indices from int to size_t to allow handling
+    vectors with more than 2^31 elements (by @DieRauteEnte PR #1404)
+
 IDE Misc:
 
   - Project Features: Fix bug introduced in the previous release (version 6.1)
@@ -266,14 +270,21 @@ Python libraries:
 
   - `requirements.txt`: Accept NumPy 2.x as well as 1.x as dependency
 
-  - Added the `omnetpp.repl` package which starts an interactive IPython
-    interpreter with the `omnetpp` packages loaded.
+  - `requirements.txt`: Use `packaging` instead of `setuptools` to parse
+    version numbers because `setuptools` got deprecated.
+
+  - Added the `opp_python_repl` command and the `omnetpp.repl` package which
+    starts an interactive IPython interpreter with the `omnetpp` packages loaded.
 
   - Added the `omnetpp.test` package that contains the functionality of the
     `opp_test` tool. This allows using the test code both as a python library
     and as a standalone script.
 
   - `omnetpp.scave`: Change the default chart export DPI from 96 to 300.
+
+  - `omnetpp.scave`: Implemented unit conversion support for vector, histogram,
+    bar and box-whiskers charts. This affects the operation of plot_vectors() and
+    similar plot_*(), and postconfigure_plot() functions.
 
   - Many bug fixes in the `omnetpp.scave` library.
 
@@ -285,9 +296,23 @@ User Guide:
     to include all possible gestures in all the modes for both types of plots
     (native/matplotlib), and also mention the function of the X and Y keys.
 
+Install Guide:
+
+  - Installation indtructions got simplfied and updated.
+
+  - Added a new chapter for ArchLinux.
+
+  - Expanded Windows installation instructions to cover instructions for
+    installing in Windows Subsystem for Linux (WSL).
+
+  - Added instructions to use `opp_env` as the recommended installation method.
+
 Tests:
 
   - New tests
+
+  - opp_test: added %stacksize directive (default stacksize is still 1MB) to allow
+    configuring the stack size for activity based tests.
 
 Build:
 
