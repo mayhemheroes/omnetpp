@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     outputs:
-      # e.g.: "omnetpp-6.2.0pre1"
+      # e.g.: "omnetpp-6.2.0"
       omnetpp_version: ${{ steps.cat_version.outputs.omnetpp_version }}
 
     steps:
@@ -127,7 +127,7 @@ jobs:
           - { image: "ubuntu:latest", preinstall_cmd: "apt update" }
           - { image: "fedora:latest" }
           - { image: "archlinux:latest", preinstall_cmd: "pacman -Syy" }
-          - { image: "opensuse/tumbleweed:latest", preinstall_cmd: "zypper refresh" }
+          - { image: "opensuse/leap:15.4", preinstall_cmd: "zypper refresh" }
           - { image: "almalinux:9", install_opts: "--no-3d" }
           - { image: "debian:latest", preinstall_cmd: "apt update" }
 
