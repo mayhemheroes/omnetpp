@@ -1,5 +1,4 @@
 import math
-import matplotlib.pyplot as plt
 from omnetpp.scave import results, chart, utils
 
 
@@ -32,8 +31,6 @@ utils.sort_rows_by_legend(df, props)
 utils.plot_vectors_separate(df, props, sort=False)
 
 utils.postconfigure_plot(props)
-
-plt.subplots_adjust(left = 0.05, right = 0.99, top = 0.9, bottom = 0.1, wspace=0.1, hspace=0.1)
 
 utils.export_image_if_needed(props)
 utils.export_data_if_needed(df, props)
