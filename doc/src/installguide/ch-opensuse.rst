@@ -9,11 +9,7 @@ installation procedure is described in the *Linux* chapter.
 
 The following openSUSE release is supported:
 
--  openSUSE Tumbleweed
-
-.. note::
-
-   openSUSE Leap is generally not supported due to older Python versions.
+-  openSUSE Leap 15.4+
 
 It was tested on the following architectures:
 
@@ -27,7 +23,7 @@ First, install the core development tools and libraries:
 .. code::
 
    $ sudo zypper install -y make ccache clang lld lldb gdb bison gawk flex perl \
-       python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz \
+       python311-devel python311-pip libxml2-devel zlib-devel doxygen graphviz \
        xdg-utils libdw-devel
 
 Next, install packages for the graphical environment (Qtenv and IDE). If you do not need GUI support (e.g., for a server installation), you can skip this step and later configure |omnet++| with ``WITH_QTENV=no`` and ``WITH_OSG=no``.
@@ -52,14 +48,14 @@ Next, set up a Python virtual environment for |omnet++|. In the root directory o
 
 .. code::
 
-   $ python3 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
+   $ python311 -m venv .venv --upgrade-deps --clear --prompt "omnetpp/.venv"
    $ source .venv/bin/activate
 
 Then, install the required Python packages into the virtual environment:
 
 .. code::
 
-   $ python3 -m pip install -r python/requirements.txt
+   $ python311 -m pip install -r python/requirements.txt
 
 .. note::
 
