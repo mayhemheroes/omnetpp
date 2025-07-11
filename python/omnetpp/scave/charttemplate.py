@@ -73,7 +73,10 @@ def get_chart_template_locations():
     """
     omnetpp_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.."))
     src_dir = os.path.join(omnetpp_root, "ui/org.omnetpp.scave.templates/charttemplates")
-    install_dir = os.path.join(omnetpp_root, "ide/plugins/org.omnetpp.scave.templates_*/charttemplates")
+    if sys.platform == "darwin":
+        install_dir = os.path.join(omnetpp_root, "ide/opp_ide.app/Contents/Eclipse/plugins/org.omnetpp.scave.templates_*/charttemplates")
+    else:
+        install_dir = os.path.join(omnetpp_root, "ide/plugins/org.omnetpp.scave.templates_*/charttemplates")
     dirs = glob.glob(src_dir) + glob.glob(install_dir)
     return dirs
 
