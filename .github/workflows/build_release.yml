@@ -127,8 +127,8 @@ jobs:
           - { image: "ubuntu:latest", preinstall_cmd: "apt update" }
           - { image: "fedora:latest" }
           - { image: "archlinux:latest", preinstall_cmd: "pacman -Syy" }
-          - { image: "opensuse/leap:15.4", preinstall_cmd: "zypper refresh" }
-          - { image: "almalinux:9", install_opts: "--no-3d" }
+          - { image: "opensuse/leap:latest", preinstall_cmd: "zypper refresh && zypper install -y tar gzip" }
+          - { image: "almalinux:latest", install_opts: "--no-3d" }
           - { image: "debian:latest", preinstall_cmd: "apt update" }
 
     steps:
@@ -144,10 +144,10 @@ jobs:
           options: -v ${{ github.workspace }}:/omnetpp
           shell: bash
           run: |
+            ${{ matrix.preinstall_cmd }}
             cd /omnetpp
             tar -xf *linux-x86_64.tgz
             cd ${{ needs.build_ide.outputs.omnetpp_version }}
-            ${{ matrix.preinstall_cmd }}
             ./install.sh -y ${{ matrix.install_opts }}
             source setenv
             cd samples/aloha
