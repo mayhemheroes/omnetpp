@@ -1,4 +1,9 @@
-2025-07-10  ------ omnetpp-6.2.0 released ------
+2025-07-14  ------ omnetpp-6.2.0 released ------
+
+2025-07-10  Rudolf Hornig
+
+	* Updated test/fingerprints because log() and sin() are slightly
+	differently implemented on macOS/aarch64.
 
 2025-06-19  Rudolf Hornig
 

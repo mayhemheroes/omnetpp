@@ -1,4 +1,9 @@
-2025-07-10  ------ omnetpp-6.2.0 released ------
+2025-07-14  ------ omnetpp-6.2.0 released ------
+
+2025-07-06  Pascal [pull request #1404]
+
+	* Change XYArray length and indices from int to size_t, to allow handling
+	vectors with more than 2^31 elements.
 
 2025-06-19  Attila Torok
 

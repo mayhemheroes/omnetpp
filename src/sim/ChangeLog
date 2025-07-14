@@ -1,4 +1,13 @@
-2025-07-10  ------ omnetpp-6.2.0 released ------
+2025-07-14  ------ omnetpp-6.2.0 released ------
+
+2025-07-09  Andras Varga
+
+	* cComponent: emit(): refine error message for undeclared signals.
+
+	Include NED type name in the error message. This is important because a
+	module might call emit() on *another* module, and the error message
+	previously only contained the context module, and not the one on which
+	the emit() was called.
 
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------
 

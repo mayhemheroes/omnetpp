@@ -1,4 +1,18 @@
-2025-07-10  ------ omnetpp-6.2.0 released ------
+2025-07-14  ------ omnetpp-6.2.0 released ------
+
+2025-07-14  Rudolf Hornig
+
+	* python/requirements.txt: Accept earlier versions of the `packaging` module too,
+	to allow direct installation on nixOS 25.05.
+
+2025-07-11  Rudolf Hornig
+
+	* lldb formatter: fixed some errors because of NoneTypes.
+
+2025-07-11  Rudolf Hornig
+
+	* omnetpp.scave: fixed get_chart_template_location() not working on macOS.
+	Cause: The IDE plugin folder is at a different location on macOS.
 
 2025-07-08  Attila Torok
 
