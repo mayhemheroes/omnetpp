@@ -1169,11 +1169,27 @@ def plot_boxwhiskers(df, props, legend_func=make_legend_label, sort=True):
     - `cycle_seed`: Alters the sequence in which colors and markers are assigned to series.
     - `unit`: If present, it is required to be the same for all series and will be used in the automatic y-axis label.
     """
-    unit = _check_same_unit(df)
+    y_unit = _check_same_unit(df)
     title_cols, legend_cols = extract_label_columns(df, props)
+
+    def get_prop(k):
+        return props[k] if k in props else None
 
     if sort:
         df.sort_values(by=legend_cols, axis='index', inplace=True)
+
+    # Y unit
+    target_y_unit = get_prop("yaxis_unit")
+    if target_y_unit is None:
+        target_y_unit = y_unit
+    elif target_y_unit == "" and y_unit:
+        target_y_unit = _get_best_unit(df["mean"], y_unit)
+    if y_unit != target_y_unit and y_unit:
+        df["min"] = _convert_to_unit(df["min"], y_unit, target_y_unit)
+        df["mean"] = _convert_to_unit(df["mean"], y_unit, target_y_unit)
+        df["stddev"] = _convert_to_unit(df["stddev"], y_unit, target_y_unit)
+        df["max"] = _convert_to_unit(df["max"], y_unit, target_y_unit)
+        y_unit = target_y_unit
 
     # This is how much of the standard deviation will give the 25th and 75th
     # percentiles, assuming normal distribution.
@@ -1190,8 +1206,13 @@ def plot_boxwhiskers(df, props, legend_func=make_legend_label, sort=True):
         title = props["title"]
     set_plot_title(title)
 
-    _set_ylabel(plt, props, unit, "")
-    _set_ylimits(plt, props, unit)
+    if "yaxis_unit" in props:
+        _set_ylabel(plt, props, y_unit, "")
+        _set_ylimits(plt, props, y_unit)
+    else:
+        # backward compatibility for old charts that don't have the xaxis_unit property yet
+        if y_unit is not None:
+            plt.ylabel(f"[{y_unit}]")
 
 
 # source: https://stackoverflow.com/a/39789718/635587
@@ -1238,9 +1259,12 @@ def customized_box_plot(percentiles, labels=None, axes=None, redraw=True, *args,
 
     for box_no, pdata in enumerate(percentiles):
         color = next(_color_cycle)
-        box_plot = axes.boxplot([-9, -4, 2, 4, 9], positions=[box_no], widths=[0.5],
-            showmeans=True, meanprops=dict(marker='+', markeredgecolor=mpl.rcParams["axes.facecolor"]),
-            boxprops=dict(facecolor=color), whiskerprops=dict(zorder=5, linewidth=1, solid_capstyle="butt"), capprops=dict(zorder=6, linewidth=2, color=color, solid_capstyle="butt"),
+        box_plot = axes.boxplot([-9, -4, 2, 4, 9], positions=[box_no], widths=[0.5], showmeans=True,
+            meanprops=dict(marker='+', markeredgecolor=mpl.rcParams["axes.facecolor"]),
+            medianprops=dict(linestyle=None, linewidth=0), # hide the median line
+            boxprops=dict(facecolor=color),
+            whiskerprops=dict(zorder=5, linewidth=1, solid_capstyle="butt"),
+            capprops=dict(zorder=6, linewidth=2, color=color, solid_capstyle="butt"),
             patch_artist=True, *args, **kwargs)
 
         if labels is not None:
