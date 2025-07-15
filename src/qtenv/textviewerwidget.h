@@ -85,6 +85,7 @@ protected:
     QColor selectionForegroundColor;
     int toolbarSpacing = 4;
     int horizontalMargin = 6;
+    std::vector<QColor> terminalPalette;
     int baseline, lineSpacing, averageCharWidth; // measured from font
     bool isMonospaceFont;
     int getTopLineIndex() { return verticalScrollOffset / lineSpacing; }
@@ -156,6 +157,8 @@ protected:
 
     int paintText(const QString& text, QPainter& painter, const QFontMetrics& metrics, int x, int y, const QColor& fgColor, const QColor& bgColor, const QFont& font);
     void drawLine(QPainter &painter, int lineIndex, int x, int y, bool asSelected);
+    void readColor(const char *&textPointer, QColor& color);
+    void performSgrControlSequence(const char *&textPointer, const QFont &defaultFont, QColor &fgColor, QColor &bgColor, QFont &font, bool &faint);
 
 
     /**

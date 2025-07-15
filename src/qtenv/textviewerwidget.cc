@@ -32,25 +32,31 @@
 namespace omnetpp {
 namespace qtenv {
 
-/*
-// custom generated:
-static std::vector<QColor> terminalPalette = {
-    // dark palette, 30-37 for FG, 40-47 for BG
-    "#000000", "#730909", "#097309", "#737309", "#090973", "#730973", "#097373", "#bfbfbf",
-    // bright palette, 90-97 for FG, 100-107 for BG
-    "#404040", "#f47272", "#72f472", "#f4f472", "#7272f4", "#f472f4", "#72f4f4", "#ffffff"
-};
-*/
-
-
-// VGA:
-static std::vector<QColor> terminalPalette = {
+// VGA palette for light backgrounds:
+static std::vector<QColor> lightThemeTerminalPalette = {
     // dark palette, 30-37 for FG, 40-47 for BG
     "#000000", "#AA0000", "#00AA00", "#AA5500", "#0000AA", "#AA00AA", "#00AAAA", "#AAAAAA",
     // bright palette, 90-97 for FG, 100-107 for BG
     "#555555", "#FF5555", "#55FF55", "#FFFF55", "#5555FF", "#FF55FF", "#55FFFF", "#FFFFFF"
 };
 
+/*
+// Breeze for dark background mode (with dark/bright and black/white swapped)
+static std::vector<QColor> darkThemeTerminalPalette = {
+    // bright palette, 90-97 for FG, 100-107 for BG
+    "#FFFFFF", "#FF5555", "#55FF55", "#FFFF55", "#5555FF", "#FF55FF", "#55FFFF", "#555555",
+    // dark palette, 30-37 for FG, 40-47 for BG
+    "#AAAAAA", "#AA0000", "#00AA00", "#AA5500", "#0000AA", "#AA00AA", "#00AAAA", "#000000",
+};
+*/
+
+// Optimized palette for dark backgrounds:
+static std::vector<QColor> darkThemeTerminalPalette = {
+    // dark palette, 30-37 for FG, 40-47 for BG - made brighter for dark backgrounds
+    "#808080", "#FF6B6B", "#4ECDC4", "#FFE66D", "#74B9FF", "#FD79A8", "#00CEC9", "#DDD6FE",
+    // bright palette, 90-97 for FG, 100-107 for BG - kept bright but adjusted for better contrast
+    "#A0A0A0", "#FF7675", "#00B894", "#FDCB6E", "#6C5CE7", "#E84393", "#00CEC9", "#FFFFFF"
+};
 
 TextViewerWidget::TextViewerWidget(QWidget *parent)
     : QAbstractScrollArea(parent)
@@ -60,6 +66,10 @@ TextViewerWidget::TextViewerWidget(QWidget *parent)
 
     selectionBackgroundColor = parent->palette().color(QPalette::Active, QPalette::Highlight);
     selectionForegroundColor = parent->palette().color(QPalette::Active, QPalette::HighlightedText);
+
+    // Initialize terminal palette based on current theme
+    bool isDarkTheme = QApplication::palette().window().color().lightnessF() < 0.6;
+    terminalPalette = isDarkTheme ? darkThemeTerminalPalette : lightThemeTerminalPalette;
     setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(scrolledHorizontally(int)));
@@ -977,7 +987,7 @@ static int readInt(const char *&textPointer)
     return result;
 }
 
-static void readColor(const char *&textPointer, QColor& color)
+void TextViewerWidget::readColor(const char *&textPointer, QColor& color)
 {
     int format = readInt(textPointer);
 
@@ -1017,7 +1027,7 @@ static void readColor(const char *&textPointer, QColor& color)
     }
 }
 
-static void performSgrControlSequence(const char *&textPointer, const QFont &defaultFont, QColor &fgColor, QColor &bgColor, QFont &font, bool &faint)
+void TextViewerWidget::performSgrControlSequence(const char *&textPointer, const QFont &defaultFont, QColor &fgColor, QColor &bgColor, QFont &font, bool &faint)
 {
     // "\x1b[m"
     // "\x1b[34m"
