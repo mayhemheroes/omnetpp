@@ -35,6 +35,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QCheckBox>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QImageReader>
 #include <QtCore/QThread>
 #include <QtCore/QEventLoop>
 #include <QtGui/QPainter>
@@ -626,6 +627,9 @@ void Qtenv::doRun()
     // set signal handler
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
+
+    if (!QImageReader::supportedImageFormats().contains("svg"))
+        std::cerr << "Warning: SVG image format support for Qt (the `qsvg` plugin) is not present, toolbar icons can't be displayed." << std::endl;
 
     icons.setVerbose(opt->verbose);
     icons.loadImages(opt->imagePath.c_str());
