@@ -22,6 +22,7 @@
 #include "inspectorutil.h"
 
 #include <QtCore/QDebug>
+#include <QtWidgets/QStyleFactory>
 
 namespace omnetpp {
 namespace qtenv {
@@ -56,6 +57,22 @@ void PreferencesDialog::init()
     // XXX This conversion is fragile, it depends on the order of
     // both the enum values, and the items in the checkbox.
     ui->hideNameSpace->setCurrentIndex(getQtenv()->opt->stripNamespace);
+
+    // Style selection
+    ui->styleComboBox->addItem("(default)", "");
+    for (const QString &style : QStyleFactory::keys()) {
+        if (style.toLower() == "fusion") // Fusion is the default style, so we add it first
+            ui->styleComboBox->insertItem(1, style, style);
+        else
+            ui->styleComboBox->addItem(style, style);
+    }
+
+    QString currentStyle = getQtenv()->getPref("application-style", "").toString();
+    int styleIndex = ui->styleComboBox->findData(currentStyle);
+    if (styleIndex != -1)
+        ui->styleComboBox->setCurrentIndex(styleIndex);
+    else
+        ui->styleComboBox->setCurrentIndex(0); // default to "(default)"
 
     // Logs tab
     ui->initBanners->setChecked(getQtenv()->opt->printInitBanners);
@@ -198,6 +215,16 @@ void PreferencesDialog::accept()
 
     // TODO: this conversion is fragile, it depends on the order of the enum which might change
     getQtenv()->opt->stripNamespace = StripNamespace(ui->hideNameSpace->currentIndex());
+
+    // Style selection - check if changed to show restart message
+    QString savedStyle = getQtenv()->getPref("application-style", "").toString();
+    QString selectedStyle = ui->styleComboBox->currentData().toString();
+    bool themeChanged = (savedStyle != selectedStyle);
+    getQtenv()->setPref("application-style", selectedStyle);
+
+    if (themeChanged)
+        getQtenv()->confirm(Qtenv::INFO, "Style change will take effect after restarting the application.");
+
     getQtenv()->setPref("layout-may-change-zoom", ui->allowZoom->isChecked());
     getQtenv()->setPref("timeline-wantselfmsgs", ui->selfMsg->isChecked());
     getQtenv()->setPref("timeline-wantnonselfmsgs", ui->nonSelfMsg->isChecked());

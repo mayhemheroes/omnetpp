@@ -30,6 +30,7 @@
 #include <QtWidgets/QTreeView>
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
+#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QDialogButtonBox>
@@ -142,6 +143,7 @@ Register_PerRunConfigOption(CFGID_QTENV_IDENTICON_SEED, "qtenv-identicon-seed", 
 class QtenvProxyStyle : public QProxyStyle
 {
   public:
+    using QProxyStyle::QProxyStyle;
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap, const QStyleOption *opt) const override {
         // Override the disabled tool icon pixmap generator to make it simpler; dividing its alpha channel by 4 to
         // (hopefully) make it blend into the background better. Alternatively, we could keep the alpha as is, and
@@ -646,6 +648,21 @@ void Qtenv::doRun()
 
     app = new QApplication(argc, argv);
 
+    globalPrefs = new QSettings(QDir::homePath() + "/.qtenvrc", QSettings::IniFormat);
+    checkQSettingsStatus(globalPrefs);
+    localPrefs = new QSettings(".qtenvrc", QSettings::IniFormat);
+    checkQSettingsStatus(localPrefs);
+
+    // Apply saved style preference before setting up the UI
+    QStyle *baseStyle = nullptr; // use system default
+    QString stylePref = getPref("application-style", "").toString();
+    if (!stylePref.isEmpty()) {
+        baseStyle = QStyleFactory::create(stylePref);
+        if (!baseStyle)
+            std::cerr << "Warning: The requested application style '" << stylePref.toStdString() << "' is not available. Falling back to the default style." << std::endl;
+    }
+    app->setStyle(new QtenvProxyStyle(baseStyle));
+
     // our icon color levels are #40 and #F0, halfway between those is 152, which is close to 0.6 * 255
     if (app->palette().window().color().lightnessF() < 0.6)
         selectDarkThemeIcons();
@@ -657,16 +674,9 @@ void Qtenv::doRun()
     QFontDatabase::addApplicationFont(":/fonts/FiraCode-Regular");
     QFontDatabase::addApplicationFont(":/fonts/FiraCode-Bold");
 
-    app->setStyle(new QtenvProxyStyle());
-
     pauseEventLoop = new QEventLoop(app);
 
     messageAnimator = new MessageAnimator(&logBuffer);
-
-    globalPrefs = new QSettings(QDir::homePath() + "/.qtenvrc", QSettings::IniFormat);
-    checkQSettingsStatus(globalPrefs);
-    localPrefs = new QSettings(".qtenvrc", QSettings::IniFormat);
-    checkQSettingsStatus(localPrefs);
 
     restoreOptsFromPrefs();
     setLogLevel(opt->logLevel); // we have to tell cLog the level we want
