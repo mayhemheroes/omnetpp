@@ -74,6 +74,9 @@ void PreferencesDialog::init()
     else
         ui->styleComboBox->setCurrentIndex(0); // default to "(default)"
 
+    // Reset palette checkbox
+    ui->resetPaletteCheckBox->setChecked(getQtenv()->getPref("application-reset-palette", false).toBool());
+
     // Logs tab
     ui->initBanners->setChecked(getQtenv()->opt->printInitBanners);
     ui->eventBanners->setChecked(getQtenv()->opt->printEventBanners);
@@ -222,7 +225,13 @@ void PreferencesDialog::accept()
     bool themeChanged = (savedStyle != selectedStyle);
     getQtenv()->setPref("application-style", selectedStyle);
 
-    if (themeChanged)
+    // Reset palette selection - check if changed to show restart message
+    bool savedResetPalette = getQtenv()->getPref("application-reset-palette", false).toBool();
+    bool selectedResetPalette = ui->resetPaletteCheckBox->isChecked();
+    bool resetPaletteChanged = (savedResetPalette != selectedResetPalette);
+    getQtenv()->setPref("application-reset-palette", selectedResetPalette);
+
+    if (themeChanged || resetPaletteChanged)
         getQtenv()->confirm(Qtenv::INFO, "Style change will take effect after restarting the application.");
 
     getQtenv()->setPref("layout-may-change-zoom", ui->allowZoom->isChecked());

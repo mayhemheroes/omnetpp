@@ -37,6 +37,7 @@
 #include <QtWidgets/QCheckBox>
 #include <QtGui/QFontDatabase>
 #include <QtGui/QImageReader>
+#include <QtGui/QStyleHints>
 #include <QtCore/QThread>
 #include <QtCore/QEventLoop>
 #include <QtGui/QPainter>
@@ -646,6 +647,12 @@ void Qtenv::doRun()
     static char arg[] = { 'Q', 't', 'e', 'n', 'v', '\0' };
     static char *argv[] = { arg, nullptr };
 
+    // It's important to save this before QApplicaton is created, because later
+    // the ones set by the system will override the factory defaults.
+    QStyle *fusionStyle = QStyleFactory::create("fusion");
+    QPalette defaultFusionPalette = fusionStyle->standardPalette();
+    delete fusionStyle;
+
     app = new QApplication(argc, argv);
 
     globalPrefs = new QSettings(QDir::homePath() + "/.qtenvrc", QSettings::IniFormat);
@@ -657,11 +664,17 @@ void Qtenv::doRun()
     QStyle *baseStyle = nullptr; // use system default
     QString stylePref = getPref("application-style", "").toString();
     if (!stylePref.isEmpty()) {
+        // QApplication::setStyle docs state that it's recommended to call it
+        // before the QApplication instance is created, but some styles (e.g.
+        // Breeze, Kvantum) crash when created before the QApplication instance.
         baseStyle = QStyleFactory::create(stylePref);
         if (!baseStyle)
             std::cerr << "Warning: The requested application style '" << stylePref.toStdString() << "' is not available. Falling back to the default style." << std::endl;
     }
     app->setStyle(new QtenvProxyStyle(baseStyle));
+
+    if (getPref("application-reset-palette", false).toBool())
+        app->setPalette(defaultFusionPalette);
 
     // our icon color levels are #40 and #F0, halfway between those is 152, which is close to 0.6 * 255
     if (app->palette().window().color().lightnessF() < 0.6)

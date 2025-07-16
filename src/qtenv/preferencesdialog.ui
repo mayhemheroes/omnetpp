@@ -64,6 +64,13 @@
             </item>
            </layout>
           </item>
+          <item>
+           <widget class="QCheckBox" name="resetPaletteCheckBox">
+            <property name="text">
+             <string>Use the Fusion default color palette</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
