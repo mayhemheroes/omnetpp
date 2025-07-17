@@ -126,11 +126,6 @@ ModuleCanvasViewer::ModuleCanvasViewer()
     overlayLayout->addWidget(zoomLabel, 1, 0, Qt::AlignRight | Qt::AlignBottom);
 
     rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
-
-#ifdef Q_WS_MAC
-    // the zoom label was not correctly drawn without this
-    setViewportUpdateMode(FullViewportUpdate);
-#endif
 }
 
 ModuleCanvasViewer::~ModuleCanvasViewer()

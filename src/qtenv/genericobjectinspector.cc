@@ -99,7 +99,6 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     if (!isTopLevel) {
         // aligning right
         QWidget *spacer = new QWidget();
-        spacer->setAutoFillBackground(true);
         spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         toolbar->addWidget(spacer);
     }
