@@ -560,26 +560,28 @@ void LogInspector::onRightClicked(QPoint globalPos, int lineIndex, int column)
         groupDigitsAction->setChecked(getQtenv()->opt->messageLogDigitGrouping);
 
         menu->addSeparator();
-        menu->addAction(QIcon(":/tools/label"), "Set Sending Time as &Reference", [msg, this]() {
-            if (EventEntryMessageLinesProvider::getReferenceTime() != msg->getSendingTime()) {
-                EventEntryMessageLinesProvider::setReferenceTime(msg->getSendingTime());
-                Q_EMIT globalMessageFormatChanged();
-            }
-        });
-
-        SimTime refTime = EventEntryMessageLinesProvider::getReferenceTime();
-        if (refTime > 0) {
-            std::string refTimeStr = refTime.format(SimTime::getScaleExp(), ".", "'");
-            refTimeStr = stripSuffixes(refTimeStr, "'000");
-            menu->addAction(QIcon(":/tools/label_off"), "Clear Time Reference (=" + QString::fromStdString(refTimeStr) + ")", [this]() {
-                if (EventEntryMessageLinesProvider::getReferenceTime() != 0) {
-                    EventEntryMessageLinesProvider::setReferenceTime(0);
+        if (msg) {
+            menu->addAction(QIcon(":/tools/label"), "Set Sending Time as &Reference", [msg, this]() {
+                if (EventEntryMessageLinesProvider::getReferenceTime() != msg->getSendingTime()) {
+                    EventEntryMessageLinesProvider::setReferenceTime(msg->getSendingTime());
                     Q_EMIT globalMessageFormatChanged();
                 }
             });
-        }
 
-        menu->addSeparator();
+            SimTime refTime = EventEntryMessageLinesProvider::getReferenceTime();
+            if (refTime > 0) {
+                std::string refTimeStr = refTime.format(SimTime::getScaleExp(), ".", "'");
+                refTimeStr = stripSuffixes(refTimeStr, "'000");
+                menu->addAction(QIcon(":/tools/label_off"), "Clear Time Reference (=" + QString::fromStdString(refTimeStr) + ")", [this]() {
+                    if (EventEntryMessageLinesProvider::getReferenceTime() != 0) {
+                        EventEntryMessageLinesProvider::setReferenceTime(0);
+                        Q_EMIT globalMessageFormatChanged();
+                    }
+                });
+            }
+
+            menu->addSeparator();
+        }
     }
 
     menu->addAction(goToSimTimeAction);
