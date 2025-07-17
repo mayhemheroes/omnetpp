@@ -47,6 +47,24 @@ struct FigureRenderingHints;
 class CanvasRenderer;
 
 /**
+ * Helper class that turns show/hide events on a QWidget into signal emissions.
+ * Used to avoid having to switch the scrollbars to a QScrollBar subclass with
+ * method overrides. There are only these two ways to get notified about when
+ * they are shown or hidden, and the layout has to be adjusted when that happens.
+ */
+class QTENV_API VisibilityWatcher : public QObject {
+    Q_OBJECT
+public:
+    using QObject::QObject;
+
+Q_SIGNALS:
+    void visibilityChanged();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+};
+
+/**
  * Viewer for displaying network modules and their connections in a canvas.
  * Supports zooming, panning, selection, and various visualization options.
  */

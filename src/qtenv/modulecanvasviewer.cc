@@ -57,6 +57,14 @@ using namespace omnetpp::layout;
 namespace omnetpp {
 namespace qtenv {
 
+bool VisibilityWatcher::eventFilter(QObject *obj, QEvent *event)
+{
+    bool result = QObject::eventFilter(obj, event);
+    if (event->type() == QEvent::Show || event->type() == QEvent::Hide)
+        Q_EMIT visibilityChanged();
+    return result;
+}
+
 ModuleCanvasViewer::ModuleCanvasViewer()
 {
     setFont(getQtenv()->getCanvasFont());
@@ -106,15 +114,20 @@ ModuleCanvasViewer::ModuleCanvasViewer()
 
     QGridLayout *overlayLayout = new QGridLayout(this);
 
-    // This has to be delayed until after the widget got shown/layouted/polished,
-    // because before that, the scollbar sizes are not known yet.
-    QTimer::singleShot(0, this, [this, overlayLayout]() {
-        const int toolbarSpacing = 4; // from the edges, in pixels, the scrollbar size will be added to this
+    VisibilityWatcher *watcher = new VisibilityWatcher(this);
+    connect(watcher, &VisibilityWatcher::visibilityChanged, [this, overlayLayout]() {
+        // While the scrollbars may not ever be dynamically shown/hidden,
+        // their sizes are reported incorrectly before they are first shown,
+        // so we have to adjust the margins only after they become visible.
+        const int toolbarSpacing = 4; // from the edges, in pixels
         overlayLayout->setContentsMargins(
                 toolbarSpacing, toolbarSpacing,
                 verticalScrollBar()->width() + toolbarSpacing,
                 horizontalScrollBar()->height() + toolbarSpacing);
     });
+
+    horizontalScrollBar()->installEventFilter(watcher);
+    verticalScrollBar()->installEventFilter(watcher);
 
     zoomLabel = new QLabel(this);
     zoomLabel->setAutoFillBackground(true);
