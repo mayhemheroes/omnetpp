@@ -128,12 +128,6 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
 
     if (isTopLevel) {
         addTopLevelToolBarActions(toolbar);
-
-        // this is to fill the remaining space on the toolbar, replacing the ugly default gradient on Mac
-        QWidget *stretch = new QWidget(toolbar);
-        stretch->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        stretch->setAutoFillBackground(true);
-        toolbar->addWidget(stretch);
     }
     else {
         goBackAction = toolbar->addAction(QIcon(":/tools/back"), "Back", this, SLOT(goBack()));

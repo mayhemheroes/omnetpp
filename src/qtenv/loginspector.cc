@@ -263,12 +263,6 @@ QToolBar *LogInspector::createToolbar(bool isTopLevel)
         fastRunUntilAction->setShortcut((int)Qt::CTRL | Qt::Key_F4);
 
         toolBar->addAction(getQtenv()->getMainWindow()->getStopAction());
-
-        // this is to fill the remaining space on the toolbar, replacing the ugly default gradient on Mac
-        QWidget *stretch = new QWidget(toolBar);
-        stretch->setAutoFillBackground(true);
-        stretch->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        toolBar->addWidget(stretch);
     }
     else {
         addOwnActions(toolBar);
