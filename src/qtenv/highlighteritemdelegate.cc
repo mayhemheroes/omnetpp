@@ -77,7 +77,7 @@ void HighlighterItemDelegate::paint(QPainter *painter, const QStyleOptionViewIte
         HighlightRange range = index.data(Qt::UserRole).value<HighlightRange>();
         f.start = range.start;
         f.length = range.length;
-        f.format.setForeground(option.palette.brush(group, QPalette::Link));
+        f.format.setForeground(QColor("#1a8ee2"));
         formats.append(f);
     }
 
