@@ -51,7 +51,8 @@ OBJS_STD=\
     $O/errmsg.o $O/globals.o $O/cregistrationlist.o $O/minixpath.o $O/onstartup.o $O/opp_pooledstring.o \
     $O/simtime.o $O/simtimemath.o $O/task.o $O/util.o $O/gettime.o $O/nedsupport.o $O/sim_std_m.o \
     $O/cstatisticbuilder.o $O/statisticsourceparser.o $O/statisticrecorderparser.o $O/stringutil.o \
-    $O/resultfilters.o $O/resultrecorders.o $O/expressionfilter.o $O/ccommbuffer.o $O/cparsimcomm.o
+    $O/resultfilters.o $O/resultrecorders.o $O/expressionfilter.o $O/ccommbuffer.o $O/cparsimcomm.o \
+    $O/ccommbufferbase.o $O/cmemcommbuffer.o $O/cfilecommbuffer.o 
 
 OBJS_NETBUILDER=\
     $O/netbuilder/cneddeclaration.o \
@@ -61,13 +62,11 @@ OBJS_NETBUILDER=\
     $O/netbuilder/cnednetworkbuilder.o
 
 OBJS_PARSIM=\
-    $O/parsim/cmemcommbuffer.o \
     $O/parsim/cparsimpartition.o $O/parsim/cplaceholdermod.o $O/parsim/cproxygate.o \
     $O/parsim/cparsimsynchr.o $O/parsim/cparsimprotocolbase.o $O/parsim/cnosynchronization.o \
     $O/parsim/cnullmessageprot.o $O/parsim/clinkdelaylookahead.o \
-    $O/parsim/cidealsimulationprot.o $O/parsim/cispeventlogger.o \
-    $O/parsim/ccommbufferbase.o $O/parsim/cfilecomm.o \
-    $O/parsim/cfilecommbuffer.o $O/parsim/cnamedpipecomm-win.o $O/parsim/cnamedpipecomm.o $O/parsim/parsimutil.o \
+    $O/parsim/cidealsimulationprot.o $O/parsim/cispeventlogger.o $O/parsim/cfilecomm.o \
+    $O/parsim/cnamedpipecomm-win.o $O/parsim/cnamedpipecomm.o $O/parsim/parsimutil.o \
     $O/parsim/creceivedexception.o $O/parsim/cmpicomm.o $O/parsim/cmpicommbuffer.o
 
 OBJS= $(OBJS_STD)

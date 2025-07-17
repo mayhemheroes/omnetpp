@@ -32,7 +32,7 @@
 #include "omnetpp/csimulation.h"
 #include "omnetpp/cconfiguration.h"
 #include "omnetpp/cconfigoption.h"
-#include "cmemcommbuffer.h"
+#include "omnetpp/cmemcommbuffer.h"
 #include "parsimutil.h"
 
 namespace omnetpp {

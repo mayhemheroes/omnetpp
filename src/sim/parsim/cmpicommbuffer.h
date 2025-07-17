@@ -21,7 +21,7 @@
 #ifndef __OMNETPP_CMPICOMMBUFFER_H
 #define __OMNETPP_CMPICOMMBUFFER_H
 
-#include "ccommbufferbase.h"
+#include "omnetpp/ccommbufferbase.h"
 
 namespace omnetpp {
 

@@ -20,7 +20,7 @@
 #include "omnetpp/globals.h"
 #include "omnetpp/regmacros.h"
 #include "omnetpp/opp_string.h"
-#include "cmemcommbuffer.h"
+#include "omnetpp/cmemcommbuffer.h"
 
 namespace omnetpp {
 

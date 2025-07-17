@@ -31,8 +31,8 @@
 #include "omnetpp/clog.h"
 #include "omnetpp/stringutil.h"
 #include "omnetpp/platdep/platmisc.h"
+#include "omnetpp/cfilecommbuffer.h"
 #include "cfilecomm.h"
-#include "cfilecommbuffer.h"
 #include "parsimutil.h"
 
 using namespace omnetpp::common;

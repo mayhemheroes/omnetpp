@@ -15,7 +15,7 @@
 *--------------------------------------------------------------*/
 
 #include "omnetpp/cexception.h"
-#include "ccommbufferbase.h"
+#include "omnetpp/ccommbufferbase.h"
 
 namespace omnetpp {
 

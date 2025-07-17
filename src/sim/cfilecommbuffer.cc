@@ -23,7 +23,7 @@
 #include "omnetpp/cownedobject.h"
 #include "omnetpp/globals.h"
 #include "omnetpp/regmacros.h"
-#include "cfilecommbuffer.h"
+#include "omnetpp/cfilecommbuffer.h"
 
 namespace omnetpp {
 
