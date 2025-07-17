@@ -18,10 +18,7 @@
 #include "omnetpp/cpacket.h"
 #include "omnetpp/csimplemodule.h"
 #include "omnetpp/platdep/platmisc.h"  // PRId64
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace omnetpp;
 
@@ -93,9 +90,6 @@ void cPacket::forEachChild(cVisitor *v)
 
 void cPacket::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cMessage::parsimPack(buffer);
     buffer->pack(bitLength);
     buffer->pack(duration);
@@ -103,14 +97,10 @@ void cPacket::parsimPack(cCommBuffer *buffer) const
         buffer->packObject(encapsulatedPacket);
     buffer->pack(transmissionId);
     buffer->pack(remainingDuration);
-#endif
 }
 
 void cPacket::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     ASSERT(shareCount == 0);
     cMessage::parsimUnpack(buffer);
     buffer->unpack(bitLength);
@@ -119,7 +109,6 @@ void cPacket::parsimUnpack(cCommBuffer *buffer)
         take(encapsulatedPacket = (cPacket *)buffer->unpackObject());
     buffer->unpack(transmissionId);
     buffer->unpack(remainingDuration);
-#endif
 }
 
 cPacket& cPacket::operator=(const cPacket& msg)

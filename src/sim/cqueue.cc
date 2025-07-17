@@ -23,10 +23,7 @@
 #include "omnetpp/globals.h"
 #include "omnetpp/cqueue.h"
 #include "omnetpp/cexception.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -82,9 +79,6 @@ void cQueue::forEachChild(cVisitor *v)
 
 void cQueue::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimPack(buffer);
 
     if (comparator)
@@ -98,14 +92,10 @@ void cQueue::parsimPack(cCommBuffer *buffer) const
             throw cRuntimeError(this, "parsimPack(): Refusing to transmit an object not owned by the queue");
         buffer->packObject(obj);
     }
-#endif
 }
 
 void cQueue::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimUnpack(buffer);
 
     buffer->unpack(len);
@@ -117,7 +107,6 @@ void cQueue::parsimUnpack(cCommBuffer *buffer)
         insert(obj);
     }
     comparator = oldCmp;
-#endif
 }
 
 void cQueue::clear()

@@ -29,10 +29,6 @@
 #include "omnetpp/cenum.h"
 #include "omnetpp/stringutil.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 namespace omnetpp {
 
 Register_Class(cOutVector);

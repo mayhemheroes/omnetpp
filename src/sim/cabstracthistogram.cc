@@ -26,10 +26,6 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/distrib.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 using namespace std;
 
 namespace omnetpp {

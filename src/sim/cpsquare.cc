@@ -28,10 +28,7 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/distrib.h"
 #include "omnetpp/csimulation.h" // for __contextComponentRNG()
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -63,9 +60,6 @@ cPSquare::~cPSquare()
 
 void cPSquare::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimPack(buffer);
 
     buffer->pack(numBins);
@@ -77,14 +71,10 @@ void cPSquare::parsimPack(cCommBuffer *buffer) const
         buffer->pack(n, numBins + 2);
     if (buffer->packFlag(q != nullptr))
         buffer->pack(q, numBins + 2);
-#endif
 }
 
 void cPSquare::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimUnpack(buffer);
 
     buffer->unpack(numBins);
@@ -101,7 +91,6 @@ void cPSquare::parsimUnpack(cCommBuffer *buffer)
         q = new double[numBins + 2];
         buffer->unpack(q, numBins + 2);
     }
-#endif
 }
 
 void cPSquare::copy(const cPSquare& res)

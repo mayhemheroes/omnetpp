@@ -33,10 +33,6 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/cproperty.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 using namespace omnetpp::common;
 
 namespace omnetpp {

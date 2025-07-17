@@ -31,10 +31,7 @@
 #include "omnetpp/csimplemodule.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace omnetpp::common;
 
@@ -53,20 +50,12 @@ cStatistic::cStatistic(const char *name) : cRandom(name)
 
 void cStatistic::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cRandom::parsimPack(buffer);
-#endif
 }
 
 void cStatistic::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cRandom::parsimUnpack(buffer);
-#endif
 }
 
 void cStatistic::copy(const cStatistic& res)

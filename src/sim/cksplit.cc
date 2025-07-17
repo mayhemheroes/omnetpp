@@ -30,10 +30,6 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/clog.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 using std::ostream;
 using std::endl;
 

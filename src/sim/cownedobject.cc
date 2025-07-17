@@ -25,10 +25,7 @@
 #include "omnetpp/csoftowner.h"
 #include "omnetpp/cclassdescriptor.h"
 #include "common/commonutil.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 #ifdef DEVELOPER_DEBUG
 #include <set>
@@ -157,20 +154,12 @@ cOwnedObject& cOwnedObject::operator=(const cOwnedObject& obj)
 
 void cOwnedObject::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cNamedObject::parsimPack(buffer);
-#endif
 }
 
 void cOwnedObject::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cNamedObject::parsimUnpack(buffer);
-#endif
 }
 
 //-----

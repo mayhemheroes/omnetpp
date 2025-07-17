@@ -19,10 +19,7 @@
 #include "omnetpp/regmacros.h"
 #include "omnetpp/onstartup.h"
 #include "omnetpp/globals.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -103,9 +100,6 @@ void cHistogram::assertSanity()
 
 void cHistogram::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimPack(buffer);
 
     buffer->pack(binEdges.size());
@@ -123,14 +117,10 @@ void cHistogram::parsimPack(cCommBuffer *buffer) const
 
     if (buffer->packFlag(strategy != nullptr))
         buffer->packObject(strategy);
-#endif
 }
 
 void cHistogram::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimUnpack(buffer);
 
     size_t n;
@@ -151,7 +141,6 @@ void cHistogram::parsimUnpack(cCommBuffer *buffer)
 
     if (buffer->checkFlag())
         setStrategy((cIHistogramStrategy *)buffer->unpackObject());
-#endif
 }
 
 void cHistogram::collect(double value)

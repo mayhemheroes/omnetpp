@@ -32,10 +32,7 @@
 #include "omnetpp/csimplemodule.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace omnetpp::common;
 
@@ -65,9 +62,6 @@ std::string cStdDev::str() const
 
 void cStdDev::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cStatistic::parsimPack(buffer);
     buffer->pack(weighted);
     buffer->pack(minValue);
@@ -77,14 +71,10 @@ void cStdDev::parsimPack(cCommBuffer *buffer) const
     buffer->pack(sumWeightedValues);
     buffer->pack(sumSquaredWeights);
     buffer->pack(sumWeightedSquaredValues);
-#endif
 }
 
 void cStdDev::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cStatistic::parsimUnpack(buffer);
     buffer->unpack(weighted);
     buffer->unpack(minValue);
@@ -94,7 +84,6 @@ void cStdDev::parsimUnpack(cCommBuffer *buffer)
     buffer->unpack(sumWeightedValues);
     buffer->unpack(sumSquaredWeights);
     buffer->unpack(sumWeightedSquaredValues);
-#endif
 }
 
 void cStdDev::copy(const cStdDev& res)

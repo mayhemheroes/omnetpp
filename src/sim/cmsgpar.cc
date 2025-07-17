@@ -33,10 +33,7 @@
 #include "omnetpp/cenvir.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/csimulation.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace omnetpp::common;
 
@@ -202,9 +199,6 @@ void cMsgPar::forEachChild(cVisitor *v)
 
 void cMsgPar::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimPack(buffer);
 
     buffer->pack(typeChar);
@@ -264,14 +258,10 @@ void cMsgPar::parsimPack(cCommBuffer *buffer) const
         default:
             throw cRuntimeError(this, "parsimPack(): Unsupported type '%c'", typeChar);
     }
-#endif
 }
 
 void cMsgPar::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     char *funcname;
     int argc;
 
@@ -338,7 +328,6 @@ void cMsgPar::parsimUnpack(cCommBuffer *buffer)
         default:
             throw cRuntimeError(this, "parsimUnpack(): Unknown parameter data type");
     }
-#endif
 }
 
 //----

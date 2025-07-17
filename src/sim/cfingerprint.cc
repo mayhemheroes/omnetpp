@@ -27,13 +27,10 @@
 #include "omnetpp/cstringtokenizer.h"
 #include "omnetpp/cconfiguration.h"
 #include "omnetpp/cconfigoption.h"
+#include "omnetpp/cmemcommbuffer.h"
 #include "omnetpp/regmacros.h"
 #include "common/stringutil.h"
 #include "common/stlutil.h"
-
-#ifdef WITH_PARSIM
-#include "parsim/cmemcommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -203,18 +200,11 @@ void cSingleFingerprintCalculator::addEvent(cEvent *event)
                             case MESSAGE_DATA:
                                 if (message != nullptr) {
                                     // NOTE: workaround for control info and context pointer which cannot be packed
-                                    // TODO: we should rather use a network byte order serialization API
-#ifdef WITH_PARSIM
                                     cMemCommBuffer buffer;
                                     cMessage *copy = message->dup();
                                     copy->parsimPack(&buffer);
                                     hasher_.add(buffer.getBuffer(), buffer.getMessageSize());
                                     delete copy;
-#else
-                                    throw cRuntimeError("Fingerprint is configured to contain MESSAGE_DATA (d),"
-                                                        " but parallel simulation support is disabled (WITH_PARSIM=no)"
-                                                        " which is required for serialization.");
-#endif
                                 }
                                 break;
                             case MODULE_ID:

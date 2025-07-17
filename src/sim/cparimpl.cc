@@ -28,10 +28,6 @@
 #include "omnetpp/cxmlparimpl.h"
 #include "omnetpp/platdep/platmisc.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 using namespace omnetpp::common;
 
 namespace omnetpp {

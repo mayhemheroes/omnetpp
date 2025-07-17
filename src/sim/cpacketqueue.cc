@@ -20,10 +20,7 @@
 #include "omnetpp/globals.h"
 #include "omnetpp/cpacketqueue.h"
 #include "omnetpp/cexception.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -61,22 +58,14 @@ std::string cPacketQueue::str() const
 
 void cPacketQueue::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cQueue::parsimPack(buffer);
     buffer->pack(bitLength);
-#endif
 }
 
 void cPacketQueue::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cQueue::parsimUnpack(buffer);
     buffer->unpack(bitLength);
-#endif
 }
 
 void cPacketQueue::addLength(cPacket *pkt)

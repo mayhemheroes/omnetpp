@@ -26,10 +26,7 @@
 #include "omnetpp/cprecolldensityest.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/distrib.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace std;
 
@@ -49,9 +46,6 @@ cPrecollectionBasedDensityEst::~cPrecollectionBasedDensityEst()
 
 void cPrecollectionBasedDensityEst::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimPack(buffer);
 
     buffer->pack(rangeMin);
@@ -73,14 +67,10 @@ void cPrecollectionBasedDensityEst::parsimPack(cCommBuffer *buffer) const
         buffer->pack(precollectedValues, numValues);  // pack the used positions only
     if (buffer->packFlag(precollectedWeights != nullptr))
         buffer->pack(precollectedWeights, numValues);  // pack the used positions only
-#endif
 }
 
 void cPrecollectionBasedDensityEst::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cAbstractHistogram::parsimUnpack(buffer);
 
     buffer->unpack(rangeMin);
@@ -112,7 +102,6 @@ void cPrecollectionBasedDensityEst::parsimUnpack(cCommBuffer *buffer)
         precollectedWeights = new double[numPrecollected];
         buffer->unpack(precollectedWeights, numValues);
     }
-#endif
 }
 
 void cPrecollectionBasedDensityEst::copy(const cPrecollectionBasedDensityEst& res)

@@ -23,10 +23,7 @@
 #include "omnetpp/carray.h"
 #include "omnetpp/globals.h"
 #include "omnetpp/cexception.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -138,9 +135,6 @@ void cArray::forEachChild(cVisitor *v)
 
 void cArray::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimPack(buffer);
 
     buffer->pack(capacity);
@@ -155,14 +149,10 @@ void cArray::parsimPack(cCommBuffer *buffer) const
             buffer->packObject(vect[i]);
         }
     }
-#endif
 }
 
 void cArray::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimUnpack(buffer);
 
     delete[] vect;
@@ -182,7 +172,6 @@ void cArray::parsimUnpack(cCommBuffer *buffer)
                 take(static_cast<cOwnedObject *>(vect[i]));
         }
     }
-#endif
 }
 
 void cArray::clear()

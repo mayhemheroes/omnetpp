@@ -29,10 +29,6 @@
 #include "omnetpp/ccontextswitcher.h"
 #include "omnetpp/cmodelchange.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 namespace omnetpp {
 
 using std::ostream;

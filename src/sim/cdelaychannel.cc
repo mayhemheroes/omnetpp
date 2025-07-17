@@ -25,10 +25,6 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/ctimestampedvalue.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 namespace omnetpp {
 
 using std::ostream;

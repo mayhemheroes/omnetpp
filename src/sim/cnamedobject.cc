@@ -22,10 +22,7 @@
 #include "omnetpp/opp_string.h"
 #include "common/stringutil.h"
 #include "common/pooledstring.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -127,24 +124,16 @@ void cNamedObject::setNamePooling(bool pooling)
 
 void cNamedObject::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     buffer->pack(getName());
     buffer->pack(flags);
-#endif
 }
 
 void cNamedObject::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     opp_string tmp;
     buffer->unpack(tmp);
     setName(tmp.buffer());
     buffer->unpack(flags);
-#endif
 }
 
 }  // namespace omnetpp

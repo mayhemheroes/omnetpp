@@ -21,10 +21,7 @@
 #include "omnetpp/csimulation.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 using namespace omnetpp;
 
@@ -50,30 +47,22 @@ void cEvent::forEachChild(cVisitor *v)
 
 void cEvent::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimPack(buffer);
 
     buffer->pack(priority);
     buffer->pack(arrivalTime);
     buffer->pack(heapIndex);
     buffer->pack(insertOrder);
-#endif
 }
 
 void cEvent::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cOwnedObject::parsimUnpack(buffer);
 
     buffer->unpack(priority);
     buffer->unpack(arrivalTime);
     buffer->unpack(heapIndex);
     buffer->unpack(insertOrder);
-#endif
 }
 
 cEvent& cEvent::operator=(const cEvent& event)

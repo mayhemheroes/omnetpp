@@ -27,10 +27,6 @@
 #include "omnetpp/cenvir.h"
 #include "omnetpp/cwatch.h"
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 namespace omnetpp {
 
 

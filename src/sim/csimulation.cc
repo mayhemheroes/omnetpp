@@ -47,10 +47,6 @@
 #include "omnetpp/clifecyclelistener.h"
 #include "omnetpp/platdep/platmisc.h"  // for DEBUG_TRAP
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 #ifdef WITH_NETBUILDER
 #include "sim/netbuilder/cnedloader.h"
 #endif

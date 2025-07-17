@@ -26,10 +26,6 @@
 #include "omnetpp/ctimestampedvalue.h"
 #include "omnetpp/csimplemodule.h" // SendOptions
 
-#ifdef WITH_PARSIM
-#include "omnetpp/ccommbuffer.h"
-#endif
-
 namespace omnetpp {
 
 using std::ostream;

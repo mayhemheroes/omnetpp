@@ -20,10 +20,7 @@
 #include "omnetpp/cmessage.h"
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
-
-#ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
-#endif
 
 namespace omnetpp {
 
@@ -142,9 +139,6 @@ void cMessage::forEachChild(cVisitor *v)
 
 void cMessage::parsimPack(cCommBuffer *buffer) const
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cEvent::parsimPack(buffer);
 
     if (contextPointer || controlInfo)
@@ -164,14 +158,10 @@ void cMessage::parsimPack(cCommBuffer *buffer) const
 
     if (buffer->packFlag(parList != nullptr))
         buffer->packObject(parList);
-#endif
 }
 
 void cMessage::parsimUnpack(cCommBuffer *buffer)
 {
-#ifndef WITH_PARSIM
-    throw cRuntimeError(this, E_NOPARSIM);
-#else
     cEvent::parsimUnpack(buffer);
 
     buffer->unpack(messageKind);
@@ -185,7 +175,6 @@ void cMessage::parsimUnpack(cCommBuffer *buffer)
 
     if (buffer->checkFlag())
         take(parList = (cArray *)buffer->unpackObject());
-#endif
 }
 
 cMessage& cMessage::operator=(const cMessage& msg)
