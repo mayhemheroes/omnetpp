@@ -1029,9 +1029,10 @@ EOT
             OPP_CHECK_LIB(Qt6, QtCore/QtGlobal, $QT_VERSIONCHECK_CODE, $CXXFLAGS $CFLAGS $QT_CFLAGS, $QT_LIBS, qt_ok)
         fi
 
-        # Test on Mac OS X using the local Qt framework
+        # Test on macOS using the local Qt framework
         if test $qt_ok = no; then
             QT_LIBS="-framework QtGui -framework QtCore -framework QtWidgets -framework QtPrintSupport -framework QtOpenGL -framework QtOpenGLWidgets -F $QT_INSTALL_LIBS"
+            QT_CFLAGS="-F $QT_INSTALL_LIBS -mmacosx-version-min=12.0"
             QTENV_LDFLAGS=""
             OPP_CHECK_LIB(Qt6, QtCore/QtGlobal, $QT_VERSIONCHECK_CODE, $CXXFLAGS $CFLAGS $QT_CFLAGS, $QT_LIBS $LDFLAGS_TOOLS_MACOSX, qt_ok)
         fi
