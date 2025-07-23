@@ -275,7 +275,7 @@ QStringList ModuleOutputContentProvider::getHeaders()
             result << "prefix" << "line";
             break;
         case LogInspector::MESSAGES:
-            result << "Event#" << "Time" << "Relevant Hops" << "Name";
+            result << "Sender Event#" << "Sending Time" << "Relevant Hops" << "Name";
 
             result += gatherEnabledColumnNames();
 
