@@ -49,20 +49,43 @@ void cEvent::parsimPack(cCommBuffer *buffer) const
 {
     cOwnedObject::parsimPack(buffer);
 
-    buffer->pack(priority);
-    buffer->pack(arrivalTime);
-    buffer->pack(heapIndex);
-    buffer->pack(insertOrder);
+    switch (buffer->getMode()) {
+        case cCommBuffer::FINGERPRINT:
+            // nothing to pack
+            break;
+        case cCommBuffer::FINGERPRINT_LEGACY:
+            buffer->pack(priority);
+            buffer->pack(arrivalTime);
+            buffer->pack(heapIndex);
+            buffer->pack(insertOrder);
+            break;
+        default: // case cCommBuffer::PARSIMPACK, etc.
+            // heanIndex and insertOrder are only used by cEvent, no need to pack them
+            buffer->pack(priority);
+            buffer->pack(arrivalTime);
+            break;
+    }
 }
 
 void cEvent::parsimUnpack(cCommBuffer *buffer)
 {
     cOwnedObject::parsimUnpack(buffer);
 
-    buffer->unpack(priority);
-    buffer->unpack(arrivalTime);
-    buffer->unpack(heapIndex);
-    buffer->unpack(insertOrder);
+    switch (buffer->getMode()) {
+        case cCommBuffer::FINGERPRINT:
+            break;
+        case cCommBuffer::FINGERPRINT_LEGACY:
+            buffer->unpack(priority);
+            buffer->unpack(arrivalTime);
+            buffer->unpack(heapIndex);
+            buffer->unpack(insertOrder);
+            break;
+        default: // case cCommBuffer::PARSIMPACK, etc.
+            heapIndex = -1;
+            buffer->unpack(priority);
+            buffer->unpack(arrivalTime);
+            break;
+    }
 }
 
 cEvent& cEvent::operator=(const cEvent& event)

@@ -92,7 +92,9 @@ class SIM_API cFingerprintCalculator : public cObject, noncopyable
  *  - 'k' message kind
  *  - 'l' message bit length
  *  - 'o' message control info class name
- *  - 'd' message data (uses parsimPack() by default but can be overridden)
+ *  - 'g' message control info (uses parsimPack())
+ *  - 'd' message with internals (legacy -- uses parsimPack(), includes info from last sending and other technical details; excludes control info)
+ *  - 'b' message contents (uses parsimPack(), excludes info from last sending, other technical details, and also  control info)
  *  - 'i' module id
  *  - 'm' module full name
  *  - 'p' module full path
@@ -118,7 +120,10 @@ class SIM_API cSingleFingerprintCalculator : public cFingerprintCalculator
         MESSAGE_KIND         = 'k',
         MESSAGE_BIT_LENGTH   = 'l',
         MESSAGE_CONTROL_INFO_CLASS_NAME = 'o',
-        MESSAGE_DATA         = 'd',
+        MESSAGE_CONTROL_INFO = 'g',
+        MESSAGE_WITH_INTERNALS = 'd',
+        MESSAGE_DATA = MESSAGE_WITH_INTERNALS, // old name
+        MESSAGE_CONTENTS     = 'b',
         MODULE_ID            = 'i',
         MODULE_FULL_NAME     = 'm',
         MODULE_FULL_PATH     = 'p',

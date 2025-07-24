@@ -21,6 +21,7 @@
 #include "omnetpp/cexception.h"
 #include "omnetpp/cenvir.h"
 #include "omnetpp/ccommbuffer.h"
+#include "omnetpp/ccommbufferbase.h"
 
 namespace omnetpp {
 
@@ -141,20 +142,28 @@ void cMessage::parsimPack(cCommBuffer *buffer) const
 {
     cEvent::parsimPack(buffer);
 
-    if (contextPointer || controlInfo)
-        throw cRuntimeError(this,"parsimPack(): Cannot pack object with contextPointer or controlInfo set");
+    if (contextPointer)
+        throw cRuntimeError(this,"parsimPack(): Cannot pack object with non-null contextPointer");
 
     buffer->pack(messageKind);
-    buffer->pack(timestamp);
-    buffer->pack(senderModuleId);
-    buffer->pack(senderGateId);
-    buffer->pack(targetModuleId);
-    buffer->pack(targetGateId);
-    buffer->pack(creationTime);
-    buffer->pack(sendTime);
+
+    auto mode = buffer->getMode();
+    if (mode != cCommBufferBase::FINGERPRINT) {
+        buffer->pack(timestamp);
+        buffer->pack(senderModuleId);
+        buffer->pack(senderGateId);
+        buffer->pack(targetModuleId);
+        buffer->pack(targetGateId);
+        buffer->pack(creationTime);
+        buffer->pack(sendTime);
+    }
 
     // note: do not pack msgid and treeid, because they'd conflict
     // with ids assigned at the destination partition
+
+    if (mode != cCommBufferBase::FINGERPRINT && mode != cCommBufferBase::FINGERPRINT_LEGACY)
+        if (buffer->packFlag(controlInfo != nullptr))
+            buffer->packObject(controlInfo);
 
     if (buffer->packFlag(parList != nullptr))
         buffer->packObject(parList);
@@ -165,13 +174,23 @@ void cMessage::parsimUnpack(cCommBuffer *buffer)
     cEvent::parsimUnpack(buffer);
 
     buffer->unpack(messageKind);
-    buffer->unpack(timestamp);
-    buffer->unpack(senderModuleId);
-    buffer->unpack(senderGateId);
-    buffer->unpack(targetModuleId);
-    buffer->unpack(targetGateId);
-    buffer->unpack(creationTime);
-    buffer->unpack(sendTime);
+
+    auto mode = buffer->getMode();
+    if (mode != cCommBufferBase::FINGERPRINT) {
+        buffer->unpack(timestamp);
+        buffer->unpack(senderModuleId);
+        buffer->unpack(senderGateId);
+        buffer->unpack(targetModuleId);
+        buffer->unpack(targetGateId);
+        buffer->unpack(creationTime);
+        buffer->unpack(sendTime);
+    }
+
+    ASSERT(controlInfo == nullptr && parList == nullptr); // assume unpacking into a fresh object
+
+    if (mode != cCommBufferBase::FINGERPRINT && mode != cCommBufferBase::FINGERPRINT_LEGACY)
+        if (buffer->checkFlag())
+            controlInfo = buffer->unpackObject();
 
     if (buffer->checkFlag())
         take(parList = (cArray *)buffer->unpackObject());

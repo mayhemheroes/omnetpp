@@ -110,9 +110,35 @@ std::string cSingleFingerprintCalculator::str() const
 
 cSingleFingerprintCalculator::FingerprintIngredient cSingleFingerprintCalculator::validateIngredient(char ch)
 {
-    if (strchr("etncklodimparszvyfx0", ch) == nullptr)
+    static const std::set<char> validIngredients = {
+        EVENT_NUMBER,
+        SIMULATION_TIME,
+        MESSAGE_FULL_NAME,
+        MESSAGE_CLASS_NAME,
+        MESSAGE_KIND,
+        MESSAGE_BIT_LENGTH,
+        MESSAGE_CONTROL_INFO_CLASS_NAME,
+        MESSAGE_CONTROL_INFO,
+        MESSAGE_WITH_INTERNALS,
+        MESSAGE_CONTENTS,
+        MODULE_ID,
+        MODULE_FULL_NAME,
+        MODULE_FULL_PATH,
+        MODULE_CLASS_NAME,
+        RANDOM_NUMBERS_DRAWN,
+        RESULT_SCALAR,
+        RESULT_STATISTIC,
+        RESULT_VECTOR,
+        DISPLAY_STRINGS,
+        CANVAS_FIGURES,
+        EXTRA_DATA,
+        CLEAN_HASHER
+    };
+
+    if (validIngredients.count(ch))
+        return (FingerprintIngredient) ch;
+    else
         throw cRuntimeError("Unknown fingerprint ingredient character '%c'", ch);
-    return (FingerprintIngredient) ch;
 }
 
 void cSingleFingerprintCalculator::parseIngredients(const char *s)
@@ -197,14 +223,30 @@ void cSingleFingerprintCalculator::addEvent(cEvent *event)
                                 if (controlInfo != nullptr)
                                     hasher_ << controlInfo->getClassName();
                                 break;
-                            case MESSAGE_DATA:
-                                if (message != nullptr) {
-                                    // NOTE: workaround for control info and context pointer which cannot be packed
+                            case MESSAGE_CONTROL_INFO:
+                                if (controlInfo != nullptr) {
                                     cMemCommBuffer buffer;
-                                    cMessage *copy = message->dup();
+                                    buffer.setMode(cCommBuffer::FINGERPRINT);
+                                    controlInfo->parsimPack(&buffer);
+                                    hasher_.add(buffer.getBuffer(), buffer.getMessageSize());
+                                }
+                                break;
+                            case MESSAGE_WITH_INTERNALS:
+                                if (message != nullptr) {
+                                    cMemCommBuffer buffer;
+                                    buffer.setMode(cCommBuffer::FINGERPRINT_LEGACY);
+                                    cMessage *copy = message->dup();  // needed to reproduce old behavior
                                     copy->parsimPack(&buffer);
                                     hasher_.add(buffer.getBuffer(), buffer.getMessageSize());
                                     delete copy;
+                                }
+                                break;
+                            case MESSAGE_CONTENTS:
+                                if (message != nullptr) {
+                                    cMemCommBuffer buffer;
+                                    buffer.setMode(cCommBuffer::FINGERPRINT);
+                                    message->parsimPack(&buffer);
+                                    hasher_.add(buffer.getBuffer(), buffer.getMessageSize());
                                 }
                                 break;
                             case MODULE_ID:

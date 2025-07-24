@@ -41,10 +41,34 @@ class opp_string;
 class SIM_API cCommBuffer : public cObject
 {
   public:
+      enum Mode {
+          PARSIMPACK,
+          FINGERPRINT_LEGACY,   // "d" ingredient
+          FINGERPRINT           // "b", "g" ingredients (new in omnetpp-6.3)
+      };
+
+  protected:
+      Mode mode = PARSIMPACK;
+
+  public:
     /**
      * Virtual destructor
      */
     virtual ~cCommBuffer() {}
+
+    /** @name Mode */
+    //@{
+    /**
+     * Returns the usage mode. parsimPack() methods may take this field into
+     * account when deciding which fields to pack and which fields not to pack.
+     */
+    virtual Mode getMode() const { return mode; }
+
+    /**
+     * Sets the usage mode.
+     */
+    virtual void setMode(Mode m) { mode = m; }
+    //@}
 
     /** @name Buffer management */
     //@{
