@@ -120,7 +120,6 @@
       <add x:p0="upper left"/>
       <add x:p0="lower left"/>
       <add x:p0="lower right"/>
-      <add x:p0="right"/>
       <add x:p0="center left"/>
       <add x:p0="center right"/>
       <add x:p0="lower center"/>

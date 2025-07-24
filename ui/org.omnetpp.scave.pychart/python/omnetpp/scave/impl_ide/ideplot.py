@@ -259,7 +259,7 @@ def legend(show, frameon, loc):
             "upper left": ("Inside", "NorthWest"),
             "lower left": ("Inside", "SouthWest"),
             "lower right": ("Inside", "SouthEast"),
-            "right": ("Inside", "East"),
+            "right": ("Inside", "East"),  # kept only for backward compatibility - similarly as in Matplotlib
             "center left": ("Inside", "West"),
             "center right": ("Inside", "East"),
             "lower center": ("Inside", "South"),
