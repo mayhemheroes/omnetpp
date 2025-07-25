@@ -575,6 +575,11 @@ COMMON_API std::string opp_markup2latex(const std::string& str);
 COMMON_API std::string opp_xmlquote(const std::string& str);
 
 /**
+ * Produces a hex dump of the given memory buffer.
+ */
+COMMON_API std::string opp_hexdump(const void *ptr, size_t count, bool linebreaks=true);
+
+/**
  * Convert an integer to string, using the specified string to separate digit groups.
  */
 COMMON_API std::string opp_formati64(int64_t n, const char *digitSep);

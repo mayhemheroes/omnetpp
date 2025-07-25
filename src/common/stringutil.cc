@@ -1222,6 +1222,19 @@ std::string opp_xmlquote(const std::string& str)
     return out.str();
 }
 
+std::string opp_hexdump(const void *ptr, size_t count, bool linebreaks)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    std::stringstream out;
+    const uint8_t *p = static_cast<const uint8_t *>(ptr);
+    for (size_t i = 0; i < count; ++i) {
+        if (linebreaks && (i % 16) == 0 && i > 0)
+            out << "\n";
+        out << hex[(p[i] >> 4) & 0xF] << hex[p[i] & 0xF] << ((i % 16) == 15 ? "" : " ");
+    }
+    return out.str();
+}
+
 std::string opp_formati64(int64_t n, const char *digitSep)
 {
     std::stringstream os;
