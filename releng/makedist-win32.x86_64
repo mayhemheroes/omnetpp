@@ -78,8 +78,8 @@ cp -R $PATCH_DIR/* .
 # remove visual c++ related and commercial files from omnetpp
 if [ "$what" != "omnest" ]; then
   rm vcenv.cmd
-  rm tools/opp-tools-win32-x86_64-visualc-dependencies.7z
 fi
+rm tools/opp-tools-win32-x86_64-visualc-dependencies.7z
 
 # rename some files to have txt extensions on windows
 mv doc/Readme-IDE doc/Readme-IDE.txt
