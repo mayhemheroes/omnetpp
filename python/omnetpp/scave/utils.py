@@ -1609,10 +1609,10 @@ def export_image_if_needed(props):
             min_y, max_y = ax.get_ylim()
 
             # relative to data range
-            padding_left = 0.1
-            padding_right = 0.1
-            padding_bottom = 0.2
-            padding_top = 0.2
+            padding_left = 0.01
+            padding_right = 0.01
+            padding_bottom = 0.1
+            padding_top = 0.1
 
             if mode in (PlotAreaCalculationMode.DATA_WITH_PADDING_AND_ORIGIN_WITH_PADDING,
                         PlotAreaCalculationMode.DATA_WITH_PADDING_AND_ORIGIN):

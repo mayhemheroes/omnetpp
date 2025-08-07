@@ -149,10 +149,10 @@ class Lines implements ILinePlot {
         }
 
         // relative to data range
-        double paddingLeft = 0.1;
-        double paddingRight = 0.1;
-        double paddingBottom = 0.2;
-        double paddingTop = 0.2;
+        double paddingLeft = 0.01;
+        double paddingRight = 0.01;
+        double paddingBottom = 0.1;
+        double paddingTop = 0.1;
 
         if (mode == PlotAreaCalculationMode.DATA_WITH_PADDING_AND_ORIGIN_WITH_PADDING
                 || mode == PlotAreaCalculationMode.DATA_WITH_PADDING_AND_ORIGIN) {
