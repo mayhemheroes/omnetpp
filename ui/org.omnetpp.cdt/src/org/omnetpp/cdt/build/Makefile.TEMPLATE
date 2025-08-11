@@ -175,14 +175,14 @@ endif
 ### Pattern rules for msg files.
 {sourcedirs:}%_m.{cc} %_m.h: %.msg
 {sourcedirs:}	$(qecho) MSGC: $<
-{sourcedirs:}	$(Q)$(MSGC) -s _m.{cc} -MD -MP -MF $O/$(basename $<)_m.h.d $(MSGCOPTS) $?
+{sourcedirs:}	$(Q)$(MSGC) -s _m.{cc} -MD -MP -MF $O/$(basename $<)_m.h.d $(MSGCOPTS) $<
 {sourcedirs:}
 {@msg:msgfiles,m_cc:msgccfiles,m_h:msghfiles}
 {/@}
 ### Pattern rules for sm files.
 {sourcedirs:}%_sm.{cc} %_sm.h: %.sm
 {sourcedirs:}	$(qecho) SMC: $<
-{sourcedirs:}	$(Q)$(SMC) -c++ -suffix {cc} $(SMCOPTS) $?
+{sourcedirs:}	$(Q)$(SMC) -c++ -suffix {cc} $(SMCOPTS) $<
 {sourcedirs:}
 {@sm:smfiles,sm_cc:smccfiles,sm_h:smhfiles}
 {/@}
