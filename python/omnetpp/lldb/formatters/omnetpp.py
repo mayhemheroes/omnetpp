@@ -7,11 +7,14 @@ def cDisplayString_SummaryProvider(value, internal_dict):
     return value.GetChildMemberWithName("assembledString").GetSummary()[1:-1]
 
 def simtime_t_SummaryProvider(value, internal_dict):
-    t = value.GetChildMemberWithName("t").GetValueAsSigned()
-    if (t == 0):
+    t_value = value.GetChildMemberWithName("t").GetValue()
+    if t_value is None:
+        return "invalid"
+    
+    if (t_value == "0"):
         return "0s"
     scaleexp = value.GetTarget().FindFirstGlobalVariable("omnetpp::SimTime::scaleexp").GetValueAsSigned()
-    s = Decimal(str(t) + 'E' + str(scaleexp)).normalize()
+    s = Decimal(str(t_value) + 'E' + str(scaleexp)).normalize()
     return str(s) + " s"
 
 def cNamedObject_SummaryProvider(value, internal_dict):
