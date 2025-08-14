@@ -109,11 +109,11 @@ $O/%.o: %.cpp $(COPTS_FILE) | msgheaders smheaders
 
 %_m.cpp %_m.h: %.msg
 	$(qecho) MSGC: $<
-	$(Q)$(MSGC) -s _m.cpp -MD -MP -MF $O/$(basename $<)_m.h.d $(MSGCOPTS) $?
+	$(Q)$(MSGC) -s _m.cpp -MD -MP -MF $O/$(basename $<)_m.h.d $(MSGCOPTS) $<
 
 %_sm.cpp %_sm.h: %.sm
 	$(qecho) SMC: $<
-	$(Q)$(SMC) -c++ -suffix cpp $(SMCOPTS) $?
+	$(Q)$(SMC) -c++ -suffix cpp $(SMCOPTS) $<
 
 msgheaders: $(MSGFILES:.msg=_m.h)
 
