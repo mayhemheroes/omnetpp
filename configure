@@ -2755,13 +2755,6 @@ printf "%s\n" "$as_me: Reading configure.user for your custom settings." >&6;}
 printf "%s\n" "$as_me: Creating a backup of 'Makefile.inc'." >&6;}
 mv -f ./Makefile.inc ./Makefile.inc.last_known_good
 
-# force MS-ABI / x64 compatible target if requested by the user
-if test "$USE_MS_ABI" = "yes"; then
-  CFLAGS="$CFLAGS --target=x86_64-windows-msvc"
-  CXXFLAGS="$CXXFLAGS --target=x86_64-windows-msvc"
-  LDFLAGS="$LDFLAGS --target=x86_64-windows-msvc"
-fi
-
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -4319,7 +4312,7 @@ else
             echo "checking whether we are using MS ABI compatible libraries... yes"
             DEFINES="$DEFINES -D_MT -D_WINDOWS -D_WIN32 -DWIN32 -DWIN64 -D_USRDLL -D_WINDLL -D_DLL"
             CFLAGS_ARCH="$CFLAGS_ARCH -Wno-deprecated-declarations -isystem /opt/visualc/include"
-            CXXFLAGS="-fcxx-exceptions"
+            CXXFLAGS="$CXXFLAGS -fcxx-exceptions"
             LDFLAG_LIBPATH="-Wl,-libpath:"
             LDFLAG_INCLUDE="-Wl,-include:"
             LDFLAG_IMPLIB="-Wl,-implib:"
@@ -6082,7 +6075,7 @@ if test "$WITH_QTENV" = "yes"; then
     if test "$QMAKE" = ""; then
         # Check for qmake variants on path if the user did not specify the QMAKE variable to use its own Qt installation.
         # first try qt6 specific variants to force qt6 in case either qt4 or qt5 is installed on the user's system
-        for ac_prog in qmake-qt6 qmake6 qmake
+        for ac_prog in qmake6 qmake-qt6 qmake
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6146,7 +6139,7 @@ test -n "$QMAKE" || QMAKE="nope"
         QT_INSTALL_LIBS=$(cd $($QMAKE -query QT_INSTALL_LIBS) ; pwd)
         QT_INSTALL_LIBEXECS=$(cd $($QMAKE -query QT_INSTALL_LIBEXECS) ; pwd)
 
-        for ac_prog in moc-qt6 moc6 moc
+        for ac_prog in moc6 moc-qt6 moc
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6198,7 +6191,7 @@ fi
 done
 test -n "$MOC" || MOC="nope"
 
-        for ac_prog in uic-qt6 uic6 uic
+        for ac_prog in uic6 uic-qt6 uic
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -6250,7 +6243,7 @@ fi
 done
 test -n "$UIC" || UIC="nope"
 
-        for ac_prog in rcc-qt6 rcc6 rcc
+        for ac_prog in rcc6 rcc-qt6 rcc
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2

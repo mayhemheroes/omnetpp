@@ -156,13 +156,6 @@ AC_MSG_NOTICE(Reading configure.user for your custom settings.)
 AC_MSG_NOTICE([Creating a backup of 'Makefile.inc'.])
 mv -f ./Makefile.inc ./Makefile.inc.last_known_good
 
-# force MS-ABI / x64 compatible target if requested by the user
-if test "$USE_MS_ABI" = "yes"; then
-  CFLAGS="$CFLAGS --target=x86_64-windows-msvc"
-  CXXFLAGS="$CXXFLAGS --target=x86_64-windows-msvc"
-  LDFLAGS="$LDFLAGS --target=x86_64-windows-msvc"
-fi
-
 AC_CONFIG_SRCDIR(include/omnetpp.h)
 AC_LANG(C++)
 AC_CONFIG_AUX_DIR(src/utils)
@@ -368,7 +361,7 @@ else
             echo "checking whether we are using MS ABI compatible libraries... yes"
             DEFINES="$DEFINES -D_MT -D_WINDOWS -D_WIN32 -DWIN32 -DWIN64 -D_USRDLL -D_WINDLL -D_DLL"
             CFLAGS_ARCH="$CFLAGS_ARCH -Wno-deprecated-declarations -isystem /opt/visualc/include"
-            CXXFLAGS="-fcxx-exceptions"
+            CXXFLAGS="$CXXFLAGS -fcxx-exceptions"
             LDFLAG_LIBPATH="-Wl,-libpath:"
             LDFLAG_INCLUDE="-Wl,-include:"
             LDFLAG_IMPLIB="-Wl,-implib:"
@@ -986,7 +979,7 @@ if test "$WITH_QTENV" = "yes"; then
     if test "$QMAKE" = ""; then
         # Check for qmake variants on path if the user did not specify the QMAKE variable to use its own Qt installation.
         # first try qt6 specific variants to force qt6 in case either qt4 or qt5 is installed on the user's system
-        AC_PATH_PROGS(QMAKE, qmake-qt6 qmake6 qmake, nope)
+        AC_PATH_PROGS(QMAKE, qmake6 qmake-qt6 qmake, nope)
     elif test ! -x "$QMAKE"; then
         AC_MSG_ERROR([Qtenv cannot find qmake specified in the QMAKE variable (or it is not executable) -- $QMAKE])
     fi
@@ -999,9 +992,9 @@ if test "$WITH_QTENV" = "yes"; then
         QT_INSTALL_LIBS=$(cd $($QMAKE -query QT_INSTALL_LIBS) ; pwd)
         QT_INSTALL_LIBEXECS=$(cd $($QMAKE -query QT_INSTALL_LIBEXECS) ; pwd)
 
-        AC_PATH_PROGS(MOC, moc-qt6 moc6 moc, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
-        AC_PATH_PROGS(UIC, uic-qt6 uic6 uic, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
-        AC_PATH_PROGS(RCC, rcc-qt6 rcc6 rcc, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
+        AC_PATH_PROGS(MOC, moc6 moc-qt6 moc, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
+        AC_PATH_PROGS(UIC, uic6 uic-qt6 uic, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
+        AC_PATH_PROGS(RCC, rcc6 rcc-qt6 rcc, nope, path = $QT_INSTALL_BINS$PATH_SEPARATOR$QT_INSTALL_LIBS$PATH_SEPARATOR$QT_INSTALL_LIBEXECS)
 
         if [test "$MOC" = nope] || [test "$UIC" = nope] || [test "$RCC" = nope] ; then
           AC_MSG_ERROR([Could not find all of moc, rcc, and uic for Qt6 -- $MOC, $RCC, $UIC])

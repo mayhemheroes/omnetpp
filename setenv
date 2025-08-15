@@ -125,13 +125,22 @@ if [ $(uname) = "Darwin" ]; then
   fi
 fi
 
-# Windows/MinGW specific settings
-if [ "$MSYSTEM" = "MINGW64" ] ; then
+# Windows/MinGW specific settings for MS ABI compatible build
+if [ -n "$MSYSTEM" -a "$MS_ABI" = "yes" ] ; then
   export PYTHONPATH=
-  if [ "$VCToolsInstallDir" = "" ] ; then
-    export PATH="/opt/mingw64/bin:$PATH"
+  if [ -n "$VCToolsInstallDir" ] ; then
+    # add the MS toolchain directories at the beginning of the PATH to hide the default clang compiler
+    export PATH=$(cygpath "$VCToolsInstallDir/bin/HostX64/x64"):$(cygpath "$VCINSTALLDIR/Tools/Llvm/x64/bin"):$(cygpath "$VCPKG_ROOT"):$PATH
   else
-    export PATH="/opt/visualc/bin:$(cygpath "$VCToolsInstallDir/bin/HostX64/x64"):$PATH"
+    echo "Error: MS Visual C++ and Clang installation is required."
+  fi
+  # dependencies installed from VCPKG
+  VCPKGTripletDir=/opt/visualc
+  if [ -d $VCPKGTripletDir ] ; then
+    export PATH=$(cygpath "$VCPKGTripletDir/bin"):$(cygpath "$VCPKGTripletDir/tools/Qt6/bin"):$PATH
+    export OSG_LIBRARY_PATH=$VCPKGTripletDir/plugins
+  else
+    echo "Error: The /opt/visualc directory must contain the dependencies insalled by 'vcpkg'. See the 'install_vcenv.sh' file for details."
   fi
 fi
 
