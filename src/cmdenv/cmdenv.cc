@@ -179,14 +179,14 @@ void Cmdenv::doRun()
         if (opt->configName.empty())
             opt->configName = "General";
 
-        if (cfg->isAbstractConfig(opt->configName.c_str()))
-            throw cRuntimeError("Refusing to run configuration '%s', as it is declared abstract", opt->configName.c_str());
-
         if (args->optionGiven('r'))  // note: do not overwrite value from cmdenv-runs-to-execute option!
             opt->runFilter = args->optionValue('r');
 
         std::vector<int> runNumbers;
         try {
+            if (cfg->isAbstractConfig(opt->configName.c_str()))
+                throw cRuntimeError("Refusing to run configuration '%s', as it is declared abstract", opt->configName.c_str());
+
             runNumbers = resolveRunFilter(opt->configName.c_str(), opt->runFilter.c_str());
         }
         catch (std::exception& e) {
