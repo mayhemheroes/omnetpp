@@ -383,16 +383,29 @@ void ModuleCanvasViewer::exportToImage()
 
     QString selF = "PNG(*.png)";
     QString fileName = QString(getQtenv()->cEnvir::getConfigEx()->getActiveConfigName()) + "_" + getObjectShortTypeName(object) + QString(".png");
-    fileName = QFileDialog::getSaveFileName(this, "Export to Image", fileName, filter, &selF);
 
-    if (fileName.isNull())
-        return; // the file selection dialog got cancelled
+    while (true) {
+        fileName = QFileDialog::getSaveFileName(this, "Export to Image", fileName, filter, &selF);
+
+        if (fileName.isNull())
+            return; // the file selection dialog got cancelled
+
+        bool extensionFound = false;
+        for (auto f : QImageWriter::supportedImageFormats())
+            if (fileName.endsWith("." + QString(f), Qt::CaseInsensitive))
+                extensionFound = true;
+        if (extensionFound)
+            break;
+
+        QMessageBox::warning(this, "Export to Image", "Please enter a file name ending with a supported extension (e.g. .png, .jpg, .bmp).");
+    }
 
     QImage image(sceneRect.size().toSize(), QImage::Format_RGBA8888); // Premultiplied?
 
     renderToPaintDevice(image, sceneRect, QRectF(QPointF(0, 0), sceneRect.size().toSize()));
 
-    image.save(fileName);
+    if (!image.save(fileName))
+        QMessageBox::warning(this, "Export to Image", "Failed to save image to file: " + fileName);
 }
 
 void ModuleCanvasViewer::exportToPdf()
