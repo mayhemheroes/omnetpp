@@ -27,6 +27,18 @@ std::ostream& operator<<(std::ostream& os, const Point& p)
     return os << "(" << p.x << "," << p.y << ")";
 }
 
+std::ostream& operator<<(std::ostream& os, const GeneratedStruct& gs)
+{
+    return os << "(" << gs.foo << "," << gs.bar << "," << gs.baz << ")";
+}
+
+bool operator<(const GeneratedStruct& lhs, const GeneratedStruct& rhs)
+{
+    if (lhs.foo != rhs.foo) return lhs.foo < rhs.foo;
+    if (lhs.bar != rhs.bar) return lhs.bar < rhs.bar;
+    return lhs.baz < rhs.baz;
+}
+
 std::istream& operator>>(std::istream& is, Point& p)
 {
     char dummy;
@@ -138,7 +150,7 @@ void WatchTest::activity()
     // WATCH_PTR(wrongp); -- this has to give a compile error
 
     //
-    // Vectors, lists and maps
+    // Vectors, lists, sets, and maps
     //
     std::vector<int> vi;
     vi.push_back(2);
@@ -169,6 +181,97 @@ void WatchTest::activity()
     ss.insert("Bashful");
     ss.insert("Doc");
     WATCH_SET(ss);
+
+    //
+    // Containers with compound elements
+    //
+    GeneratedPacket *pk1 = new GeneratedPacket("packet1");
+    GeneratedPacket *pk2 = new GeneratedPacket("packet2");
+    GeneratedPacket *pk3 = new GeneratedPacket("packet3");
+
+    std::vector<GeneratedStruct> vgs;
+    GeneratedStruct gs1;
+    gs1.foo = 1;
+    gs1.bar = 2;
+    gs1.baz = "one";
+    vgs.push_back(gs1);
+    GeneratedStruct gs2;
+    gs2.foo = 11;
+    gs2.bar = 22;
+    gs2.baz = "eleven";
+    vgs.push_back(gs2);
+    GeneratedStruct gs3;
+    gs3.foo = 33;
+    gs3.bar = 44;
+    gs3.baz = "thirtythree";
+    vgs.push_back(gs3);
+    WATCH_VECTOR(vgs);
+
+    std::vector<GeneratedStruct *> vgsp;
+    vgsp.push_back(&gs1);
+    vgsp.push_back(&gs2);
+    vgsp.push_back(&gs3);
+    WATCH_PTRVECTOR(vgsp);
+
+    std::vector<GeneratedPacket *> vpacket;
+    vpacket.push_back(pk1);
+    vpacket.push_back(pk2);
+    vpacket.push_back(pk3);
+    WATCH_PTRVECTOR(vpacket);
+
+    std::list<GeneratedStruct> lgs;
+    lgs.push_back(gs1);
+    lgs.push_back(gs2);
+    lgs.push_back(gs3);
+    WATCH_LIST(lgs);
+
+    std::list<GeneratedStruct *> lgsp;
+    lgsp.push_back(&gs1);
+    lgsp.push_back(&gs2);
+    lgsp.push_back(&gs3);
+    WATCH_PTRLIST(lgsp);
+
+    std::list<GeneratedPacket *> lpacket;
+    lpacket.push_back(pk1);
+    lpacket.push_back(pk2);
+    lpacket.push_back(pk3);
+    WATCH_PTRLIST(lpacket);
+
+    std::set<GeneratedStruct> sgs;
+    sgs.insert(gs1);
+    sgs.insert(gs2);
+    sgs.insert(gs3);
+    WATCH_SET(sgs);
+
+    std::set<GeneratedStruct *> sgsp;
+    sgsp.insert(&gs1);
+    sgsp.insert(&gs2);
+    sgsp.insert(&gs3);
+    WATCH_PTRSET(sgsp);
+
+    std::set<GeneratedPacket *> spacket;
+    spacket.insert(pk1);
+    spacket.insert(pk2);
+    spacket.insert(pk3);
+    WATCH_PTRSET(spacket);
+
+    std::map<int, GeneratedStruct> mgs;
+    mgs[1] = gs1;
+    mgs[2] = gs2;
+    mgs[3] = gs3;
+    WATCH_MAP(mgs);
+
+    std::map<int, GeneratedStruct *> mgsp;
+    mgsp[1] = &gs1;
+    mgsp[2] = &gs2;
+    mgsp[3] = &gs3;
+    WATCH_PTRMAP(mgsp);
+
+    std::map<int, GeneratedPacket *> mpacket;
+    mpacket[1] = pk1;
+    mpacket[2] = pk2;
+    mpacket[3] = pk3;
+    WATCH_PTRMAP(mpacket);
 
     // TBD: PTRVECTOR, PTRMAP etc.
     for ( ; ; ) {
