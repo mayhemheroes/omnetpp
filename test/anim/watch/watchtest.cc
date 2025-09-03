@@ -213,6 +213,33 @@ void WatchTest::activity()
     m[3] = "three";
     WATCH_MAP(m);
 
+    //
+    // Nested containers
+    //
+    std::vector<std::vector<int>> vv;
+    vv.push_back(std::vector<int>{2,3});
+    vv.push_back(std::vector<int>{5,7});
+    vv.push_back(std::vector<int>{11,13});
+    WATCH_VECTOR(vv);
+
+    std::vector<std::map<int, double>> vm;
+    vm.push_back(std::map<int, double>{{1, 1.1}, {2, 2.2}});
+    vm.push_back(std::map<int, double>{{3, 3.3}, {4, 4.4}});
+    vm.push_back(std::map<int, double>{{5, 5.5}, {6, 6.6}});
+    WATCH_VECTOR(vm);
+
+    std::map<int, std::vector<std::string>> mv;
+    mv[1] = {"one", "uno", "un"};
+    mv[2] = {"two", "dos", "deux"};
+    mv[3] = {"three", "tres", "trois"};
+    WATCH_MAP(mv);
+
+    std::map<int, std::map<std::string, int>> mm;
+    mm[1] = {{"one", 1}, {"uno", 1}, {"un", 1}};
+    mm[2] = {{"two", 2}, {"dos", 2}, {"deux", 2}};
+    mm[3] = {{"three", 3}, {"tres", 3}, {"trois", 3}};
+    WATCH_MAP(mm);
+
     std::set<std::string> ss;
     ss.insert("Dopey");
     ss.insert("Sleepy");
