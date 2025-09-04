@@ -31,12 +31,12 @@ namespace omnetpp {
 //
 // Internal class
 //
-class SIM_API cStdVectorWatcherBase : public cWatchBase
+class SIM_API cStlContainerWatcherBase : public cWatchBase
 {
   private:
     mutable cClassDescriptor *desc;
   public:
-    cStdVectorWatcherBase(const char *name) : cWatchBase(name) {desc = nullptr;}
+    cStlContainerWatcherBase(const char *name) : cWatchBase(name) {desc = nullptr;}
 
     virtual std::string str() const override;
     virtual bool supportsAssignment() const override {return false;}
@@ -52,13 +52,13 @@ class SIM_API cStdVectorWatcherBase : public cWatchBase
 // Internal class
 //
 template<class T>
-class cStdVectorWatcher : public cStdVectorWatcherBase
+class cStdVectorWatcher : public cStlContainerWatcherBase
 {
   protected:
     std::vector<T>& v;
     std::string classname;
   public:
-    cStdVectorWatcher(const char *name, std::vector<T>& var) : cStdVectorWatcherBase(name), v(var) {
+    cStdVectorWatcher(const char *name, std::vector<T>& var) : cStlContainerWatcherBase(name), v(var) {
         classname = std::string("std::vector<")+opp_typename(typeid(T))+">";
     }
     const char *getClassName() const override {return classname.c_str();}
@@ -95,7 +95,7 @@ void createStdPointerVectorWatcher(const char *varname, std::vector<T>& v)
 // Internal class
 //
 template<class T>
-class cStdListWatcher : public cStdVectorWatcherBase
+class cStdListWatcher : public cStlContainerWatcherBase
 {
   protected:
     std::list<T>& v;
@@ -103,7 +103,7 @@ class cStdListWatcher : public cStdVectorWatcherBase
     mutable typename std::list<T>::iterator it;
     mutable int itPos;
   public:
-    cStdListWatcher(const char *name, std::list<T>& var) : cStdVectorWatcherBase(name), v(var) {
+    cStdListWatcher(const char *name, std::list<T>& var) : cStlContainerWatcherBase(name), v(var) {
         itPos=-1;
         classname = std::string("std::list<")+opp_typename(typeid(T))+">";
     }
@@ -168,7 +168,7 @@ void createStdPointerListWatcher(const char *varname, std::list<T>& v)
 // Internal class
 //
 template<class T>
-class cStdSetWatcher : public cStdVectorWatcherBase
+class cStdSetWatcher : public cStlContainerWatcherBase
 {
   protected:
     std::set<T>& v;
@@ -176,7 +176,7 @@ class cStdSetWatcher : public cStdVectorWatcherBase
     mutable typename std::set<T>::iterator it;
     mutable int itPos;
   public:
-    cStdSetWatcher(const char *name, std::set<T>& var) : cStdVectorWatcherBase(name), v(var) {
+    cStdSetWatcher(const char *name, std::set<T>& var) : cStlContainerWatcherBase(name), v(var) {
         itPos=-1;
         classname = std::string("std::set<")+opp_typename(typeid(T))+">";
     }
@@ -241,7 +241,7 @@ void createStdPointerSetWatcher(const char *varname, std::set<T>& v)
 // Internal class
 //
 template<class KeyT, class ValueT, class CmpT>
-class cStdMapWatcher : public cStdVectorWatcherBase
+class cStdMapWatcher : public cStlContainerWatcherBase
 {
   protected:
     std::map<KeyT,ValueT,CmpT>& m;
@@ -249,7 +249,7 @@ class cStdMapWatcher : public cStdVectorWatcherBase
     mutable int itPos;
     std::string classname;
   public:
-    cStdMapWatcher(const char *name, std::map<KeyT,ValueT,CmpT>& var) : cStdVectorWatcherBase(name), m(var) {
+    cStdMapWatcher(const char *name, std::map<KeyT,ValueT,CmpT>& var) : cStlContainerWatcherBase(name), m(var) {
         itPos=-1;
         classname = std::string("std::map<")+opp_typename(typeid(KeyT))+","+opp_typename(typeid(ValueT))+">";
     }

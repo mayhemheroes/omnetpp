@@ -29,15 +29,15 @@ namespace omnetpp {
 //
 // Internal
 //
-class SIM_API cStdVectorWatcherDescriptor : public cClassDescriptor  // noncopyable
+class SIM_API cStlContainerWatcherDescriptor : public cClassDescriptor  // noncopyable
 {
   private:
     std::string vectorTypeName;  // type name of the inspected type, e.g. "std::vector<foo::Bar>"
     std::string elementTypeName;  // type name of vector elements, e.g. "foo::Bar"
 
   public:
-    cStdVectorWatcherDescriptor(const char *vecTypeName, const char *elemTypeName);
-    virtual ~cStdVectorWatcherDescriptor() {}
+    cStlContainerWatcherDescriptor(const char *vecTypeName, const char *elemTypeName);
+    virtual ~cStlContainerWatcherDescriptor() {}
 
     virtual const char **getPropertyNames() const override;
     virtual const char *getProperty(const char *propertyname) const override;
@@ -60,102 +60,102 @@ class SIM_API cStdVectorWatcherDescriptor : public cClassDescriptor  // noncopya
     virtual void setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const override;
 };
 
-cStdVectorWatcherDescriptor::cStdVectorWatcherDescriptor(const char *vecType, const char *elemType) :
+cStlContainerWatcherDescriptor::cStlContainerWatcherDescriptor(const char *vecType, const char *elemType) :
     cClassDescriptor(vecType, "omnetpp::cWatchBase"), vectorTypeName(vecType), elementTypeName(elemType)
 {
 }
 
-const char **cStdVectorWatcherDescriptor::getPropertyNames() const
+const char **cStlContainerWatcherDescriptor::getPropertyNames() const
 {
     return getBaseClassDescriptor()->getPropertyNames();
 }
 
-const char *cStdVectorWatcherDescriptor::getProperty(const char *propertyname) const
+const char *cStlContainerWatcherDescriptor::getProperty(const char *propertyname) const
 {
     return getBaseClassDescriptor()->getProperty(propertyname);
 }
 
-int cStdVectorWatcherDescriptor::getFieldCount() const
+int cStlContainerWatcherDescriptor::getFieldCount() const
 {
     return 1;
 }
 
-unsigned int cStdVectorWatcherDescriptor::getFieldTypeFlags(int field) const
+unsigned int cStlContainerWatcherDescriptor::getFieldTypeFlags(int field) const
 {
-    return FD_ISARRAY;  //TODO we could return FD_ISCOMPOUND, FD_ISPOINTER, FD_ISCOBJECT / FD_ISCOWNEDOBJECT, with a little help from cStdVectorWatcherBase, and then elements would become inspectable (currently they displayed as just strings)
+    return FD_ISARRAY;  //TODO we could return FD_ISCOMPOUND, FD_ISPOINTER, FD_ISCOBJECT / FD_ISCOWNEDOBJECT, with a little help from cStlContainerWatcherBase, and then elements would become inspectable (currently they displayed as just strings)
 }
 
-const char *cStdVectorWatcherDescriptor::getFieldName(int field) const
+const char *cStlContainerWatcherDescriptor::getFieldName(int field) const
 {
     return "elements";
 }
 
-const char *cStdVectorWatcherDescriptor::getFieldTypeString(int field) const
+const char *cStlContainerWatcherDescriptor::getFieldTypeString(int field) const
 {
     return elementTypeName.c_str();
 }
 
-const char **cStdVectorWatcherDescriptor::getFieldPropertyNames(int field) const
+const char **cStlContainerWatcherDescriptor::getFieldPropertyNames(int field) const
 {
     static const char **names = { nullptr };
     return names;
 }
 
-const char *cStdVectorWatcherDescriptor::getFieldProperty(int field, const char *propertyname) const
+const char *cStlContainerWatcherDescriptor::getFieldProperty(int field, const char *propertyname) const
 {
     return nullptr;
 }
 
-int cStdVectorWatcherDescriptor::getFieldArraySize(any_ptr object, int field) const
+int cStlContainerWatcherDescriptor::getFieldArraySize(any_ptr object, int field) const
 {
-    cStdVectorWatcherBase *pp = check_and_cast<cStdVectorWatcherBase*>(fromAnyPtr<cObject>(object));
+    cStlContainerWatcherBase *pp = check_and_cast<cStlContainerWatcherBase*>(fromAnyPtr<cObject>(object));
     return pp->size();
 }
 
-void cStdVectorWatcherDescriptor::setFieldArraySize(any_ptr object, int field, int size) const
+void cStlContainerWatcherDescriptor::setFieldArraySize(any_ptr object, int field, int size) const
 {
     throw cRuntimeError("Cannot set size of array field");  // not supported
 }
 
-std::string cStdVectorWatcherDescriptor::getFieldValueAsString(any_ptr object, int field, int i) const
+std::string cStlContainerWatcherDescriptor::getFieldValueAsString(any_ptr object, int field, int i) const
 {
-    cStdVectorWatcherBase *pp = check_and_cast<cStdVectorWatcherBase*>(fromAnyPtr<cObject>(object));
+    cStlContainerWatcherBase *pp = check_and_cast<cStlContainerWatcherBase*>(fromAnyPtr<cObject>(object));
     return pp->at(i);
 }
 
-void cStdVectorWatcherDescriptor::setFieldValueAsString(any_ptr object, int field, int i, const char *value) const
+void cStlContainerWatcherDescriptor::setFieldValueAsString(any_ptr object, int field, int i, const char *value) const
 {
     throw cRuntimeError("Cannot set field value");  // not supported
 }
 
-cValue cStdVectorWatcherDescriptor::getFieldValue(any_ptr object, int field, int i) const
+cValue cStlContainerWatcherDescriptor::getFieldValue(any_ptr object, int field, int i) const
 {
     throw cRuntimeError("Cannot return field value as cValue");  // not supported
 }
 
-void cStdVectorWatcherDescriptor::setFieldValue(any_ptr object, int field, int i, const cValue& value) const
+void cStlContainerWatcherDescriptor::setFieldValue(any_ptr object, int field, int i, const cValue& value) const
 {
     throw cRuntimeError("Cannot set field value");  // not supported
 }
 
-const char *cStdVectorWatcherDescriptor::getFieldStructName(int field) const
+const char *cStlContainerWatcherDescriptor::getFieldStructName(int field) const
 {
     return nullptr;  //TODO we could return elementTypeName (if it is a compound type; if it's a pointer, the '*' should be removed)
 }
 
-any_ptr cStdVectorWatcherDescriptor::getFieldStructValuePointer(any_ptr object, int field, int i) const
+any_ptr cStlContainerWatcherDescriptor::getFieldStructValuePointer(any_ptr object, int field, int i) const
 {
     return any_ptr(nullptr);  //TODO we could return a pointer to the given array element (if element is a compound type)
 }
 
-void cStdVectorWatcherDescriptor::setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const
+void cStlContainerWatcherDescriptor::setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const
 {
     throw cRuntimeError("Cannot set field value");  // not supported
 }
 
 //--------------------------------
 
-std::string cStdVectorWatcherBase::str() const
+std::string cStlContainerWatcherBase::str() const
 {
     if (size() == 0)
         return std::string("empty");
@@ -164,14 +164,14 @@ std::string cStdVectorWatcherBase::str() const
     return out.str();
 }
 
-cClassDescriptor *cStdVectorWatcherBase::getDescriptor() const
+cClassDescriptor *cStlContainerWatcherBase::getDescriptor() const
 {
     if (!desc) {
         // try to find existing descriptor for this particular type (e.g. "std::vector<double>");
         // if there isn't, create and register a new one
         desc = (cClassDescriptor *)classDescriptors.getInstance()->lookup(getClassName());
         if (!desc) {
-            desc = new cStdVectorWatcherDescriptor(getClassName(), getElemTypeName());
+            desc = new cStlContainerWatcherDescriptor(getClassName(), getElemTypeName());
             classDescriptors.getInstance()->add(desc);
         }
     }

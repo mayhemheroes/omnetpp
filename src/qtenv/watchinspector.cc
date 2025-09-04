@@ -40,8 +40,8 @@ class WatchInspectorFactory : public InspectorFactory
     bool supportsObject(cObject *obj) override {
         // Return true if it's a watch for a simple type (int, double, string etc).
         // For structures, we prefer the normal GenericObjectInspector.
-        // Currently we're prepared for cStdVectorWatcherBase.
-        return dynamic_cast<cWatchBase *>(obj) && !dynamic_cast<cStdVectorWatcherBase *>(obj);
+        // Currently we're prepared for cStlContainerWatcherBase.
+        return dynamic_cast<cWatchBase *>(obj) && !dynamic_cast<cStlContainerWatcherBase *>(obj);
     }
 
     InspectorType getInspectorType() override { return INSP_OBJECT; }
