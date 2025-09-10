@@ -54,6 +54,7 @@
         <file alias="layers">icons/tools/layers.svg</file>
         <file alias="loadned">icons/tools/loadned.svg</file>
         <file alias="log">icons/tools/log.svg</file>
+        <file alias="menu">icons/tools/menu.svg</file>
         <file alias="mfast">icons/tools/mfast.svg</file>
         <file alias="modulegraphics">icons/tools/modulegraphics.svg</file>
         <file alias="mrun">icons/tools/mrun.svg</file>

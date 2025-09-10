@@ -48,7 +48,9 @@ PreferencesDialog::PreferencesDialog(eTab defaultPage, QWidget *parent) :
 void PreferencesDialog::init()
 {
     // General tab
-    QVariant variant = getQtenv()->getPref("confirm-exit");
+    QVariant variant = getQtenv()->getPref("move-menu-to-toolbar");
+    ui->moveMenuToToolbar->setChecked(variant.isValid() ? variant.value<bool>() : getQtenv()->getMainWindow()->getMenuBar()->isNativeMenuBar());
+    variant = getQtenv()->getPref("confirm-exit");
     ui->confirmExit->setChecked(variant.isValid() ? variant.value<bool>() : true);
     variant = getQtenv()->getPref("ned-doc-tooltips");
     ui->nedDocTooltips->setChecked(variant.isValid() ? variant.value<bool>() : true);
@@ -213,6 +215,7 @@ void PreferencesDialog::accept()
 
     getQtenv()->opt->arrangeVectorConnections = ui->arrange->isChecked();
     getQtenv()->opt->showBubbles = ui->showBubbles->isChecked();
+    getQtenv()->setPref("move-menu-to-toolbar", ui->moveMenuToToolbar->isChecked());
     getQtenv()->setPref("confirm-exit", ui->confirmExit->isChecked());
     getQtenv()->setPref("ned-doc-tooltips", ui->nedDocTooltips->isChecked());
 

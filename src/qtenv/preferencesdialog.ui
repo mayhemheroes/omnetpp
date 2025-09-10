@@ -87,6 +87,13 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
+           <widget class="QCheckBox" name="moveMenuToToolbar">
+            <property name="text">
+             <string>Move menu to the toolbar</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="confirmExit">
             <property name="text">
              <string>Confirm exit when simulation is in progress</string>

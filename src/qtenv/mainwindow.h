@@ -65,6 +65,7 @@ public:
     void updateNetworkRunDisplay();
     void updateSimulationIdenticon(const QString &tooltip, const QString &seed);
 
+    QMenuBar *getMenuBar() { return ui->menuBar; }
     QWidget *getMainInspectorArea() { return ui->mainArea; }
     QWidget *getObjectTreeArea() { return ui->treeView; }
     QWidget *getObjectInspectorArea() { return ui->objectInspector; }
@@ -76,6 +77,7 @@ public:
 
     void storeGeometry();
     void restoreGeometry();
+    void updateMenuPlacement();
 
     QSize sizeHint() const override { return QSize(1100, 700); }
 

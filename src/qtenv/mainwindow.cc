@@ -161,6 +161,8 @@ MainWindow::MainWindow(Qtenv *env, QWidget *parent) :
     adjustSize();
 
     ui->actionDebugOnErrors->setChecked(getQtenv()->debugOnErrors);
+
+    updateMenuPlacement();
 }
 
 MainWindow::~MainWindow()
@@ -184,6 +186,33 @@ void MainWindow::updateSimulationIdenticon(const QString &tooltip, const QString
     QIcon icon = RandomIconGenerator::generateIcon(seed, 20);
     identiconButton->setIcon(icon);
     identiconButton->setToolTip("Simulation Identification Icon\n" + tooltip);
+}
+
+void MainWindow::updateMenuPlacement()
+{
+    bool moveMenuToToolbar = getQtenv()->getPref("move-menu-to-toolbar", ui->menuBar->isNativeMenuBar()).toBool();
+    
+    if (moveMenuToToolbar) {
+        // Hide regular menu bar and add toolbar button
+        ui->menuBar->setVisible(false);
+        // Move menu to toolbar button
+        QToolButton* mainMenuToolButton = dynamic_cast<QToolButton *>(ui->mainToolBar->widgetForAction(ui->actionMainMenu));
+        if (!mainMenuToolButton) {
+            // Action was removed (or was not added until now), need to add it to the toolbar
+            ui->mainToolBar->insertAction(ui->actionSetUpConfiguration, ui->actionMainMenu);
+            mainMenuToolButton = dynamic_cast<QToolButton *>(ui->mainToolBar->widgetForAction(ui->actionMainMenu));
+        }
+        mainMenuToolButton->setPopupMode(QToolButton::InstantPopup);
+        mainMenuToolButton->setStyleSheet("QToolButton::menu-indicator { image: none; }");
+        mainMenuToolButton->removeAction(ui->actionMainMenu);
+        for (QAction *action : ui->menuBar->actions())
+            mainMenuToolButton->addAction(action);
+    }
+    else {
+        // Show regular menu bar and remove toolbar button
+        ui->menuBar->setVisible(true);
+        ui->mainToolBar->removeAction(ui->actionMainMenu);
+    }
 }
 
 void MainWindow::onSimTimeLabelGroupingTriggered()
@@ -1010,6 +1039,7 @@ void MainWindow::busy(QString msg)
 void MainWindow::on_actionPreferences_triggered()
 {
     InspectorUtil::preferencesDialog();
+    updateMenuPlacement();
     getQtenv()->callRefreshInspectors();
 }
 

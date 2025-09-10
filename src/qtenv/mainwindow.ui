@@ -402,6 +402,7 @@ Total number of messages created since start of the simulation</string>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionMainMenu"/>
    <addaction name="actionSetUpConfiguration"/>
    <addaction name="separator"/>
    <addaction name="actionOneStep"/>
@@ -894,6 +895,18 @@ Total number of messages created since start of the simulation</string>
    </property>
    <property name="toolTip">
     <string>Show information about the current simulation</string>
+   </property>
+  </action>
+  <action name="actionMainMenu">
+   <property name="text">
+    <string>Main &amp;Menu</string>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/tools/menu</normaloff>:/tools/menu</iconset>
+   </property>
+   <property name="toolTip">
+    <string>Open the main menu here as a dropdown</string>
    </property>
   </action>
  </widget>
