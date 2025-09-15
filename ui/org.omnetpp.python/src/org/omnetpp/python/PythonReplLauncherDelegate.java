@@ -5,14 +5,15 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.tm.internal.terminal.provisional.api.ITerminalConnector;
-import org.eclipse.tm.terminal.connector.local.launcher.LocalLauncherDelegate;
-import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.terminal.connector.ITerminalConnector;
+import org.eclipse.terminal.connector.local.launcher.LocalLauncherDelegate;
+import org.eclipse.terminal.view.core.ITerminalsConnectorConstants;
 
 public class PythonReplLauncherDelegate extends LocalLauncherDelegate {
     private static final String title = "OMNeT++ Python REPL";
     @Override
-    public ITerminalConnector createTerminalConnector(Map<String, Object> properties) {
+    public ITerminalConnector createTerminalConnector(Map<String, Object> properties) throws CoreException {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         String pythonReplCommand = System.getenv("OMNETPP_PYTHON_REPL_COMMAND");
         if (pythonReplCommand == null) {

@@ -4,7 +4,7 @@
     <extension point="org.eclipse.ui.startup">
         <startup class="org.omnetpp.python.Activator" />
     </extension>
-    <extension point="org.eclipse.tm.terminal.view.ui.launcherDelegates">
+    <extension point="org.eclipse.terminal.view.ui.launcherDelegates">
         <delegate
             id="org.omnetpp.python.pytonReplLaunchDelegate"
             class="org.omnetpp.python.PythonReplLauncherDelegate">
