@@ -34,9 +34,10 @@ class SIM_API cStlContainerWatcherDescriptor : public cClassDescriptor  // nonco
   private:
     std::string vectorTypeName;  // type name of the inspected type, e.g. "std::vector<foo::Bar>"
     std::string elementTypeName;  // type name of vector elements, e.g. "foo::Bar"
-
+    bool elementsAreCompound;
+    bool elementsAreCObjects;
   public:
-    cStlContainerWatcherDescriptor(const char *vecTypeName, const char *elemTypeName);
+    cStlContainerWatcherDescriptor(const char *vecTypeName, const char *elemTypeName, bool elementsAreCompound, bool elementsAreCObjects);
     virtual ~cStlContainerWatcherDescriptor() {}
 
     virtual const char **getPropertyNames() const override;
@@ -60,8 +61,8 @@ class SIM_API cStlContainerWatcherDescriptor : public cClassDescriptor  // nonco
     virtual void setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const override;
 };
 
-cStlContainerWatcherDescriptor::cStlContainerWatcherDescriptor(const char *vecType, const char *elemType) :
-    cClassDescriptor(vecType, "omnetpp::cWatchBase"), vectorTypeName(vecType), elementTypeName(elemType)
+cStlContainerWatcherDescriptor::cStlContainerWatcherDescriptor(const char *vecType, const char *elemType, bool elementsAreCompound, bool elementsAreCObjects) :
+    cClassDescriptor(vecType, "omnetpp::cWatchBase"), vectorTypeName(vecType), elementTypeName(elemType), elementsAreCompound(elementsAreCompound), elementsAreCObjects(elementsAreCObjects)
 {
 }
 
@@ -82,7 +83,7 @@ int cStlContainerWatcherDescriptor::getFieldCount() const
 
 unsigned int cStlContainerWatcherDescriptor::getFieldTypeFlags(int field) const
 {
-    return FD_ISARRAY;  //TODO we could return FD_ISCOMPOUND, FD_ISPOINTER, FD_ISCOBJECT / FD_ISCOWNEDOBJECT, with a little help from cStlContainerWatcherBase, and then elements would become inspectable (currently they displayed as just strings)
+    return FD_ISARRAY | (elementsAreCompound ? FD_ISCOMPOUND : 0) | (elementsAreCObjects ? FD_ISCOBJECT : 0);
 }
 
 const char *cStlContainerWatcherDescriptor::getFieldName(int field) const
@@ -140,12 +141,13 @@ void cStlContainerWatcherDescriptor::setFieldValue(any_ptr object, int field, in
 
 const char *cStlContainerWatcherDescriptor::getFieldStructName(int field) const
 {
-    return nullptr;  //TODO we could return elementTypeName (if it is a compound type; if it's a pointer, the '*' should be removed)
+    return elementTypeName.c_str();
 }
 
 any_ptr cStlContainerWatcherDescriptor::getFieldStructValuePointer(any_ptr object, int field, int i) const
 {
-    return any_ptr(nullptr);  //TODO we could return a pointer to the given array element (if element is a compound type)
+    cStlContainerWatcherBase *pp = check_and_cast<cStlContainerWatcherBase*>(fromAnyPtr<cObject>(object));
+    return pp->elementAt(i);
 }
 
 void cStlContainerWatcherDescriptor::setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const
@@ -170,8 +172,13 @@ cClassDescriptor *cStlContainerWatcherBase::getDescriptor() const
         // try to find existing descriptor for this particular type (e.g. "std::vector<double>");
         // if there isn't, create and register a new one
         desc = (cClassDescriptor *)classDescriptors.getInstance()->lookup(getClassName());
+        cClassDescriptor *elemDesc = cClassDescriptor::getDescriptorFor(getElemTypeName());
         if (!desc) {
-            desc = new cStlContainerWatcherDescriptor(getClassName(), getElemTypeName());
+            // FIXME: This wrongly passes false for `elementsAreCObjects` if there is no
+            // descriptor for the element type directly, only for a superclass of it.
+            // The issue is that there's no way to lookup base classes "at runtime"
+            // (after template instantiation), and without an element instance...
+            desc = new cStlContainerWatcherDescriptor(getClassName(), getElemTypeName(), elemDesc != nullptr, elemDesc && elemDesc->extendsCObject());
             classDescriptors.getInstance()->add(desc);
         }
     }
