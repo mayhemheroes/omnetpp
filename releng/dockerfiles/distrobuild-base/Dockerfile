@@ -17,10 +17,10 @@ RUN apt-get update && \
 
 # install maven manually as the 3.6.3 version in the repo does not work on Java17
 RUN cd /opt && \
-    wget https://downloads.apache.org/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.tar.gz && \
-    tar xzf apache-maven-3.9.8-bin.tar.gz && \
-    rm apache-maven-3.9.8-bin.tar.gz && \
-    mv apache-maven-3.9.8 apachemaven
+    wget https://downloads.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz && \
+    tar xzf apache-maven-3.9.11-bin.tar.gz && \
+    rm apache-maven-3.9.11-bin.tar.gz && \
+    mv apache-maven-3.9.11 apachemaven
 ENV M2_HOME /opt/apachemaven
 ENV MAVEN_HOME /opt/apachemaven
 ENV PATH $M2_HOME/bin:$PATH
