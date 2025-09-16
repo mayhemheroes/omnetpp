@@ -28,6 +28,7 @@
 #include "stringutil.h"
 
 namespace omnetpp {
+namespace internal {
 
 //
 // Internal class
@@ -333,6 +334,7 @@ void createStdMapWatcher(const char *varname, std::map<KeyT,ValueT,CmpT>& m)
     new cStdMapWatcher<KeyT,ValueT,CmpT>(varname, m);
 }
 
+} // namespace internal
 
 /**
  * @ingroup WatchMacros
@@ -344,56 +346,56 @@ void createStdMapWatcher(const char *varname, std::map<KeyT,ValueT,CmpT>& m)
  *
  * @hideinitializer
  */
-#define WATCH_VECTOR(variable)     omnetpp::createStdVectorWatcher(#variable,(variable))
+#define WATCH_VECTOR(variable)     omnetpp::internal::createStdVectorWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::vectors storing pointers inspectable in Qtenv. See also WATCH_VECTOR().
  *
  * @hideinitializer
  */
-#define WATCH_PTRVECTOR(variable)  omnetpp::createStdVectorWatcher(#variable,(variable))
+#define WATCH_PTRVECTOR(variable)  omnetpp::internal::createStdVectorWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::lists inspectable in Qtenv. See also WATCH_PTRLIST().
  *
  * @hideinitializer
  */
-#define WATCH_LIST(variable)       omnetpp::createStdListWatcher(#variable,(variable))
+#define WATCH_LIST(variable)       omnetpp::internal::createStdListWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::lists storing pointers inspectable in Qtenv. See also WATCH_LIST().
  *
  * @hideinitializer
  */
-#define WATCH_PTRLIST(variable)    omnetpp::createStdListWatcher(#variable,(variable))
+#define WATCH_PTRLIST(variable)    omnetpp::internal::createStdListWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::sets inspectable in Qtenv. See also WATCH_PTRSET().
  *
  * @hideinitializer
  */
-#define WATCH_SET(variable)        omnetpp::createStdSetWatcher(#variable,(variable))
+#define WATCH_SET(variable)        omnetpp::internal::createStdSetWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::sets storing pointers inspectable in Qtenv. See also WATCH_SET().
  *
  * @hideinitializer
  */
-#define WATCH_PTRSET(variable)     omnetpp::createStdSetWatcher(#variable,(variable))
+#define WATCH_PTRSET(variable)     omnetpp::internal::createStdSetWatcher(#variable,(variable))
 
 /**
  * @brief Makes std::maps inspectable in Qtenv. See also WATCH_PTRMAP().
  *
  * @hideinitializer
  */
-#define WATCH_MAP(m)               omnetpp::createStdMapWatcher(#m,(m))
+#define WATCH_MAP(m)               omnetpp::internal::createStdMapWatcher(#m,(m))
 
 /**
  * @brief Makes std::maps storing pointers inspectable in Qtenv. See also WATCH_MAP().
  *
  * @hideinitializer
  */
-#define WATCH_PTRMAP(m)            omnetpp::createStdMapWatcher(#m,(m))
+#define WATCH_PTRMAP(m)            omnetpp::internal::createStdMapWatcher(#m,(m))
 
 /** @} */
 
