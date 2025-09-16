@@ -318,6 +318,17 @@ class SIM_API cClassDescriptor : public cNoncopyableOwnedObject
      * 0 if the field is not an array.
      */
     virtual void setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const = 0;
+
+    /**
+     * Returns a string to be used as the array index in the UI when displaying
+     * an array element. The default implementation returns "[arrayIndex] ".
+     * This method can be overridden to provide custom index formatting,
+     * for example to show map keys instead of numeric indices.
+     *
+     * The field argument must be in the 0..getFieldCount()-1 range.
+     * The arrayIndex argument must be in the 0..getFieldArraySize()-1 range.
+     */
+    virtual std::string getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const;
     //@}
 };
 

@@ -303,5 +303,11 @@ int cClassDescriptor::findField(const char *fieldName) const
     return -1;
 }
 
-}  // namespace omnetpp
+std::string cClassDescriptor::getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "[%d] ", arrayIndex);
+    return std::string(buf);
+}
 
+}  // namespace omnetpp

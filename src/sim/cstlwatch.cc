@@ -59,6 +59,7 @@ class SIM_API cStlContainerWatcherDescriptor : public cClassDescriptor  // nonco
     virtual const char *getFieldStructName(int field) const override;
     virtual any_ptr getFieldStructValuePointer(any_ptr object, int field, int i) const override;
     virtual void setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const override;
+    virtual std::string getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const override;
 };
 
 cStlContainerWatcherDescriptor::cStlContainerWatcherDescriptor(const char *vecType, const char *elemType, bool elementsAreCompound, bool elementsAreCObjects) :
@@ -155,6 +156,13 @@ void cStlContainerWatcherDescriptor::setFieldStructValuePointer(any_ptr object, 
     throw cRuntimeError("Cannot set field value");  // not supported
 }
 
+std::string cStlContainerWatcherDescriptor::getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const
+{
+    // Delegate to the watcher
+    cStlContainerWatcherBase *watcher = check_and_cast<cStlContainerWatcherBase*>(fromAnyPtr<cObject>(object));
+    return watcher->getArrayIndexString(arrayIndex);
+}
+
 //--------------------------------
 
 std::string cStlContainerWatcherBase::str() const
@@ -185,5 +193,12 @@ cClassDescriptor *cStlContainerWatcherBase::getDescriptor() const
     return desc;
 }
 
-}  // namespace omnetpp
+std::string cStlContainerWatcherBase::getArrayIndexString(int arrayIndex) const
+{
+    // Default implementation: use standard numeric indexing
+    char buf[32];
+    snprintf(buf, sizeof(buf), "[%d] ", arrayIndex);
+    return std::string(buf);
+}
 
+}  // namespace omnetpp

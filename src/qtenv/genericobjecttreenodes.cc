@@ -917,7 +917,7 @@ QVariant ArrayElementNode::computeData(int role)
 {
     DisableDebugOnErrors dummy;
 
-    QString indexEquals = QString("[%1] ").arg(arrayIndex);
+    QString indexEquals = QString::fromStdString(containingDesc->getFieldArrayIndexString(containingObject, fieldIndex, arrayIndex));
     QString value;
     QString info;
     cObject *fieldObjectPointer = nullptr;

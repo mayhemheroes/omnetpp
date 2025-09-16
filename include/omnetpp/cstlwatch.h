@@ -59,6 +59,7 @@ class SIM_API cStlContainerWatcherBase : public cWatchBase
     virtual std::string at(int i) const = 0;
     virtual any_ptr elementAt(int i) const {return any_ptr(nullptr);}
     virtual cClassDescriptor *getDescriptor() const override;
+    virtual std::string getArrayIndexString(int arrayIndex) const;
 };
 
 
@@ -289,6 +290,11 @@ class cStdSetWatcher : public cIteratorBasedContainerWatcherBase<T, I>
         cIteratorBasedContainerWatcherBase<T, I>(name, std::string("std::set<")+opp_typename(typeid(T))+">"),
         v(var)
     { }
+
+    std::string getArrayIndexString(int arrayIndex) const override {
+        // For sets, return empty string (no index prefix)
+        return "";
+    }
 };
 
 template <class T>
@@ -322,8 +328,19 @@ class cStdMapWatcher : public cIteratorBasedContainerWatcherBase<ValueT, I>
 
     virtual std::string atIt() const {
         std::stringstream out;
-        out << this->it->first << " => ";
         printValue(out, this->it->second);
+        return out.str();
+    }
+
+    std::string getArrayIndexString(int arrayIndex) const override {
+        // For maps, extract the key and use "key => " format
+        this->seekItTo(arrayIndex);
+        if (this->it == this->end()) {
+            return "[out of bounds] => ";
+        }
+        std::stringstream out;
+        printValue(out, this->it->first);
+        out << " => ";
         return out.str();
     }
 };
