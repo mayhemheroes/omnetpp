@@ -245,6 +245,7 @@
       <module>org.visigoths.freemarker.ide</module>
 
       <module>features/org.omnetpp.ide</module>
+      <module>features/org.omnetpp.ide.source</module>
       <module>features/org.omnetpp.ide.${what}</module>
       <module>releng/org.omnetpp.ide.${what}.product</module>
 
