@@ -10,12 +10,15 @@
       <eclipse-repo.url>https://download.eclipse.org/releases/2025-09</eclipse-repo.url>
       <justj-repo.url>https://download.eclipse.org/justj/jres/21/updates/release/</justj-repo.url>
       <pydev-repo.url>http://pydev.sourceforge.net/pydev_update_site/13.0.2/</pydev-repo.url>
+      <gmf-runtime-repo.url>https://download.eclipse.org/modeling/gmp/gmf-runtime/updates/releases/R202508120942/</gmf-runtime-repo.url>
    </properties>
 
    <repositories>
       <repository><id>main</id><url>${eclipse-repo.url}</url><layout>p2</layout></repository>
       <repository><id>justj</id><url>${justj-repo.url}</url><layout>p2</layout></repository>
       <repository><id>pydev</id><url>${pydev-repo.url}</url><layout>p2</layout></repository>
+      <!-- gmf-runtime is not available in the 2025-09 EPP repository so add it directly from the GMF repository -->
+      <repository><id>gmf-runtime</id><url>${gmf-runtime-repo.url}</url><layout>p2</layout></repository>
    </repositories>
    <build>
       <extensions>
