@@ -229,9 +229,6 @@
    </profiles>
 
    <modules>
-      <module>features</module>
-      <module>releng/org.omnetpp.ide.${what}.product</module>
-
       <module>org.omnetpp.cdt</module>
       <module>org.omnetpp.common</module>
       <module>org.omnetpp.common.core</module>
@@ -263,5 +260,10 @@
       <module>org.swtworkbench.xswt</module>
       <module>org.visigoths.freemarker</module>
       <module>org.visigoths.freemarker.ide</module>
+
+      <module>features/org.omnetpp.ide</module>
+      <module>features/org.omnetpp.ide.${what}</module>
+      <module>releng/org.omnetpp.ide.${what}.product</module>
+
    </modules>
 </project>
