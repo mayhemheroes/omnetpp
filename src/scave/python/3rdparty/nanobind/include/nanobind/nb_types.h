@@ -183,7 +183,7 @@ public:
     NB_INLINE handle(const PyTypeObject *ptr) : m_ptr((PyObject *) ptr) { }
 
     const handle& inc_ref() const & noexcept {
-#if defined(NDEBUG) && !defined(Py_LIMITED_API)
+#if defined(NDEBUG)
         Py_XINCREF(m_ptr);
 #else
         detail::incref_checked(m_ptr);
@@ -192,7 +192,7 @@ public:
     }
 
     const handle& dec_ref() const & noexcept {
-#if defined(NDEBUG) && !defined(Py_LIMITED_API)
+#if defined(NDEBUG)
         Py_XDECREF(m_ptr);
 #else
         detail::decref_checked(m_ptr);
@@ -314,7 +314,7 @@ inline void delattr(handle h, handle key) {
 
 class module_ : public object {
 public:
-    NB_OBJECT(module_, object, "types.ModuleType", PyModule_CheckExact);
+    NB_OBJECT(module_, object, "types.ModuleType", PyModule_CheckExact)
 
     template <typename Func, typename... Extra>
     module_ &def(const char *name_, Func &&f, const Extra &...extra);
@@ -334,7 +334,7 @@ public:
 };
 
 class capsule : public object {
-    NB_OBJECT_DEFAULT(capsule, object, "types.CapsuleType", PyCapsule_CheckExact)
+    NB_OBJECT_DEFAULT(capsule, object, NB_TYPING_CAPSULE, PyCapsule_CheckExact)
 
     capsule(const void *ptr, void (*cleanup)(void *) noexcept = nullptr) {
         m_ptr = detail::capsule_new(ptr, nullptr, cleanup);
@@ -348,6 +348,12 @@ class capsule : public object {
     const char *name() const { return PyCapsule_GetName(m_ptr); }
 
     void *data() const { return PyCapsule_GetPointer(m_ptr, name()); }
+    void *data(const char *name) const {
+        void *p = PyCapsule_GetPointer(m_ptr, name);
+        if (!p && PyErr_Occurred())
+            raise_python_error();
+        return p;
+    }
 };
 
 class bool_ : public object {
@@ -371,10 +377,12 @@ class int_ : public object {
         : object(detail::int_from_obj(h.ptr()), detail::steal_t{}) { }
 
     template <typename T, detail::enable_if_t<std::is_arithmetic_v<T>> = 0>
-    explicit int_(T value)
-        : object(
-              detail::type_caster<T>::from_cpp(value, rv_policy::copy, nullptr),
-              detail::steal_t{}) {
+    explicit int_(T value) {
+        if constexpr (std::is_floating_point_v<T>)
+            m_ptr = PyLong_FromDouble((double) value);
+        else
+            m_ptr = detail::type_caster<T>::from_cpp(value, rv_policy::copy, nullptr).ptr();
+
         if (!m_ptr)
             raise_python_error();
     }
@@ -419,7 +427,7 @@ class str : public object {
     explicit str(const char *s, size_t n)
         : object(detail::str_from_cstr_and_size(s, n), detail::steal_t{}) { }
 
-    template <typename... Args> str format(Args&&... args);
+    template <typename... Args> str format(Args&&... args) const;
 
     const char *c_str() const { return PyUnicode_AsUTF8AndSize(m_ptr, nullptr); }
 };
@@ -443,6 +451,42 @@ class bytes : public object {
     size_t size() const { return (size_t) PyBytes_Size(m_ptr); }
 };
 
+NAMESPACE_BEGIN(literals)
+inline str operator""_s(const char *s, size_t n) {
+    return str(s, n);
+}
+NAMESPACE_END(literals)
+
+class bytearray : public object {
+    NB_OBJECT(bytearray, object, "bytearray", PyByteArray_Check)
+
+#if PY_VERSION_HEX >= 0x03090000
+    bytearray()
+        : object(PyObject_CallNoArgs((PyObject *)&PyByteArray_Type), detail::steal_t{}) { }
+#else
+    bytearray()
+        : object(PyObject_CallObject((PyObject *)&PyByteArray_Type, NULL), detail::steal_t{}) { }
+#endif
+
+    explicit bytearray(handle h)
+        : object(detail::bytearray_from_obj(h.ptr()), detail::steal_t{}) { }
+
+    explicit bytearray(const void *s, size_t n)
+        : object(detail::bytearray_from_cstr_and_size(s, n), detail::steal_t{}) { }
+
+    const char *c_str() const { return PyByteArray_AsString(m_ptr); }
+
+    const void *data() const { return PyByteArray_AsString(m_ptr); }
+    void *data() { return PyByteArray_AsString(m_ptr); }
+
+    size_t size() const { return (size_t) PyByteArray_Size(m_ptr); }
+
+    void resize(size_t n) {
+        if (PyByteArray_Resize(m_ptr, (Py_ssize_t) n) != 0)
+            detail::raise_python_error();
+    }
+};
+
 class tuple : public object {
     NB_OBJECT(tuple, object, "tuple", PyTuple_Check)
     tuple() : object(PyTuple_New(0), detail::steal_t()) { }
@@ -456,6 +500,7 @@ class tuple : public object {
     detail::fast_iterator begin() const;
     detail::fast_iterator end() const;
 #endif
+    bool empty() const { return size() == 0; }
 };
 
 class type_object : public object {
@@ -499,6 +544,7 @@ class list : public object {
     detail::fast_iterator begin() const;
     detail::fast_iterator end() const;
 #endif
+    bool empty() const { return size() == 0; }
 };
 
 class dict : public object {
@@ -510,12 +556,25 @@ class dict : public object {
     list keys() const { return steal<list>(detail::obj_op_1(m_ptr, PyDict_Keys)); }
     list values() const { return steal<list>(detail::obj_op_1(m_ptr, PyDict_Values)); }
     list items() const { return steal<list>(detail::obj_op_1(m_ptr, PyDict_Items)); }
+    object get(handle key, handle def) const {
+        PyObject *o = PyDict_GetItem(m_ptr, key.ptr());
+        if (!o)
+            o = def.ptr();
+        return borrow(o);
+    }
+    object get(const char *key, handle def) const {
+        PyObject *o = PyDict_GetItemString(m_ptr, key);
+        if (!o)
+            o = def.ptr();
+        return borrow(o);
+    }
     template <typename T> bool contains(T&& key) const;
     void clear() { PyDict_Clear(m_ptr); }
     void update(handle h) {
         if (PyDict_Update(m_ptr, h.ptr()))
             raise_python_error();
     }
+    bool empty() const { return size() == 0; }
 };
 
 class set : public object {
@@ -531,6 +590,17 @@ class set : public object {
             raise_python_error();
     }
     template <typename T> bool discard(T &&value);
+    bool empty() const { return size() == 0; }
+};
+
+class frozenset : public object {
+    NB_OBJECT(frozenset, object, "frozenset", PyFrozenSet_Check)
+    frozenset() : object(PyFrozenSet_New(nullptr), detail::steal_t()) { }
+    explicit frozenset(handle h)
+        : object(detail::frozenset_from_obj(h.ptr()), detail::steal_t{}) { }
+    size_t size() const { return (size_t) NB_SET_GET_SIZE(m_ptr); }
+    template <typename T> bool contains(T&& key) const;
+    bool empty() const { return size() == 0; }
 };
 
 class sequence : public object {
@@ -712,6 +782,15 @@ public:
     static bool check_(handle h) { return isinstance<T>(h); }
 };
 
+struct fallback : public handle {
+public:
+    static constexpr auto Name = detail::const_name("object");
+
+    using handle::handle;
+    using handle::operator=;
+    fallback(const handle &h) : handle(h) { }
+};
+
 template <typename T> class type_object_t : public type_object {
 public:
     static constexpr auto Name = detail::const_name(NB_TYPING_TYPE "[") +
@@ -733,6 +812,8 @@ public:
     constexpr static bool nb_typed = true;
     using T::T;
     using T::operator=;
+    typed(const T& o) : T(o) {}
+    typed(T&& o) : T(std::move(o)) {}
 };
 
 template <typename T> struct pointer_and_handle {
@@ -790,24 +871,29 @@ struct fast_iterator {
 
 class dict_iterator {
 public:
+    NB_NONCOPYABLE(dict_iterator)
+
     using value_type = std::pair<handle, handle>;
     using reference = const value_type;
 
-    dict_iterator() : h(), pos(-1) { }
-
+    dict_iterator() = default;
     dict_iterator(handle h) : h(h), pos(0) {
+#if defined(NB_FREE_THREADED)
+        PyCriticalSection_Begin(&cs, h.ptr());
+#endif
         increment();
     }
+
+#if defined(NB_FREE_THREADED)
+    ~dict_iterator() {
+        if (h.ptr())
+            PyCriticalSection_End(&cs);
+    }
+#endif
 
     dict_iterator& operator++() {
         increment();
         return *this;
-    }
-
-    dict_iterator operator++(int) {
-        dict_iterator rv = *this;
-        increment();
-        return rv;
     }
 
     void increment() {
@@ -822,8 +908,12 @@ public:
 
 private:
     handle h;
-    Py_ssize_t pos;
-    PyObject *key = nullptr, *value = nullptr;
+    Py_ssize_t pos = -1;
+    PyObject *key = nullptr;
+    PyObject *value = nullptr;
+#if defined(NB_FREE_THREADED)
+    PyCriticalSection cs { };
+#endif
 };
 
 NB_IMPL_COMP(equal,      Py_EQ)

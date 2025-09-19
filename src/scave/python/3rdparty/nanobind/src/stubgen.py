@@ -56,7 +56,7 @@ specifically to simplify stub generation.
 import argparse
 import builtins
 import enum
-from inspect import Signature, Parameter, signature, ismodule, getmembers
+from inspect import Signature, Parameter, signature, ismodule
 import textwrap
 import importlib
 import importlib.machinery
@@ -90,7 +90,8 @@ SKIP_LIST = [
     "__cached__", "__path__", "__version__", "__spec__", "__loader__",
     "__package__", "__nb_signature__", "__class_getitem__", "__orig_bases__",
     "__file__", "__dict__", "__weakref__", "__format__", "__nb_enum__",
-    "__firstlineno__", "__static_attributes__"
+    "__firstlineno__", "__static_attributes__", "__annotations__", "__annotate__",
+    "__annotate_func__"
 ]
 # fmt: on
 
@@ -164,6 +165,25 @@ class ReplacePattern:
     query: Pattern[str]
     lines: List[str]
     matches: int
+
+
+def create_subdirectory_for_module(module: types.ModuleType) -> bool:
+    """
+    When creating stubs recursively, prefer putting information directly
+    into a ``submodule.pyi`` file unless the submodule has sub-submodules,
+    or is defined in a nested directory (e.g. ``submodule/__init__.py``).
+    In those two cases, put the stubs into ``submodule/__init__.pyi``
+    """
+
+    for child in module.__dict__.values():
+        if ismodule(child):
+            parent_name, _, _ = child.__name__.rpartition(".")
+            if parent_name == module.__name__:
+                return True
+
+    return hasattr(module, '__file__') \
+        and module.__file__ is not None \
+        and module.__file__.endswith('__init__.py')
 
 
 class StubGen:
@@ -395,18 +415,18 @@ class StubGen:
             self.write_ln(f"{name} = {fn_name}\n")
             return
 
-        if isinstance(fn, staticmethod):
-            self.write_ln("@staticmethod")
-            fn = fn.__func__
-        elif isinstance(fn, classmethod):
-            self.write_ln("@staticmethod")
-            fn = fn.__func__
-
         # Special handling for nanobind functions with overloads
         if type(fn).__module__ == "nanobind":
             fn = cast(NbFunction, fn)
             self.put_nb_func(fn, name)
             return
+
+        if isinstance(fn, staticmethod):
+            self.write_ln("@staticmethod")
+            fn = fn.__func__
+        elif isinstance(fn, classmethod):
+            self.write_ln("@classmethod")
+            fn = fn.__func__
 
         if name is None:
             name = fn.__name__
@@ -427,7 +447,17 @@ class StubGen:
                 overload = self.import_object("typing", "overload")
                 self.write_ln(f"@{overload}")
 
-            sig_str = f"{name}{self.signature_str(signature(fno))}"
+            try:
+                sig = signature(fno)
+            except ValueError:
+                sig = None
+
+            if sig is not None:
+                sig_str = f"{name}{self.signature_str(sig)}"
+            else:
+                # If inspect.signature fails, use a maximally permissive type.
+                any_type = self.import_object("typing", "Any")
+                sig_str = f"{name}(*args, **kwargs) -> {any_type}"
 
             # Potentially copy docstring from the implementation function
             docstr = fno.__doc__
@@ -462,7 +492,10 @@ class StubGen:
     def put_nb_static_property(self, name: Optional[str], prop: NbStaticProperty):
         """Append a 'nb_static_property' object"""
         getter_sig = prop.fget.__nb_signature__[0][0]
-        getter_sig = getter_sig[getter_sig.find("/) -> ") + 6 :]
+        pos = getter_sig.find("/) -> ")
+        if pos == -1:
+            raise RuntimeError(f"Static property '{name}' ({getter_sig}) has an invalid signature!")
+        getter_sig = getter_sig[pos + 6 :]
         self.write_ln(f"{name}: {getter_sig} = ...")
         if prop.__doc__ and self.include_docstrings:
             self.put_docstr(prop.__doc__)
@@ -479,7 +512,10 @@ class StubGen:
 
             if same_module:
                 # This is an alias of a type in the same module or same top-level module
-                alias_tp = self.import_object("typing", "TypeAlias")
+                if sys.version_info >= (3, 10, 0):
+                    alias_tp = self.import_object("typing", "TypeAlias")
+                else:
+                    alias_tp = self.import_object("typing_extensions", "TypeAlias")
                 self.write_ln(f"{name}: {alias_tp} = {tp.__qualname__}\n")
             elif self.include_external_imports or (same_toplevel_module and self.include_internal_imports):
                 # Import from a different module
@@ -555,6 +591,9 @@ class StubGen:
         ):
             return
 
+        if tp.__module__ == '__future__':
+            return
+
         if isinstance(parent, type) and issubclass(tp, parent):
             # This is an entry of an enumeration
             self.write_ln(f"{name} = {typing.cast(enum.Enum, value).value}")
@@ -578,7 +617,10 @@ class StubGen:
             if self.is_type_var(tp):
                 types = ""
             elif typing.get_origin(value):
-                types = ": " + self.import_object("typing", "TypeAlias")
+                if sys.version_info >= (3, 10, 0):
+                    types = ": " + self.import_object("typing", "TypeAlias")
+                else:
+                    types = ": " + self.import_object("typing_extensions", "TypeAlias")
             else:
                 types = f": {self.type_str(tp)}"
 
@@ -599,14 +641,14 @@ class StubGen:
 
         - "local_module.X" -> "X"
 
-        - "other_module.X" -> "other_module.XX"
+        - "other_module.X" -> "other_module.X"
           (with "import other_module" added at top)
 
         - "builtins.X" -> "X"
 
         - "NoneType" -> "None"
 
-        - "ndarray[...]" -> "Annotated[ArrayLike, dict(...)]"
+        - "ndarray[...]" -> "Annotated[NDArray[dtype], dict(..extras..)]"
 
         - "collections.abc.X" -> "X"
           (with "from collections.abc import X" added at top)
@@ -617,27 +659,25 @@ class StubGen:
         """
 
         # Process nd-array type annotations so that MyPy accepts them
-        def process_ndarray(m: Match[str]) -> str:
-            s = m.group(2)
-
-            ndarray = self.import_object("numpy.typing", "ArrayLike")
-            assert ndarray
-            s = re.sub(r"dtype=([\w]*)\b", r"dtype='\g<1>'", s)
-            s = s.replace("*", "None")
-
-            if s:
-                annotated = self.import_object("typing", "Annotated")
-                return f"{annotated}[{ndarray}, dict({s})]"
-            else:
-                return ndarray
-
-        s = self.ndarray_re.sub(process_ndarray, s)
+        s = self.ndarray_re.sub(lambda m: self._format_ndarray(m.group(2)), s)
 
         if sys.version_info >= (3, 9, 0):
             s = self.abc_re.sub(r'collections.abc.\1', s)
 
         # Process other type names and add suitable import statements
         def process_general(m: Match[str]) -> str:
+            def is_valid_module(module_name: str) -> bool:
+                try:
+                    importlib.util.find_spec(module_name)
+                    # If we get here, the module exists and has a valid spec.
+                    return True
+                except ValueError:
+                    # The module exists but has no spec, `find_spec` raises a
+                    # `ValueError`, so if we get here, the module does exist.
+                    return True
+                except ModuleNotFoundError:
+                    return False
+
             full_name, mod_name, cls_name = m.group(0), m.group(1)[:-1], m.group(2)
 
             if mod_name == "builtins":
@@ -650,6 +690,19 @@ class StubGen:
                 # Import frequently-occurring typing classes and ABCs directly
                 return self.import_object(mod_name, cls_name)
             else:
+                # Handle nested names. While mod_name isn't a valid module, then
+                # move the last segment of the name from mod_name to cls_name
+                # and try again until we have the right partition.
+                search_mod_name = mod_name
+                search_cls_name = cls_name
+                while search_mod_name:
+                    if is_valid_module(search_mod_name):
+                        mod_name = search_mod_name
+                        cls_name = search_cls_name
+                        break
+                    search_mod_name, _, symbol = search_mod_name.rpartition(".")
+                    search_cls_name = f"{symbol}.{search_cls_name}"
+
                 # Import the module and reference the contained class by name
                 self.import_object(mod_name, None)
                 return full_name
@@ -657,6 +710,27 @@ class StubGen:
         s = self.id_seq.sub(process_general, s)
 
         return s
+
+    def _format_ndarray(self, annotation: str) -> str:
+        """Improve NumPy type annotations for static type checking"""
+        dtype = None
+        m = re.search(r"dtype=(\w+)", annotation)
+
+        if m:
+            dtype = "numpy."+ m.group(1)
+            annotation = re.sub(r"dtype=\w+,?\s*", "", annotation).rstrip(", ")
+
+        # Turn shape notation into a valid Python type expression
+        annotation = annotation.replace("*", "None").replace("(None)", "(None,)")
+
+        # Build type while potentially preserving extra information as an annotation
+        ndarray = self.import_object("numpy.typing", "NDArray")
+        result = f"{ndarray}[{dtype}]" if dtype else ndarray
+        if annotation:
+            annotated = self.import_object("typing", "Annotated")
+            result = f"{annotated}[{result}, dict({annotation})]"
+
+        return result
 
     def apply_pattern(self, query: str, value: object) -> bool:
         """
@@ -774,16 +848,15 @@ class StubGen:
                     # Do not include submodules in the same stub, but include a directive to import them
                     self.import_object(value.__name__, name=None, as_name=name)
 
-                    # If the user requested this, generate a separate stub recursively
+                    # If the user requested this, generate recursive stub files as well
                     if self.recursive and value_name_s[:-1] == module_name_s and self.output_file:
-                        module_file = getattr(value, '__file__', None)
-
-                        if not module_file or module_file.endswith('__init__.py'):
+                        if create_subdirectory_for_module(value):
+                            # Create a new subdirectory and start with an __init__.pyi file there
                             dir_name = self.output_file.parents[0] / value_name_s[-1]
                             dir_name.mkdir(parents=False, exist_ok=True)
                             output_file = dir_name / '__init__.pyi'
                         else:
-                            output_file = self.output_file.parents[0] / (value_name_s[-1] + '.py')
+                            output_file = self.output_file.parents[0] / (value_name_s[-1] + '.pyi')
 
                         sg = StubGen(
                             module=value,
@@ -799,6 +872,7 @@ class StubGen:
                         )
 
                         sg.put(value)
+                        output_file = output_file.resolve()
 
                         if not self.quiet:
                             print(f'  - writing stub "{output_file}" ..')
@@ -808,7 +882,9 @@ class StubGen:
                     return
                 else:
                     self.apply_pattern(self.prefix + ".__prefix__", None)
-                    for name, child in getmembers(value):
+                    # using value.__dict__ rather than inspect.getmembers
+                    # to preserve insertion order
+                    for name, child in value.__dict__.items():
                         self.put(child, name=name, parent=value)
                     self.apply_pattern(self.prefix + ".__suffix__", None)
             elif self.is_function(tp):
@@ -820,7 +896,7 @@ class StubGen:
             elif tp_mod == "nanobind":
                 if tp_name == "nb_method":
                     value = cast(NbFunction, value)
-                    self.put_nb_func(value, name)
+                    self.put_function(value, name)
                 elif tp_name == "nb_static_property":
                     value = cast(NbStaticProperty, value)
                     self.put_nb_static_property(name, value)
@@ -853,7 +929,7 @@ class StubGen:
             return name
 
         # Rewrite module name if this is relative import from a submodule
-        if module.startswith(self.module.__name__):
+        if module.startswith(self.module.__name__) and module != self.module.__name__:
             module_short = module[len(self.module.__name__) :]
             if not name and as_name and module_short[0] == ".":
                 name = as_name = module_short[1:]
@@ -1024,6 +1100,10 @@ class StubGen:
         if has_def:
             result += " = " if has_type else "="
             p_default_str = self.expr_str(p.default)
+            if p_default_str is None:
+                # self.expr_str(p.default) could return None in some rare cases,
+                # e.g. p.default is a nanobind object. If so, use ellipsis as a placeholder.
+                p_default_str = "..."
             assert p_default_str
             result += p_default_str
         return result
@@ -1032,7 +1112,9 @@ class StubGen:
         """Attempt to convert a type into a Python expression which reproduces it"""
         origin, args = typing.get_origin(tp), typing.get_args(tp)
 
-        if isinstance(tp, typing.TypeVar):
+        if isinstance(tp, str):
+            result = tp
+        elif isinstance(tp, typing.TypeVar):
             return tp.__name__
         elif isinstance(tp, typing.ForwardRef):
             return repr(tp.__forward_arg__)
@@ -1081,7 +1163,7 @@ class StubGen:
             return 1
 
         if spec:
-            if spec.origin and "site-packages" in spec.origin:
+            if spec.origin and ("site-packages" in spec.origin or "dist-packages" in spec.origin):
                 return 1
             else:
                 return 0
@@ -1186,10 +1268,11 @@ def parse_options(args: List[str]) -> argparse.Namespace:
     parser.add_argument(
         "-M",
         "--marker-file",
+        action="append",
         metavar="FILE",
         dest="marker_file",
-        default=None,
-        help="generate a marker file (usually named 'py.typed')",
+        default=[],
+        help="generate a marker file (usually named 'py.typed', can specify multiple times)",
     )
 
     parser.add_argument(
@@ -1339,11 +1422,21 @@ def main(args: Optional[List[str]] = None) -> None:
 
             ext_loader = importlib.machinery.ExtensionFileLoader
             if isinstance(mod_imported.__loader__, ext_loader):
-                file = file.with_name(mod_imported.__name__)
+                # Splitting on "." (module nesting qualifier) handles the case
+                # of invoking stubgen on a module that's not in the current
+                # working directory - in that case, we still only want the Python
+                # module name as the stub file name, not the whole source tree
+                # hierarchy.
+                modname = mod_imported.__name__.split(".")[-1]
+                file = file.with_name(modname)
             file = file.with_suffix(".pyi")
 
             if opt.output_dir:
                 file = Path(opt.output_dir, file.name)
+
+            if opt.recursive and create_subdirectory_for_module(mod_imported) \
+                and file.name != '__init__.pyi':
+                    file = file.with_suffix('') / "__init__.pyi"
 
         file.parents[0].mkdir(parents=True, exist_ok=True)
 
@@ -1376,16 +1469,19 @@ def main(args: Optional[List[str]] = None) -> None:
             if not opt.quiet:
                 print(f"  - applied {total_matches} patterns.")
 
+        file = file.resolve()
+
         if not opt.quiet:
             print(f'  - writing stub "{file}" ..')
 
         with open(file, "w", encoding='utf-8') as f:
             f.write(sg.get())
 
-    if opt.marker_file:
+    for marker_file in opt.marker_file:
+        marker_file = Path(marker_file).resolve()
         if not opt.quiet:
-            print(f'  - writing marker file "{opt.marker_file}" ..')
-        Path(opt.marker_file).touch()
+            print(f'  - writing marker file "{marker_file}" ..')
+        marker_file.touch()
 
 
 if __name__ == "__main__":
