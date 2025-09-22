@@ -246,15 +246,20 @@ void DemuxFilter::receiveSignal(cResultFilter *prev, simtime_t_cref t, cObject *
         getDelegate(startIndex + i)->receiveSignal(this, t, obj, details);
 }
 
+std::string DemuxFilter::getDemuxLabel(cObject *details)
+{
+    if (details == nullptr)
+        return "";
+    return details->getFullName();
+}
+
 int DemuxFilter::getDelegateStartIndexByLabel(cObject *details)
 {
     if (fanOut == -1)
         fanOut = getNumDelegates();
 
-    if (details == nullptr)
-        return 0;
-    const char *label = details->getFullName();
-    if (!*label)
+    std::string label = getDemuxLabel(details);
+    if (label.empty())
         return 0;
 
     auto it = labelToDelegateStartIndexMap.find(label);
@@ -265,7 +270,7 @@ int DemuxFilter::getDelegateStartIndexByLabel(cObject *details)
         int startIndex = getNumDelegates();
         labelToDelegateStartIndexMap[label] = startIndex;
         for (int i = 0; i < fanOut; i++) {
-            cResultListener *delegate = copyChain(getDelegate(i), label);
+            cResultListener *delegate = copyChain(getDelegate(i), label.c_str());
             addDelegate(delegate); // placed at position startIndex+i
         }
         return startIndex;

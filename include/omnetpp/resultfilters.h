@@ -70,6 +70,8 @@ class SIM_API DemuxFilter : public cResultFilter
         int getDelegateStartIndexByLabel(cObject *details);
         cResultListener *copyChain(cResultListener *templateChain, const char *label);
     protected:
+        virtual std::string getDemuxLabel(cObject *details);
+    protected:
         virtual void receiveSignal(cResultFilter *prev, simtime_t_cref t, bool b, cObject *details) override;
         virtual void receiveSignal(cResultFilter *prev, simtime_t_cref t, intval_t, cObject *details) override;
         virtual void receiveSignal(cResultFilter *prev, simtime_t_cref t, uintval_t, cObject *details) override;
