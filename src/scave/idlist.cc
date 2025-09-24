@@ -324,6 +324,12 @@ void IDList::sortByName(ResultFileManager *mgr, bool ascending, std::vector<int>
     doSort<const char *>([mgr,&tmp](ID id) {return mgr->uncheckedGetItem(id, tmp)->getName().c_str();}, mgr, ascending, selectionIndices, interrupted);
 }
 
+void IDList::sortByAttribute(ResultFileManager *mgr, const char *attrName, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
+{
+    ScalarResult tmp;
+    doSort<const char *>([mgr,&tmp,attrName](ID id) {return mgr->uncheckedGetItem(id, tmp)->getAttribute(attrName).c_str();}, mgr, ascending, selectionIndices, interrupted);
+}
+
 void IDList::sortScalarsByValue(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
     assertAllScalars();

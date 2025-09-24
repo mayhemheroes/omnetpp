@@ -76,6 +76,7 @@ class SCAVE_API Scave
     static constexpr const char *ENUM = "enum";
     static constexpr const char *UNIT = "unit";
     static constexpr const char *INTERPOLATIONMODE = "interpolationmode";
+    static constexpr const char *MODULEDISPLAYPATH = "moduledisplaypath";
 
     static constexpr const char *ISFIELD = "isfield";
     static constexpr const char *TRUE = "true";

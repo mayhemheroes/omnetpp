@@ -108,6 +108,7 @@ public class DataTable extends LargeTable implements IDataControl {
         COL_MEASUREMENT("Measurement", Scave.RUNATTR_PREFIX + Scave.MEASUREMENT, 160, true, false),
         COL_REPLICATION("Replication", Scave.RUNATTR_PREFIX + Scave.REPLICATION, 60, true, false),
         COL_MODULE("Module", Scave.MODULE, 160, true, false),
+        COL_MODULEDISPLAYPATH("Module Display Path", Scave.MODULEDISPLAYPATH, 160, true, false),
         COL_NAME("Name", Scave.NAME, 120, true, false),
         COL_PARAM_VALUE("Value", null, 120, true, true),
         COL_SCALAR_VALUE("Value", null, 120, true, true),
@@ -163,21 +164,21 @@ public class DataTable extends LargeTable implements IDataControl {
         public static final ColumnRole[] ALL_SCALAR_COLUMNS = new ColumnRole[] {
                 COL_DIRECTORY, COL_FILE, COL_CONFIG, COL_RUNNUMBER, COL_RUN_ID,
                 COL_EXPERIMENT, COL_MEASUREMENT, COL_REPLICATION,
-                COL_MODULE, COL_NAME,
+                COL_MODULE, COL_MODULEDISPLAYPATH, COL_NAME,
                 COL_SCALAR_VALUE
         };
 
         public static final ColumnRole[] ALL_PARAMETER_COLUMNS = new ColumnRole[] {
                 COL_DIRECTORY, COL_FILE, COL_CONFIG, COL_RUNNUMBER, COL_RUN_ID,
                 COL_EXPERIMENT, COL_MEASUREMENT, COL_REPLICATION,
-                COL_MODULE, COL_NAME,
+                COL_MODULE, COL_MODULEDISPLAYPATH, COL_NAME,
                 COL_PARAM_VALUE
         };
 
         public static final ColumnRole[] ALL_VECTOR_COLUMNS = new ColumnRole[] {
                 COL_DIRECTORY, COL_FILE, COL_CONFIG, COL_RUNNUMBER, COL_RUN_ID,
                 COL_EXPERIMENT, COL_MEASUREMENT, COL_REPLICATION,
-                COL_MODULE, COL_NAME,
+                COL_MODULE, COL_MODULEDISPLAYPATH, COL_NAME,
                 COL_VECTOR_ID,
                 COL_COUNT, COL_MEAN, COL_STDDEV, COL_VARIANCE, COL_MIN, COL_MAX, COL_MIN_TIME, COL_MAX_TIME
         };
@@ -185,7 +186,7 @@ public class DataTable extends LargeTable implements IDataControl {
         public static final ColumnRole[] ALL_HISTOGRAM_COLUMNS = new ColumnRole[] {
                 COL_DIRECTORY, COL_FILE, COL_CONFIG, COL_RUNNUMBER, COL_RUN_ID,
                 COL_EXPERIMENT, COL_MEASUREMENT, COL_REPLICATION,
-                COL_MODULE, COL_NAME, COL_KIND, COL_ISWEIGHTED,
+                COL_MODULE, COL_MODULEDISPLAYPATH, COL_NAME, COL_KIND, COL_ISWEIGHTED,
                 COL_COUNT, COL_SUMWEIGHTS, COL_MEAN, COL_STDDEV, COL_VARIANCE, COL_MIN, COL_MAX,
                 COL_NUMBINS, COL_HISTOGRAMRANGE
         };
@@ -674,6 +675,9 @@ public class DataTable extends LargeTable implements IDataControl {
         case COL_MODULE:
             idList.sortByModule(manager, ascending, selectionIndices, interrupted);
             break;
+        case COL_MODULEDISPLAYPATH:
+            idList.sortByAttribute(manager, Scave.MODULEDISPLAYPATH, ascending, selectionIndices, interrupted);
+            break;
         case COL_NAME:
             idList.sortByName(manager, ascending, selectionIndices, interrupted);
             break;
@@ -797,6 +801,20 @@ public class DataTable extends LargeTable implements IDataControl {
                 return new StyledString(result.getFileRun().getRun().getRunName());
             case COL_MODULE: {
                 String name = result.getModuleName();
+                if (!showNetworkNames) {
+                    int index = name.indexOf('.');
+                    return new StyledString(name.substring(index+1));
+                }
+                StyledString styledString = new StyledString(name);
+                if (colorNetworkNames) {
+                    int index = name.indexOf('.');
+                    if (index != -1)
+                        styledString.setStyle(0, index, GREYED_OUT_STYLER);
+                }
+                return styledString;
+            }
+            case COL_MODULEDISPLAYPATH: {
+                String name = result.getAttribute(Scave.MODULEDISPLAYPATH);
                 if (!showNetworkNames) {
                     int index = name.indexOf('.');
                     return new StyledString(name.substring(index+1));
