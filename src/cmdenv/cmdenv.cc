@@ -39,6 +39,7 @@
 #include "omnetpp/cproperty.h"
 #include "omnetpp/cenum.h"
 #include "omnetpp/cscheduler.h"
+#include "omnetpp/cfingerprint.h"
 #include "omnetpp/cfutureeventset.h"
 #include "omnetpp/cresultfilter.h"
 #include "omnetpp/cresultrecorder.h"
@@ -465,19 +466,28 @@ void Cmdenv::simulate()
 void Cmdenv::printEventBanner(cEvent *event)
 {
     ASSERT(!opt->silent);
+
     out << "** Event #" << getSimulation()->getEventNumber()
         << "  t=" << getSimulation()->getSimTime()
-        << progressPercentage() << "   ";  // note: IDE launcher uses this to track progress
+        << "  on " << event->getName() << " (" << event->getClassName() << ")";
 
     if (event->isMessage()) {
         cModule *mod = static_cast<cMessage *>(event)->getArrivalModule();
-        out << mod->getFullPath() << " (" << mod->getComponentType()->getName() << ", id=" << mod->getId() << ")";
+        out << "  in " << mod->getFullPath() << " (" << mod->getComponentType()->getName() << ", id=" << mod->getId() << ")";
     }
     else if (event->getTargetObject()) {
         cObject *target = event->getTargetObject();
-        out << target->getFullPath() << " (" << target->getClassName() << ")";
+        out << "  target: " << target->getFullPath() << " (" << target->getClassName() << ")";
     }
+
+    if (getSimulation()->getFingerprintCalculator()) {
+        out << "  fingerprints: " << getSimulation()->getFingerprintCalculator()->str();
+    }
+
+    out << "  " << progressPercentage();  // note: IDE launcher uses progress percentage to track progress
+
     out << "\n"; // note: "\n" not endl, because we don't want auto-flush on each event
+
     if (opt->detailedEventBanners) {
         out << "   Elapsed: " << timeToStr(getElapsedSecs())
             << "   Messages: created: " << cMessage::getTotalMessageCount()
