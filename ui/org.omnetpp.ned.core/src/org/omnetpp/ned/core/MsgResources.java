@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -31,6 +32,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.project.ProjectUtils;
 import org.omnetpp.common.util.FileUtils;
 import org.omnetpp.ned.model.INedElement;
@@ -63,6 +65,8 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
 
     // associate types declared in Msg files to their names
     private final Map<String, IMsgTypeElement> msgTypes = new HashMap<String, IMsgTypeElement>();
+
+    private ReentrantLock lock = new ReentrantLock();
 
     protected MsgResources() {
         NedElement.setDefaultMsgTypeResolver(this);
@@ -136,7 +140,7 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
         }
     }
 
-    public synchronized Set<IFile> getMsgFiles(IProject project) {
+    public Set<IFile> getMsgFiles(IProject project) { try (var unused = new LockGuard(lock)) {
         final Set<IFile> files = new HashSet<IFile>();
 
         try {
@@ -152,7 +156,8 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
             NedResourcesPlugin.logError("Error during gathering message files", e);
         }
         return files;
-    }
+    }}
+
 
     public synchronized MsgFileElementEx getMsgFileElement(IFile file) throws IOException, CoreException {
         Assert.isTrue(isMsgFile(file), "file is not a MSG file");
@@ -163,25 +168,28 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
         return msgFiles.get(file);
     }
 
-    public synchronized IFile getMsgFile(MsgFileElementEx msgFileElement) {
+    public IFile getMsgFile(MsgFileElementEx msgFileElement) { try (var unused = new LockGuard(lock)) {
         return msgElementFiles.get(msgFileElement);
-    }
+    }}
 
-    public synchronized boolean isMsgFile(IResource resource) {
+
+    public boolean isMsgFile(IResource resource) { try (var unused = new LockGuard(lock)) {
         return resource instanceof IFile &&
                MSG_EXTENSION.equalsIgnoreCase(((IFile)resource).getFileExtension()) &&
                NedResourcesPlugin.getNedResources().getNedSourceFolderFor((IFile)resource) != null;
-    }
+    }}
 
-    public synchronized IMsgTypeElement lookupMsgType(String name) {
+
+    public IMsgTypeElement lookupMsgType(String name) { try (var unused = new LockGuard(lock)) {
         return msgTypes.get(name);
-    }
+    }}
+
 
     public IMsgTypeInfo createTypeInfoFor(IMsgTypeElement node) {
         return new MsgTypeInfo(node);
     }
 
-    public synchronized void forgetMsgFile(IFile file) {
+    public void forgetMsgFile(IFile file) { try (var unused = new LockGuard(lock)) {
         if (msgFiles.containsKey(file)) {
             MsgFileElementEx element = msgFiles.get(file);
             msgFiles.remove(file);
@@ -191,7 +199,8 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
             for (IMsgTypeElement typeElement : element.getTopLevelTypeNodes())
                 msgTypes.remove(typeElement.getMsgTypeInfo().getFullyQualifiedCppClassName());
         }
-    }
+    }}
+
 
     private void readMsgFile(IFile file) throws IOException, CoreException {
         // forget types that used to be in this msg file
@@ -220,7 +229,7 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
     /**
      * Synchronize the plugin with the resources in the workspace
      */
-    public synchronized void resourceChanged(IResourceChangeEvent event) {
+    public void resourceChanged(IResourceChangeEvent event) { try (var unused = new LockGuard(lock)) {
         try {
             if (event.getDelta() == null)
                 return;
@@ -274,5 +283,6 @@ public class MsgResources implements IMsgTypeResolver, IResourceChangeListener {
         catch (CoreException e) {
             NedResourcesPlugin.logError("Error during workspace change notification: ", e);
         }
-    }
+    }}
+
 }

@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +54,7 @@ import org.omnetpp.common.collections.ProductIterator;
 import org.omnetpp.common.engine.Common;
 import org.omnetpp.common.engine.ExprValue;
 import org.omnetpp.common.engine.ExprValue.Type;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.engine.Expression;
 import org.omnetpp.common.engine.PatternMatcher;
 import org.omnetpp.common.engine.StringSet;
@@ -129,7 +131,7 @@ public final class InifileAnalyzer {
     private IReadonlyInifileDocument analysisDocCopy; // copy of the ini file belongs to the last analysis
     private INedTypeResolver analysisNedResolverCopy; // copy of the ned resources belong to the last analysis
     private ParamResolutionJob paramResolutionJob;
-    private Object paramResolutionLock; // for threads that are waiting for the param resolution job
+    private ReentrantLock paramResolutionLock = new ReentrantLock(); // for threads that are waiting for the param resolution job
 
     // infrastructure
     private INedChangeListener nedChangeListener; // we listen on NED changes
@@ -142,7 +144,10 @@ public final class InifileAnalyzer {
     // InifileDocument, InifileAnalyzer, and NedResources are all accessed from
     // background threads (must be synchronized), and the analyze procedure needs
     // NedResources -- so use NedResources as lock to prevent deadlocks
-    private Object globalLock = NedResourcesPlugin.getNedResources();
+    private ReentrantLock globalLock = NedResourcesPlugin.getNedResources().getLock();
+
+    // Local lock -- TODO conflicts with globalLock
+    private ReentrantLock lock = new ReentrantLock();
 
 
     /**
@@ -184,7 +189,6 @@ public final class InifileAnalyzer {
      */
     public InifileAnalyzer(IInifileDocument doc) {
         this.doc = doc;
-        this.paramResolutionLock = new Object();
         this.paramResolutionJob = new ParamResolutionJob(doc);
 
         // hook on inifile changes
@@ -213,13 +217,13 @@ public final class InifileAnalyzer {
     }
 
     private void modelChanged() {
-        synchronized (globalLock) {
+        try (var unused = new LockGuard(globalLock)) {
             changed = true;
         }
     }
 
     public boolean isAnalysisUpToDate() {
-        synchronized (globalLock) {
+        try (var unused = new LockGuard(globalLock)) {
             return analysisDocCopy != null && analysisNedResolverCopy != null &&
                     doc.isImmutableCopyUpToDate(analysisDocCopy) &&
                     NedResourcesPlugin.getNedResources().isImmutableCopyUpToDate(analysisNedResolverCopy);
@@ -233,16 +237,18 @@ public final class InifileAnalyzer {
         return doc;
     }
 
-    public synchronized boolean isParamResolutionEnabled() {
+    public boolean isParamResolutionEnabled() { try (var unused = new LockGuard(lock)) {
         return paramResolutionEnabled;
-    }
+    }}
 
-    public synchronized void setParamResolutionEnabled(boolean paramResolutionEnabled) {
+
+    public void setParamResolutionEnabled(boolean paramResolutionEnabled) { try (var unused = new LockGuard(lock)) {
         if (this.paramResolutionEnabled != paramResolutionEnabled) {
             this.paramResolutionEnabled = paramResolutionEnabled;
             firePropertyChange(PROP_ANALYSIS_ENABLED, !paramResolutionEnabled, paramResolutionEnabled);
         }
-    }
+    }}
+
 
     public void addPropertyChangeListener(IPropertyChangeListener listener) {
         propertyChangeListeners.add(listener);
@@ -285,41 +291,42 @@ public final class InifileAnalyzer {
      *
      * Throws exception if the parameter resolution job has not completed within timeout.
      */
-    public synchronized void analyzeIfChanged(ITimeout timeout) throws ParamResolutionTimeoutException {
+    public void analyzeIfChanged(ITimeout timeout) throws ParamResolutionTimeoutException { try (var unused = new LockGuard(lock)) {
         validateIfChanged();
         if (paramResolutionEnabled && !isAnalysisUpToDate())
             executeParamResolution(timeout);
-    }
+    }}
 
     /**
      * Forces analysis of the ini file even it is not changed.
      * Throws exception if the parameter resolution job has not completed within timeout.
      */
-    public synchronized void analyze(Timeout timeout) throws ParamResolutionTimeoutException {
+    public void analyze(Timeout timeout) throws ParamResolutionTimeoutException { try (var unused = new LockGuard(lock)) {
         validate();
         if (paramResolutionEnabled)
             executeParamResolution(timeout);
-    }
+    }}
 
     /**
      * Starts inifile analysis if the inifile has change since the last analysis.
      * The analysis takes place in a background thread; you can use addAnalysisListener()
      * to become notified when the analysis completes.
      */
-    public synchronized void startAnalysisIfChanged() {
+    public void startAnalysisIfChanged() { try (var unused = new LockGuard(lock)) {
         try {
             analyzeIfChanged(new Timeout(0));
         } catch (ParamResolutionTimeoutException e) {
             // ignore
         }
-    }
+    }}
+
 
     /**
      * Validate the contents of the inifile if changed since last validated.
      * Does not perform parameter resolution.
      */
     private void validateIfChanged() {
-        synchronized (globalLock) {
+        try (var unused = new LockGuard(globalLock)) {
             if (changed)
                 validate();
         }
@@ -330,7 +337,7 @@ public final class InifileAnalyzer {
      * on the IFile. This method does not calculate param resolutions.
      */
     private void validate() {
-        synchronized (globalLock) {
+        try (var unused = new LockGuard(globalLock)) {
             Assert.isTrue(!withinValidate, "validate() recursively called?");
             withinValidate = true;
 
@@ -370,7 +377,7 @@ public final class InifileAnalyzer {
 
         final long start = System.currentTimeMillis();
 
-        synchronized(paramResolutionLock) {
+        try (var unused = new LockGuard(paramResolutionLock)) {
             // the job may already be scheduled or even running...
             if (paramResolutionJob.getState() == Job.NONE)
                 paramResolutionJob.schedule();
@@ -432,7 +439,7 @@ public final class InifileAnalyzer {
                 if (status.isOK() && status instanceof ParamResolutionStatus) {
                     ParamResolutionStatus okStatus = (ParamResolutionStatus)status;
                     INedResources nedResources = NedResourcesPlugin.getNedResources();
-                    synchronized (globalLock) {
+                    try (var unused = new LockGuard(globalLock)) {
                         if (doc.isImmutableCopyUpToDate(okStatus.docCopy) && nedResources.isImmutableCopyUpToDate(okStatus.nedResolverCopy)) {
                             analysisDocCopy = okStatus.docCopy;
                             analysisNedResolverCopy = okStatus.nedResolverCopy;
@@ -446,7 +453,7 @@ public final class InifileAnalyzer {
             }
             finally {
                 // wake up threads that are waiting for the result of the analysis in executeParamResolutionJob()
-                synchronized (paramResolutionLock) {
+                try (var unused = new LockGuard(paramResolutionLock)) {
                     paramResolutionLock.notifyAll();
                 }
             }
@@ -1449,23 +1456,23 @@ public final class InifileAnalyzer {
         T run() throws ParamResolutionDisabledException;
     }
 
-    private synchronized <T> T withAnalyzedDocument(ITimeout timeout, Runnable<T> body) throws ParamResolutionDisabledException, ParamResolutionTimeoutException {
+    private <T> T withAnalyzedDocument(ITimeout timeout, Runnable<T> body) throws ParamResolutionDisabledException, ParamResolutionTimeoutException { try (var unused = new LockGuard(lock)) {
         if (!paramResolutionEnabled)
             throw new ParamResolutionDisabledException();
 
         while (true) {
             analyzeIfChanged(timeout);
-            synchronized (globalLock) {
+            try (var unused2 = new LockGuard(globalLock)) {
                 if (isAnalysisUpToDate())
                     return body.run();
             }
         }
-    }
+    }}
 
     public interface Runnable2<T> { T run(); }
 
     private <T> T withValidatedDocument(Runnable2<T> body) {
-        synchronized (globalLock) {
+        try (var unused = new LockGuard(globalLock)) {
             validateIfChanged();
             return body.run();
         }

@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
@@ -34,6 +35,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.swt.widgets.Display;
 import org.omnetpp.common.Debug;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
 import org.omnetpp.ned.core.NedResourcesPlugin;
@@ -59,7 +61,7 @@ public class InifileDocument implements IInifileDocument {
     // InifileDocument, InifileAnalyzer, and NEDResources are all accessed from
     // background threads (must be synchronized), and the analyze procedure needs
     // NEDResources -- so use NEDResources as lock to prevent deadlocks
-    private Object lock = NedResourcesPlugin.getNedResources();
+    private ReentrantLock lock = NedResourcesPlugin.getNedResources().getLock();
 
     static class Line implements Cloneable {
         IFile file;
@@ -141,7 +143,7 @@ public class InifileDocument implements IInifileDocument {
     }
 
     public IReadonlyInifileDocument getImmutableCopy() {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             if (docCopy == null)
                 docCopy = new ImmutableInifileDocument(this);
             return docCopy;
@@ -149,7 +151,7 @@ public class InifileDocument implements IInifileDocument {
     }
 
     public boolean isImmutableCopyUpToDate(IReadonlyInifileDocument copy) {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             return this.docCopy == copy;
         }
     }
@@ -204,7 +206,7 @@ public class InifileDocument implements IInifileDocument {
     }
 
     public void markAsChanged() {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             changed = true;
             docCopy = null;
             fireModelChanged();
@@ -225,14 +227,14 @@ public class InifileDocument implements IInifileDocument {
     }
 
     public void parseIfChanged() {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             if (changed)
                 parse();
         }
     }
 
     public void parse() {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             long startTime = System.currentTimeMillis();
 
             Reader streamReader = new StringReader(document.get());
@@ -455,7 +457,7 @@ public class InifileDocument implements IInifileDocument {
      * the trailing newline.
      */
     void addLineAt(int lineNumber, String text) {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             try {
                 if (lineNumber==document.getNumberOfLines()+1) {
                     // adding a line at the bottom
@@ -476,7 +478,7 @@ public class InifileDocument implements IInifileDocument {
      * may opt for suppressing re-parsing by manually setting the "changed" flag to false.
      */
     protected boolean replaceLine(Line line, String text) {
-        synchronized (lock) {
+        try (var unused = new LockGuard(lock)) {
             try {
                 int startOffset = document.getLineOffset(line.lineNumber-1);
                 int endOffset = line.lineNumber-1+line.numLines >= document.getNumberOfLines() ?

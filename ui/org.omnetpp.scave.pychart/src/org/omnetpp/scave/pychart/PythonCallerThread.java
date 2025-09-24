@@ -8,8 +8,10 @@
 package org.omnetpp.scave.pychart;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.omnetpp.common.Debug;
+import org.omnetpp.common.locking.LockGuard;
 
 import py4j.Py4JException;
 
@@ -39,6 +41,7 @@ public class PythonCallerThread extends Thread {
 
     private PythonProcess proc;
     private ConcurrentLinkedQueue<EventStreamRunnable> queue = new ConcurrentLinkedQueue<EventStreamRunnable>();
+    private ReentrantLock lock = new ReentrantLock();
 
     public interface ExceptionHandler {
         void handle(PythonProcess proc, Exception e);
@@ -98,7 +101,7 @@ public class PythonCallerThread extends Thread {
     public void asyncExec(Runnable runnable, int eventStream) {
         EventStreamRunnable cr = new EventStreamRunnable(runnable, eventStream);
 
-        synchronized (queue) {
+        try (var unused = new LockGuard(lock)) {
             if (eventStream >= 0)
                 queue.removeIf(icr -> icr.getEventStream() == eventStream);
             queue.add(cr);
@@ -130,7 +133,7 @@ public class PythonCallerThread extends Thread {
     @Override
     public void run() {
         outer: while (proc.isAlive()) {
-            synchronized (queue) {
+            try (var unused = new LockGuard(lock)) {
                 try {
                     // There is nothing to do, wait until a Runnable is submitted...
                     if (queue.isEmpty())
@@ -143,7 +146,7 @@ public class PythonCallerThread extends Thread {
 
             while (!queue.isEmpty() && proc.isAlive()) {
                 Runnable r = null;
-                synchronized (queue) {
+                try (var unused = new LockGuard(lock)) {
                     // double-check to avoid race condition if a submission to an event stream just emptied the queue
                     if (!queue.isEmpty())
                         r = queue.remove();

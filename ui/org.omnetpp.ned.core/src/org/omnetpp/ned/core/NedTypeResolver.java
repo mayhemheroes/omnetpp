@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IContainer;
@@ -20,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.omnetpp.common.Debug;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.ned.engine.NedParser;
 import org.omnetpp.ned.model.INedElement;
@@ -54,6 +56,8 @@ public class NedTypeResolver implements INedTypeResolver {
 
     // file element to contain built-in declarations (does not correspond to any physical file)
     protected NedFileElementEx builtInDeclarationsFile;
+
+    private ReentrantLock lock = new ReentrantLock();
 
     protected static class ProjectData {
         // NED Source Folders for the project (contents of the .nedfolders file)
@@ -224,11 +228,12 @@ public class NedTypeResolver implements INedTypeResolver {
         return new NedTypeInfo(node);
     }
 
-    public synchronized Set<IFile> getNedFiles() {
+    public Set<IFile> getNedFiles() { try (var unused = new LockGuard(lock)) {
         return nedFiles.keySet();
-    }
+    }}
 
-    public synchronized Set<IFile> getNedFiles(IProject project) {
+
+    public Set<IFile> getNedFiles(IProject project) { try (var unused = new LockGuard(lock)) {
         Set<IFile> files = new HashSet<IFile>();
 
         for (IFile file : nedFiles.keySet())
@@ -236,23 +241,27 @@ public class NedTypeResolver implements INedTypeResolver {
                 files.add(file);
 
         return files;
-    }
+    }}
 
-    public synchronized boolean containsNedFileElement(IFile file) {
+
+    public boolean containsNedFileElement(IFile file) { try (var unused = new LockGuard(lock)) {
         return nedFiles.containsKey(file);
-    }
+    }}
 
-    public synchronized NedFileElementEx getNedFileElement(IFile file) {
+
+    public NedFileElementEx getNedFileElement(IFile file) { try (var unused = new LockGuard(lock)) {
         if (!nedFiles.containsKey(file))
             throw new IllegalArgumentException("File " + file.getFullPath() + " is not a NED file, or not parsed yet");
         return nedFiles.get(file);
-    }
+    }}
 
-    public synchronized IFile getNedFile(NedFileElementEx nedFileElement) {
+
+    public IFile getNedFile(NedFileElementEx nedFileElement) { try (var unused = new LockGuard(lock)) {
         Assert.isTrue(nedFileElement.getResolver() == this, "cannot use another resolver for lookups than the one that created the element");
         Assert.isTrue(nedElementFiles.containsKey(nedFileElement) || nedFileElement==builtInDeclarationsFile, "NedFileElement is not in the resolver");
         return nedElementFiles.get(nedFileElement);
-    }
+    }}
+
 
     public IMarker[] getMarkersForElement(INedElement element, boolean recursive, int limit) {
         try {
@@ -283,22 +292,25 @@ public class NedTypeResolver implements INedTypeResolver {
         }
     }
 
-    public synchronized INedElement getNedElementAt(IFile file, int line, int column) {
+    public INedElement getNedElementAt(IFile file, int line, int column) { try (var unused = new LockGuard(lock)) {
         return getNedElementAt(getNedFileElement(file), line, column);
-    }
+    }}
 
-    public synchronized INedElement getNedElementAt(INedElement parent, int line, int column) {
+
+    public INedElement getNedElementAt(INedElement parent, int line, int column) { try (var unused = new LockGuard(lock)) {
         for (INedElement child : parent)
             if (child.getSourceRegion() != null && child.getSourceRegion().contains(line, column))
                 return getNedElementAt(child, line, column);
         return parent.getSourceRegion() != null && parent.getSourceRegion().contains(line, column) ? parent : null;
-    }
+    }}
 
-    public synchronized Collection<INedTypeInfo> getToplevelNedTypesFromAllProjects() {
+
+    public Collection<INedTypeInfo> getToplevelNedTypesFromAllProjects() { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypesFromAllProjects(ALL_FILTER);
-    }
+    }}
 
-    public synchronized Collection<INedTypeInfo> getToplevelNedTypesFromAllProjects(IPredicate predicate) {
+
+    public Collection<INedTypeInfo> getToplevelNedTypesFromAllProjects(IPredicate predicate) { try (var unused = new LockGuard(lock)) {
         // return everything from everywhere, including duplicates
         List<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
         for (IFile file : nedFiles.keySet())
@@ -309,9 +321,10 @@ public class NedTypeResolver implements INedTypeResolver {
                         result.add(typeInfo);
                 }
         return result;
-    }
+    }}
 
-    public synchronized Set<String> getToplevelNedTypeQNamesFromAllProjects() {
+
+    public Set<String> getToplevelNedTypeQNamesFromAllProjects() { try (var unused = new LockGuard(lock)) {
         // return everything from everywhere
         Set<String> result = new HashSet<String>();
         for (IFile file : nedFiles.keySet())
@@ -319,9 +332,10 @@ public class NedTypeResolver implements INedTypeResolver {
                 if (child instanceof INedTypeElement)
                     result.add(((INedTypeElement)child).getNedTypeInfo().getFullyQualifiedName());
         return result;
-    }
+    }}
 
-    public synchronized Set<INedTypeInfo> getToplevelNedTypesFromAllProjects(String qualifiedName) {
+
+    public Set<INedTypeInfo> getToplevelNedTypesFromAllProjects(String qualifiedName) { try (var unused = new LockGuard(lock)) {
         Set<INedTypeInfo> result = new HashSet<INedTypeInfo>();
         for (IProject project : projects.keySet()) {
             INedTypeInfo type = getToplevelNedType(qualifiedName, project);
@@ -329,13 +343,15 @@ public class NedTypeResolver implements INedTypeResolver {
                 result.add(type);
         }
         return result;
-    }
+    }}
 
-    public synchronized Collection<INedTypeInfo> getToplevelNedTypes(IProject context) {
+
+    public Collection<INedTypeInfo> getToplevelNedTypes(IProject context) { try (var unused = new LockGuard(lock)) {
         Collection<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
         result.addAll(getToplevelNedTypesInternal(context));
         return result;
-    }
+    }}
+
 
     private synchronized Collection<INedTypeInfo> getToplevelNedTypesInternal(IProject context) {
         rehashIfNeeded();
@@ -343,22 +359,24 @@ public class NedTypeResolver implements INedTypeResolver {
         return projectData==null ? new ArrayList<INedTypeInfo>() : projectData.components.values();
     }
 
-    public synchronized Collection<INedTypeInfo> getToplevelNedTypes(IPredicate predicate, IProject context) {
+    public Collection<INedTypeInfo> getToplevelNedTypes(IPredicate predicate, IProject context) { try (var unused = new LockGuard(lock)) {
         Collection<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
         for (INedTypeInfo type : getToplevelNedTypesInternal(context))
             if (predicate.matches(type))
                 result.add(type);
         return result;
-    }
+    }}
 
-    public synchronized Collection<INedTypeInfo> getToplevelNedTypesThatImplement(INedTypeInfo interfaceType, IProject context) {
+
+    public Collection<INedTypeInfo> getToplevelNedTypesThatImplement(INedTypeInfo interfaceType, IProject context) { try (var unused = new LockGuard(lock)) {
         Assert.isTrue(interfaceType.getResolver() == this, "cannot use another resolver for lookups than the one that created the element");
         Collection<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
         for (INedTypeInfo type : getToplevelNedTypesInternal(context))
             if (type.getInterfaces().contains(interfaceType.getNedElement()))
                 result.add(type);
         return result;
-    }
+    }}
+
 
     public Collection<INedTypeInfo> getToplevelNedTypesBySimpleName(String simpleName, IProject context) {
         Collection<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
@@ -368,27 +386,30 @@ public class NedTypeResolver implements INedTypeResolver {
         return result;
     }
 
-    public synchronized Set<String> getToplevelNedTypeQNames(IPredicate predicate, IProject context) {
+    public Set<String> getToplevelNedTypeQNames(IPredicate predicate, IProject context) { try (var unused = new LockGuard(lock)) {
         Set<String> result = new HashSet<String>();
         for (INedTypeInfo typeInfo : getToplevelNedTypesInternal(context))
             if (predicate.matches(typeInfo))
                 result.add(typeInfo.getFullyQualifiedName());
         return result;
-    }
+    }}
 
-    public synchronized Set<String> getToplevelNedTypeQNames(IProject context) {
+
+    public Set<String> getToplevelNedTypeQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         rehashIfNeeded();
         ProjectData projectData = projects.get(context);
         return projectData==null ? new HashSet<String>() : projectData.components.keySet();
-    }
+    }}
 
-    public synchronized Set<String> getReservedQNames(IProject context) {
+
+    public Set<String> getReservedQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         rehashIfNeeded();
         ProjectData projectData = projects.get(context);
         return projectData==null ? new HashSet<String>() : projectData.reservedNames;
-    }
+    }}
 
-    public synchronized Set<String> getReservedNames(IProject context, String packageName) {
+
+    public Set<String> getReservedNames(IProject context, String packageName) { try (var unused = new LockGuard(lock)) {
         rehashIfNeeded();
         ProjectData projectData = projects.get(context);
         Set<String> result = new HashSet<String>();
@@ -399,35 +420,42 @@ public class NedTypeResolver implements INedTypeResolver {
                     result.add(StringUtils.removeStart(qualifiedName, packagePrefix));
         }
         return result;
-    }
+    }}
 
-    public synchronized Set<String> getModuleQNames(IProject context) {
+
+    public Set<String> getModuleQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypeQNames(MODULE_FILTER, context);
-    }
+    }}
 
-    public synchronized Set<String> getNetworkQNames(IProject context) {
+
+    public Set<String> getNetworkQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypeQNames(NETWORK_FILTER, context);
-    }
+    }}
 
-    public synchronized Set<String> getChannelQNames(IProject context) {
+
+    public Set<String> getChannelQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypeQNames(CHANNEL_FILTER, context);
-    }
+    }}
 
-    public synchronized Set<String> getModuleInterfaceQNames(IProject context) {
+
+    public Set<String> getModuleInterfaceQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypeQNames(MODULEINTERFACE_FILTER, context);
-    }
+    }}
 
-    public synchronized Set<String> getChannelInterfaceQNames(IProject context) {
+
+    public Set<String> getChannelInterfaceQNames(IProject context) { try (var unused = new LockGuard(lock)) {
         return getToplevelNedTypeQNames(CHANNELINTERFACE_FILTER, context);
-    }
+    }}
 
-    public synchronized INedTypeInfo getToplevelNedType(String qualifiedName, IProject context) {
+
+    public INedTypeInfo getToplevelNedType(String qualifiedName, IProject context) { try (var unused = new LockGuard(lock)) {
         rehashIfNeeded();
         ProjectData projectData = projects.get(context);
         return projectData==null ? null : projectData.components.get(qualifiedName);
-    }
+    }}
 
-    public synchronized INedTypeInfo getToplevelOrInnerNedType(String qualifiedName, IProject context) {
+
+    public INedTypeInfo getToplevelOrInnerNedType(String qualifiedName, IProject context) { try (var unused = new LockGuard(lock)) {
         rehashIfNeeded();
         ProjectData projectData = projects.get(context);
         if (projectData == null)
@@ -449,27 +477,31 @@ public class NedTypeResolver implements INedTypeResolver {
             }
         }
         return typeInfo;
-    }
+    }}
 
-    public synchronized String getSimplePropertyFor(NedFileElementEx nedFileElement, String propertyName) {
+
+    public String getSimplePropertyFor(NedFileElementEx nedFileElement, String propertyName) { try (var unused = new LockGuard(lock)) {
         PropertyElementEx property = getPropertyFor(nedFileElement, propertyName);
         return property != null ? property.getSimpleValue() : null;
-    }
+    }}
 
-    public synchronized String getSimplePropertyFor(IContainer folder, String propertyName) {
+
+    public String getSimplePropertyFor(IContainer folder, String propertyName) { try (var unused = new LockGuard(lock)) {
         PropertyElementEx property = getPropertyFor(folder, propertyName);
         return property != null ? property.getSimpleValue() : null;
-    }
+    }}
 
-    public synchronized PropertyElementEx getPropertyFor(NedFileElementEx nedFileElement, String propertyName) {
+
+    public PropertyElementEx getPropertyFor(NedFileElementEx nedFileElement, String propertyName) { try (var unused = new LockGuard(lock)) {
         // look into this file, then into package.ned files in this folder and up
         PropertyElementEx property = NedElementUtilEx.getProperty(nedFileElement, propertyName, null);
         if (property != null)
             return property;
         return getPropertyFor(getNedFile(nedFileElement).getParent(), propertyName);
-    }
+    }}
 
-    public synchronized PropertyElementEx getPropertyFor(IContainer folder, String propertyName) {
+
+    public PropertyElementEx getPropertyFor(IContainer folder, String propertyName) { try (var unused = new LockGuard(lock)) {
         // look for package.ned in this folder and up
         IContainer sourceFolder = getNedSourceFolderFor(folder);
         while (true) {
@@ -485,9 +517,10 @@ public class NedTypeResolver implements INedTypeResolver {
             folder = folder.getParent();
         }
         return null;
-    }
+    }}
 
-    public synchronized INedTypeInfo lookupNedType(String name, INedTypeLookupContext lookupContext) {
+
+    public INedTypeInfo lookupNedType(String name, INedTypeLookupContext lookupContext) { try (var unused = new LockGuard(lock)) {
         Assert.isTrue(lookupContext.getResolver() == this, "cannot use another resolver for lookups than the one that created the element");
         // return cached value if exists, otherwise call doLookupNedType()
         Map<String, INedTypeInfo> map = nedTypeLookupCache.get(lookupContext);
@@ -499,7 +532,8 @@ public class NedTypeResolver implements INedTypeResolver {
         if (typeInfo == null && !map.containsKey(name))
             map.put(name, typeInfo = doLookupNedType(name, lookupContext));
         return typeInfo;
-    }
+    }}
+
 
     protected INedTypeInfo doLookupNedType(String name, INedTypeLookupContext lookupContext) {
         rehashIfNeeded();
@@ -615,7 +649,7 @@ public class NedTypeResolver implements INedTypeResolver {
         }
     }
 
-    public synchronized Set<String> getLocalTypeNames(INedTypeLookupContext lookupContext, IPredicate predicate) {
+    public Set<String> getLocalTypeNames(INedTypeLookupContext lookupContext, IPredicate predicate) { try (var unused = new LockGuard(lock)) {
         Assert.isTrue(lookupContext.getResolver() == this, "cannot use another resolver for lookups than the one that created the element");
         Set<String> result = new HashSet<String>();
         if (lookupContext instanceof NedFileElement) {
@@ -633,7 +667,8 @@ public class NedTypeResolver implements INedTypeResolver {
         }
 
         return result;
-    }
+    }}
+
 
     public boolean isNedFile(IResource resource) {
         if (!(resource instanceof IFile) || !NED_EXTENSION.equalsIgnoreCase(((IFile)resource).getFileExtension()))

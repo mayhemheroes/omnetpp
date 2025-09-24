@@ -10,6 +10,7 @@ package org.omnetpp.launch;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -27,6 +28,7 @@ import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.debug.core.model.IStreamsProxy;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.launch.tabs.OmnetppLaunchUtils;
 
@@ -126,8 +128,9 @@ public class SimulationLauncherJob extends Job {
                 hookProgressTracker(subMonitor, iprocess);
 
             // poll the state of the monitor and terminate the process if cancel was requested
+            ReentrantLock lock = new ReentrantLock();
             while (!iprocess.isTerminated()) {
-                synchronized (iprocess) {
+                try (var unused = new LockGuard(lock)) { //TODO is this correct?
                     try {
                         iprocess.wait(200);
                         if (subMonitor.isCanceled())

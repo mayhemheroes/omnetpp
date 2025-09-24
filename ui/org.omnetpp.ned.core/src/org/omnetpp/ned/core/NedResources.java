@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -32,6 +33,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.omnetpp.common.Debug;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.markers.ProblemMarkerSynchronizer;
 import org.omnetpp.common.project.NedSourceFoldersConfiguration;
 import org.omnetpp.common.project.ProjectUtils;
@@ -64,7 +66,6 @@ import org.omnetpp.ned.model.notification.NedStructuralChangeEvent;
  *
  * @author andras
  */
-@SuppressWarnings("restriction")
 public class NedResources extends NedTypeResolver implements INedResources, IResourceChangeListener {
     // singleton instance
     private static NedResources instance = null;
@@ -99,6 +100,8 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
 
     // job that performs NED validation in the background
     private Job nedValidationJob;
+
+    private ReentrantLock lock = new ReentrantLock();
 
     // a delayed job that initiates NED validation when the user idles a little
     private DelayedJob nedValidationStarterJob = new DelayedJob(400) {
@@ -142,6 +145,10 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         return instance;
     }
 
+    public ReentrantLock getLock() {
+        return lock;
+    }
+    
     public boolean isRefactoringInProgress() {
         return refactoringInProgress;
     }
@@ -150,7 +157,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         this.refactoringInProgress = refactoringInProgress;
     }
 
-    public synchronized void setNedFileText(IFile file, String text) {
+    public void setNedFileText(IFile file, String text) { try (var unused = new LockGuard(lock)) {
         NedFileElementEx currentTree = getNedFileElement(file);
 
         // parse
@@ -193,9 +200,10 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
             // perform marker synchronization in a background job, to avoid deadlocks
             markerSync.runAsWorkspaceJob();
         }
-    }
+    }}
 
-    public synchronized void connect(IFile file) {
+
+    public void connect(IFile file) { try (var unused = new LockGuard(lock)) {
         if (connectCount.containsKey(file))
             connectCount.put(file, connectCount.get(file) + 1);
         else {
@@ -203,9 +211,9 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
                 readNedFile(file);
             connectCount.put(file, 1);
         }
-    }
+    }}
 
-    public synchronized void disconnect(IFile file) {
+    public void disconnect(IFile file) { try (var unused = new LockGuard(lock)) {
         Assert.isTrue(connectCount.containsKey(file));
         int count = connectCount.get(file); // must exist
         if (count <= 1) {
@@ -218,7 +226,8 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         else {
             connectCount.put(file, count - 1);
         }
-    }
+    }}
+
 
     public int getConnectCount(IFile file) {
         return connectCount.containsKey(file) ? connectCount.get(file) : 0;
@@ -231,12 +240,13 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
     /**
      * Reads the given NED file from the disk. May only be called if the file is not already open in an editor.
      */
-    public synchronized void readNedFile(IFile file) {
+    public void readNedFile(IFile file) { try (var unused = new LockGuard(lock)) {
         ProblemMarkerSynchronizer markerSync = new ProblemMarkerSynchronizer();
         doReadNedFile(file, markerSync);
         markerSync.runAsWorkspaceJob();
         rehash();
-    }
+    }}
+
 
     /**
      * Internal: reads the given NED file from the disk.
@@ -283,11 +293,12 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
     /**
      * Forget a NED file, and throws out all cached info.
      */
-    public synchronized void forgetNedFile(IFile file) {
+    public void forgetNedFile(IFile file) { try (var unused = new LockGuard(lock)) {
         ProblemMarkerSynchronizer sync = new ProblemMarkerSynchronizer();
         doForgetNedFile(file, sync);
         sync.runAsWorkspaceJob();
-    }
+    }}
+
 
     protected synchronized void doForgetNedFile(IFile file, ProblemMarkerSynchronizer sync) {
         if (nedFiles.containsKey(file)) {
@@ -337,7 +348,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
      * Rebuild hash tables after NED resource change. Note: some errors such as
      * duplicate names only get detected when this gets run!
      */
-    public synchronized void rehashIfNeeded() {
+    public void rehashIfNeeded() { try (var unused = new LockGuard(lock)) {
         if (!needsRehash)
             return;
 
@@ -348,9 +359,10 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
 
         // schedule a validation
         nedValidationStarterJob.restartTimer();
-    }
+    }}
 
-    public synchronized void invalidate() {
+
+    public void invalidate() { try (var unused = new LockGuard(lock)) {
         lastChangeSerial++;
         needsRehash = true;
         nedTypeLookupCache.clear();
@@ -359,7 +371,8 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         // invalidate all inherited members on all typeInfo objects
         for (NedFileElementEx file : nedElementFiles.keySet())
             invalidateTypeInfo(file);
-    }
+    }}
+
 
     protected void rehash() {
         invalidate();
@@ -382,22 +395,25 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         }
     }
 
-    public synchronized void fireBeginChangeEvent() {
+    public void fireBeginChangeEvent() { try (var unused = new LockGuard(lock)) {
         nedModelChanged(new NedBeginModelChangeEvent(null));
-    }
+    }}
 
-    public synchronized void fireEndChangeEvent() {
+
+    public void fireEndChangeEvent() { try (var unused = new LockGuard(lock)) {
         nedModelChanged(new NedEndModelChangeEvent(null));
-    }
+    }}
 
-    public synchronized void runWithBeginEndNotification(Runnable runnable) {
+
+    public void runWithBeginEndNotification(Runnable runnable) { try (var unused = new LockGuard(lock)) {
         fireBeginChangeEvent();
         try {
             runnable.run();
         } finally {
             fireEndChangeEvent();
         }
-    }
+    }}
+
 
     /**
      * To be called on project-level changes: project open/close, project description change
@@ -407,7 +423,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
      * (When an editor starts, the projects table must already be up to date, otherwise
      * the editor's input file might not qualify as "NED file" and that'll cause an error).
      */
-    public synchronized void rebuildProjectsTable() {
+    public void rebuildProjectsTable() { try (var unused = new LockGuard(lock)) {
         // gather projects data
         Map<IProject,ProjectData> tmp = new HashMap<IProject, ProjectData>();
         try {
@@ -458,7 +474,8 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         nedModelChanged(new NedModelChangeEvent(null));  // "anything might have changed"
         if (!isReadMissingNedFilesJobScheduled())
             scheduleReadMissingNedFilesJob();
-    }
+    }}
+
 
     public boolean isReadMissingNedFilesJobScheduled() {
         return readMissingNedFilesJob != null && readMissingNedFilesJob.getState() == Job.WAITING;
@@ -498,7 +515,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
      * individual file changes are handled by loadNedFile() calls from the
      * workspace listener.
      */
-    public synchronized void readMissingNedFiles() {
+    public void readMissingNedFiles() { try (var unused = new LockGuard(lock)) {
         try {
             // disable all ned model notifications until all files have been processed
             nedModelChangeNotificationDisabled = true;
@@ -524,17 +541,20 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
             Assert.isTrue(debugRehashCounter <= 1, "Too many rehash operations during readMissingNedFiles()");
             nedModelChanged(new NedModelChangeEvent(null));  // "everything changed"
         }
-    }
+    }}
 
-    public synchronized INedTypeResolver getImmutableCopy() {
+
+    public INedTypeResolver getImmutableCopy() { try (var unused = new LockGuard(lock)) {
         if (immutableCopy == null)
             immutableCopy = new ImmutableNedTypeResolver(this);
         return immutableCopy;
-    }
+    }}
 
-    public synchronized boolean isImmutableCopyUpToDate(INedTypeResolver copy) {
+
+    public boolean isImmutableCopyUpToDate(INedTypeResolver copy) { try (var unused = new LockGuard(lock)) {
         return immutableCopy == copy;
-    }
+    }}
+
 
     // ******************* notification helpers ************************************
 
@@ -580,7 +600,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
     /**
      * Synchronize the plugin with the resources in the workspace
      */
-    public synchronized void resourceChanged(IResourceChangeEvent event) {
+    public void resourceChanged(IResourceChangeEvent event) { try (var unused = new LockGuard(lock)) {
         try {
             if (event.getDelta() == null)
                 return;
@@ -636,6 +656,7 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
         } finally {
             rehashIfNeeded();
         }
-    }
+    }}
+
 
 }

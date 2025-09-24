@@ -7,6 +7,8 @@
 
 package org.omnetpp.ned.core;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;

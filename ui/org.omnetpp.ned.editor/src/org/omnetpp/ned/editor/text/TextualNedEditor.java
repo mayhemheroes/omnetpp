@@ -9,6 +9,7 @@ package org.omnetpp.ned.editor.text;
 
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
@@ -49,6 +50,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.omnetpp.common.editor.text.NedCompletionHelper;
 import org.omnetpp.common.editor.text.TextDifferenceUtils;
 import org.omnetpp.common.editor.text.TextEditorUtil;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.util.DelayedJob;
 import org.omnetpp.common.util.DisplayUtils;
 import org.omnetpp.common.util.UIUtils;
@@ -98,6 +100,8 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
 
     private DelayedJob pullChangesJob;
     private NedSelectionProvider nedSelectionProvider;
+
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Default constructor.
@@ -459,14 +463,15 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
         }
     }
 
-    public synchronized void pushChangesIntoNedResources() {
+    public void pushChangesIntoNedResources() { try (var unused = new LockGuard(lock)) {
         pushChangesIntoNedResources(true);
-    }
+    }}
+
 
     /**
      * Pushes down text changes from document into NEDResources.
      */
-    public synchronized void pushChangesIntoNedResources(final boolean evenIfEditorIsInactive) {
+    public void pushChangesIntoNedResources(final boolean evenIfEditorIsInactive) { try (var unused = new LockGuard(lock)) {
         DisplayUtils.runNowOrAsyncInUIThread(new Runnable() {
             public synchronized void run() {
                 Assert.isTrue(!pushingChanges);
@@ -487,12 +492,13 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
                 }
             }
         });
-    }
+    }}
+
 
     /**
      * When a "pull changes from NEDResources" operation has been scheduled, do it now.
      */
-    public synchronized void pullChangesFromNedResourcesWhenPending() {
+    public void pullChangesFromNedResourcesWhenPending() { try (var unused = new LockGuard(lock)) {
         // if the job is not scheduled then there are no changes at all and we don't pull
         // because that would only pretty print the source
         if (pullChangesJob.isScheduled()) {
@@ -503,7 +509,8 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
                 }
             });
         }
-    }
+    }}
+
 
     /**
      * Unconditionally pulls changes from NEDResources and applies them to the

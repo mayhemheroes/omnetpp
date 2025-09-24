@@ -7,6 +7,8 @@
 
 package org.omnetpp.ned.core;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.eclipse.core.resources.IFile;
 import org.omnetpp.ned.model.interfaces.INedTypeResolver;
 import org.omnetpp.ned.model.notification.INedChangeListener;
@@ -121,5 +123,10 @@ public interface INedResources extends INedTypeResolver {
      * is still up to date.
      */
     public boolean isImmutableCopyUpToDate(INedTypeResolver copy);
+
+    /**
+     * TODO
+     */
+    public ReentrantLock getLock();
 
 }

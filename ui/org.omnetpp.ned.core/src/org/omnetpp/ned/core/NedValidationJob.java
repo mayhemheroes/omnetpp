@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.omnetpp.common.Debug;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.markers.ProblemMarkerSynchronizer;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.ex.NedFileElementEx;
@@ -90,7 +91,7 @@ public class NedValidationJob extends Job {
         }
 
         // lock NedResources while we copy marker severities onto NED trees in it
-        synchronized (nedResources) {
+        try (var unused = new LockGuard(nedResources.getLock())) {
             if (!nedResources.isImmutableCopyUpToDate(immutableResolver)) {
                 Debug.println("NED validation job: discarding results due to NED changes");
                 return false;

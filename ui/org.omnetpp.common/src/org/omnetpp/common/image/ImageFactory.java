@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -46,6 +47,7 @@ import org.eclipse.swt.widgets.Display;
 import org.omnetpp.common.CommonPlugin;
 import org.omnetpp.common.Debug;
 import org.omnetpp.common.IConstants;
+import org.omnetpp.common.locking.LockGuard;
 import org.omnetpp.common.project.ProjectUtils;
 import org.omnetpp.common.util.StringUtils;
 
@@ -207,6 +209,8 @@ public class ImageFactory {
 
     // workspace folders in the imagePath
     private IContainer[] workspaceFoldersInPath;
+
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Sets the global image directories as file system paths.
@@ -445,7 +449,7 @@ public class ImageFactory {
     /**
      * Returns a sorted list of all image IDs in the image path (files with .gif .png extension).
      */
-    public synchronized List<String> getImageNameList() {
+    public List<String> getImageNameList() { try (var unused = new LockGuard(lock)) {
         if (imageNameList != null)
             return imageNameList;
 
@@ -466,17 +470,19 @@ public class ImageFactory {
         // store/cache for later use
         imageNameList = orderedNames;
         return orderedNames;
-    }
+    }}
+
 
     /**
      * Re-reads the cached image names.
      */
-    public synchronized void rereadImageNameList() {
+    public void rereadImageNameList() { try (var unused = new LockGuard(lock)) {
         imageNameList = null;
         if (fallback != null)
             fallback.rereadImageNameList();
         getImageNameList();
-    }
+    }}
+
 
     /**
      * Returns a sorted list of folder categories found in image name list.
@@ -583,14 +589,15 @@ public class ImageFactory {
     /**
      * Removes all images from the cache.
      */
-    public synchronized void clearCache() {
+    public void clearCache() { try (var unused = new LockGuard(lock)) {
         if (Debug.debug)
             Debug.println("ImageFactory: dropping images from cache: " + StringUtils.join(imagePath, pathSeparator));
         // do not dispose old registry, because images are used by widgets, figures, etc.
         imageRegistry = new ImageRegistry(Display.getDefault());
         if (imageNameList != null)
             imageNameList.clear();
-    }
+    }}
+
 
 
     /**

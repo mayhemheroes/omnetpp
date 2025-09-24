@@ -25,7 +25,7 @@ public class FilteredMessageDependency extends MessageDependencyBase implements 
         {
             if (mappings == null)
             {
-                synchronized (Kind.class)
+                synchronized(Kind.class)
                 {
                     if (mappings == null)
                     {
