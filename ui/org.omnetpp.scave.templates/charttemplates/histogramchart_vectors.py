@@ -21,10 +21,12 @@ except results.ResultQueryError as e:
 if df.empty:
     raise chart.ChartScriptError("The result filter returned no data.")
 
+# compute histograms
 def compute_histogram(row):
     values = row["vecvalue"]
-    edges = utils.histogram_bin_edges(values)
-    row["binvalues"], row["binedges"] = np.histogram(values, bins=edges)
+    unit = row["unit"]
+    bin_edges = utils.histogram_bin_edges_from_props(values, unit, props)
+    row["binvalues"], row["binedges"] = np.histogram(values, bins=bin_edges)
     return row
 
 df = df.apply(compute_histogram, axis=1)

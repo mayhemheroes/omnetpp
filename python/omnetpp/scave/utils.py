@@ -1376,22 +1376,22 @@ def preconfigure_plot(props):
     _initialize_cycles(props)
 
 
-def _get_quantity(props, k, target_unit):
-    v = props.get(k)
+def _get_quantity(props, k, target_unit, default_unit=None):
+    return _parse_quantity(props.get(k), target_unit, default_unit)
+
+def _parse_quantity(v, target_unit, default_unit=None):
     if not target_unit:
         return float(v)
     try:
         fv = float(v)
-        bu = uc.getBaseUnit(target_unit)
-        # there is a target unit, but the base of it is "" (e.g. for "pk"),
-        # so don't try to convert it to unitless
-        if not bu:
-            return fv
-        v += bu
+        if not default_unit:
+            default_unit = uc.getBaseUnit(target_unit)
+            if not default_unit:
+                return fv
+        v += default_unit
     except (ValueError, TypeError):
         pass # most likely, v already has a unit appended
     return uc.parseQuantity(v, target_unit)
-
 
 def _set_xlimits(p, props, target_unit):
     if props.get("xaxis_min"):
@@ -1890,39 +1890,204 @@ def _initialize_cycles(props):
     _color_cycle = it.cycle(cl)
 
 
-def histogram_bin_edges(values, bins=None, range=None, weights=None):
+def histogram_bin_edges_from_props(values, unit, props):
     """
-    An improved version of numpy.histogram_bin_edges.
-    This will only return integer edges for input arrays consisting entirely of integers
-    (unless the `bins` are explicitly given otherwise).
-    In addition, the rightmost edge will always be strictly greater than the maximum of `values`
-    (unless explicitly given otherwise in `range`).
+    Calculates histogram bin edges based on chart dialog properties.
+    This is a convenience wrapper around `histogram_bin_edges()`. See that function
+    for detailed documentation of the binning algorithm and parameters.
+
+    Parameters:
+    - `values`: Input data array
+    - `unit`: Measurement unit of the input data
+    - `props` (dict): Properties from the chart configuration dialog, containing
+      settings like "use_manual", "manual_edges", "num_bins", "bin_width",
+      "range_min", "range_max", "round_bin_widths", "method".
+
+    Returns:
+    - bin_edges: Array of bin edges
     """
-    if bins is not None and type(bins) != int:
-        if range is None:
-            min_value = values.min()
-            max_value = values.max()
-            value_range = max_value - min_value
-            range = (min_value, max_value + value_range * 0.01)
-        return np.histogram_bin_edges(values, bins, range, weights)
+    use_manual = props.get("use_manual") == "true"
 
-    all_integers = not np.mod(values, 1).any()
-    min_value, max_value = range if range is not None else (values.min(), values.max())
-    value_range = max_value - min_value
+    if use_manual:
+        # Parse manual bin edges (space or comma-separated values)
+        manual_edges_str = props.get("manual_edges", "").strip()
+        manual_edges = None
+        if manual_edges_str:
+            edges_list = re.split(r'[,\s]+', manual_edges_str)
+            manual_edges = np.array([_parse_quantity(x.strip(), unit) for x in edges_list if x.strip()])
+        if manual_edges is None or len(manual_edges) < 2:
+            raise chart.ChartScriptError("Manual bin edges must have at least two values.")
+        return manual_edges
 
-    if value_range == 0:
-        edges = [min_value, min_value + 1]
     else:
-        if all_integers:
-            bin_size = max(1, round(value_range / (bins or 10)))
-            # the +1 is to make sure that max_value will be in the returned edge list,
-            # and the +bin_size is to add another whole bin because
-            # numpy.histogram defines the last bin as closed from the right
-            edges = np.arange(min_value, max_value + 1 + bin_size, bin_size)
-        else:
-            edges = np.histogram_bin_edges(values, bins or 'auto', range or (min_value, max_value + value_range * 0.01), weights)
+        # Extract constraint parameters from form, converting empty strings to None
+        def get_optional_int(key):
+            val = props.get(key, "").strip()
+            return int(val) if val else None
 
-    return edges
+        def get_optional_quantity(key):
+            val = props.get(key, "").strip()
+            return _get_quantity(props, key, unit) if val else None
+
+        constraint_params = {
+            'num_bins': get_optional_int("num_bins"),
+            'bin_width': get_optional_quantity("bin_width"),
+            'range_min': get_optional_quantity("range_min"),
+            'range_max': get_optional_quantity("range_max"),
+            'round_bin_widths': props.get("round_bin_widths", "true") == "true",
+            'method': props.get("method", "auto") if not get_optional_quantity("bin_width") else None
+        }
+
+        try:
+            bin_edges = histogram_bin_edges(values, **constraint_params)
+            return bin_edges
+        except ValueError as ex:
+            raise chart.ChartScriptError(ex.args[0])
+
+def histogram_bin_edges(values, num_bins=None, bin_width=None, range_min=None, range_max=None, method=None, round_bin_widths=True):
+    """
+    Enhanced histogram bin edge calculator with flexible parameter combinations
+    and smart defaults. Automatically returns integer-aligned edges for integer
+    data and uses rounded "nice" bin widths for improved readability.
+
+    Parameters:
+    - values: Input data array
+    - num_bins: Number of bins to use. If round_bin_widths is True, this will be treated as a hint.
+    - bin_width: Fixed width for each bin
+    - range_min: Lower endpoint of histogram range
+    - range_max: Upper endpoint of histogram range
+    - round_bin_widths: Choose "nice" bin widths such as 1, 2, 5 * 10^k.
+    - method: Binning method (used if num_bins is None, default: 'auto' if None)
+
+    When parameters are provided (not None), they are respected.
+    If parameters are overconstrained, an exception will be thrown.
+
+    Returns:
+    - bin_edges: Array of bin edges
+
+    Raises:
+    - ValueError: If parameters are overconstrained or incompatible
+    """
+
+    has_num_bins = num_bins is not None
+    has_bin_width = bin_width is not None
+    has_range_min = range_min is not None
+    has_range_max = range_max is not None
+    has_method = method is not None
+
+    # Basic validation of input array (empty/NaN/inf)
+    values = np.asarray(values)
+    if values.size == 0:
+        raise ValueError("values must be non-empty")
+    if not np.isfinite(values).all():
+        raise ValueError("values must be finite (no NaN/inf)")
+
+    # Validate parameter constraints
+    if has_bin_width and has_method:
+        raise ValueError("Cannot specify both 'bin_width' and 'method' at the same time")
+    if has_num_bins and not isinstance(num_bins, int):
+        raise ValueError("num_bins must be an integer")
+    if has_num_bins and num_bins <= 0:
+        raise ValueError(f"num_bins must be positive, got {num_bins}")
+    if has_bin_width and bin_width <= 0:
+        raise ValueError(f"bin_width must be positive, got {bin_width}")
+
+    # First, handle fully constrained range
+    if has_range_min and has_range_max:
+        range = range_max - range_min
+        if range <= 0:
+            raise ValueError(f"range_min < range_max required, got {range_min=} and {range_max=}")
+        values_range_covered = values.min() >= range_min and values.max() < range_max
+        if not values_range_covered:
+            logger.warning(f"Histogram range ({range_min},{range_max}) does not fully cover values range ({values.min()},{values.max()})")
+
+        if has_num_bins and not has_bin_width:
+            bin_width = range / num_bins
+        elif not has_num_bins and has_bin_width:
+            num_bins = round(range / bin_width)
+            bin_width = range / num_bins  # adjust
+        elif not has_num_bins and not has_bin_width:
+            # use numpy to tell us the optimal number of bins
+            tmp_edges = np.histogram_bin_edges(values, method or "auto", (range_min, range_max))
+            num_bins = len(tmp_edges) - 1
+            bin_width = range / num_bins
+        else:
+            raise ValueError(f"Do not specify num_bins, bin_width, range_min, and range_max together")
+
+        bin_edges = range_min + np.arange(num_bins+1) * bin_width
+        bin_edges[-1] = range_max
+
+        assert range_min == bin_edges[0]
+        assert range_max == bin_edges[-1]
+
+        return bin_edges
+
+    def nearest_nice_number(num):
+        """Return the next number of the form 1, 2, 2.5, 5, 10* 10^k"""
+        assert num > 0
+        magnitude = math.floor(math.log10(abs(num)))
+        scaled = num / (10 ** magnitude)  # [1, 10)
+        # scaled = round(scaled*2)/2 if scaled < 3 else round(scaled)
+        scaled = 1 if scaled < 1.5 else 2 if scaled < 2.2 else 2.5 if scaled < 3.5 else 5 if scaled < 7 else 10
+        return scaled * (10 ** magnitude)
+
+    # Else, first compute bin_width
+    all_integers = None
+    if not has_bin_width:
+        # compute 1st approx
+        eff_min = range_min if has_range_min else values.min()
+        eff_max = range_max if has_range_max else values.max()
+        if not has_num_bins:
+            # use numpy to tell us the optimal number of bins
+            tmp_edges = np.histogram_bin_edges(values, method or "auto", (eff_min, eff_max))
+            num_bins = len(tmp_edges) - 1
+
+        bin_width = math.fabs(eff_max - eff_min) / num_bins
+        if bin_width == 0:
+            bin_width = 1
+
+        # adjust to make it a nice round number
+        all_integers = not np.mod(values, 1).any()
+        if all_integers:
+            bin_width = max(1, round(bin_width))
+        if round_bin_widths:
+            # note: the way we "cheat" here will affect the number of bins!
+            bin_width = nearest_nice_number(bin_width)
+
+    # Compute edges from bin_width and range constraints
+    # Note: We don't use num_bins to avoid the error of accidentally leaving values uncovered.
+    # Instead, bin_width must be chosen so that it produces the desired number of bins.
+    assert not has_range_min or not has_range_max
+    if has_range_min:
+        n = max(1, math.ceil((values.max() - range_min) / bin_width))
+        bin_edges = range_min + np.arange(n+1) * bin_width
+        if bin_edges[-1] <= values.max():
+            bin_edges = np.append(bin_edges, bin_edges[-1] + bin_width) # extend to include values.max())
+    elif has_range_max:
+        n = max(1, math.ceil((range_max - values.min()) / bin_width))
+        bin_edges = range_max - np.arange(n+1, -1, -1) * bin_width
+    else:
+        # cover values range with bin_width bins, make edges multiple of bin_width
+        i_min = math.floor(values.min() / bin_width)
+        i_max = math.ceil(values.max() / bin_width)
+        bin_edges =  np.arange(i_min, i_max+1) * bin_width
+        if bin_edges[-1] <= values.max():
+            bin_edges = np.append(bin_edges, bin_edges[-1] + bin_width) # extend to include values.max())
+
+    # Issue warning if histogram range does not cover all values (note: bins' right edges are open, i.e. exclusive)
+    values_range_covered = values.min() >= bin_edges[0] and values.max() < bin_edges[-1]
+    if not values_range_covered:
+        logger.warning(f"Histogram range ({bin_edges[0]},{bin_edges[-1]}) does not fully cover values range ({values.min()},{values.max()})")
+
+    # Assert that constraints are met
+    assert not has_num_bins or round_bin_widths or all_integers or num_bins == len(bin_edges)-1 # num_bins is fulfilled *unless* this-or-that...
+    assert not has_bin_width or bin_width == bin_edges[1] - bin_edges[0]
+    assert not has_range_min or range_min == bin_edges[0]
+    assert not has_range_max or range_max == bin_edges[-1]
+    # histogram_width_constrained = has_range_min or has_range_max or (has_num_bins and has_bin_width)
+    # assert histogram_width_constrained or values_range_covered
+
+    return bin_edges
 
 
 def confidence_interval(alpha, data):
