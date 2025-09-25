@@ -18,9 +18,9 @@ cmdenv-performance-display= false
 
 %contains: stdout
 Running simulation...
-** Event #1  t=0   Test (Test, id=1)
+** Event #1  t=0  on starter-1 (cMessage)  in Test (Test, id=1)
 Before wait
-** Event #2  t=1   Test (Test, id=1)
+** Event #2  t=1  on timeout-1 (cMessage)  in Test (Test, id=1)
 After wait
 
 <!> No more events, simulation completed -- at t=1s, event #2

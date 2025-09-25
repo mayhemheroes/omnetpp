@@ -66,9 +66,9 @@ check-signals = true
 %contains: stdout
 
 Running simulation...
-** Event #1  t=0   Test.test1 (Test1, id=2)
+** Event #1  t=0  on starter-2 (omnetpp::cMessage)  in Test.test1 (Test1, id=2)
 Test.test1::activity() called
-** Event #2  t=0   Test.test2 (Test2, id=3)
+** Event #2  t=0  on starter-3 (omnetpp::cMessage)  in Test.test2 (Test2, id=3)
 Test.test2::activity() called
 
 <!> No more events
