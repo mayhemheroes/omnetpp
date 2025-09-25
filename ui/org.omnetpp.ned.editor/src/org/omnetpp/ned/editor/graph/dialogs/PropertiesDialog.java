@@ -65,7 +65,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
@@ -199,25 +198,25 @@ public class PropertiesDialog extends TrayDialog {
     private ComboFieldEditor shapeField;
     private ColorFieldEditor shapeFillColorField;
     private ColorFieldEditor shapeBorderColorField;
-    private SpinnerFieldEditor shapeBorderWidthField;
+    private TextFieldEditor shapeBorderWidthField;
     private ImageFieldEditor imageField;
     private ColorFieldEditor imageColorField;
-    private SpinnerFieldEditor imageColorPercentageField;
+    private TextFieldEditor imageColorPercentageField;
     private ComboFieldEditor imageSizeField;
     private ImageFieldEditor image2Field;
     private ColorFieldEditor image2ColorField;
-    private SpinnerFieldEditor image2ColorPercentageField;
+    private TextFieldEditor image2ColorPercentageField;
     private TextFieldEditor rangeField;
     private ColorFieldEditor rangeFillColorField;
     private ColorFieldEditor rangeBorderColorField;
-    private SpinnerFieldEditor rangeBorderWidthField;
+    private TextFieldEditor rangeBorderWidthField;
     private TextFieldEditor queueNameField;
     private TextFieldEditor textField;
     private ComboFieldEditor textPosField;
     private ColorFieldEditor textColorField;
     private TextFieldEditor tooltipField;
     private ColorFieldEditor connectionColorField;
-    private SpinnerFieldEditor connectionWidthField;
+    private TextFieldEditor connectionWidthField;
     private ComboFieldEditor connectionStyleField;
 
     private TextFieldEditor bgUnitField;
@@ -226,12 +225,12 @@ public class PropertiesDialog extends TrayDialog {
     private TextFieldEditor bgHeightField;
     private ColorFieldEditor bgFillColorField;
     private ColorFieldEditor bgBorderColorField;
-    private SpinnerFieldEditor bgBorderWidthField;
+    private TextFieldEditor bgBorderWidthField;
     private TextFieldEditor bgTooltipField;
     private ImageFieldEditor bgImageField;
     private ComboFieldEditor bgImageArrangement;
     private TextFieldEditor bgGridDistanceField;
-    private SpinnerFieldEditor bgGridSubdivisionField;
+    private TextFieldEditor bgGridSubdivisionField;
     private ColorFieldEditor bgGridColorField;
     private List<Label> unitLabels = new ArrayList<Label>();
 
@@ -745,7 +744,7 @@ public class PropertiesDialog extends TrayDialog {
         createUnitLabel(comp);
         comp = createComposite(group, 7);
         createLabel(comp, "Line width:", false);
-        rangeBorderWidthField = createSpinner(comp, 0, 0, 100, 1);
+        rangeBorderWidthField = createText(comp, 5);
         createLabel(comp, "px", false);
         createLabel(comp, "Line color:", true);
         rangeBorderColorField = createColorSelector(comp);
@@ -790,7 +789,7 @@ public class PropertiesDialog extends TrayDialog {
             imageSizeField = createCombo(comp, IDisplayString.Prop.IMAGE_SIZE.getEnumSpec().getNames());
             createLabel(comp, " Tint:", true);
             imageColorField = createColorSelector(comp);
-            imageColorPercentageField = createSpinner(comp, 0, 0, 100, 1);
+            imageColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
 
             group = createGroup(page, "Decorations", 1);
@@ -802,7 +801,7 @@ public class PropertiesDialog extends TrayDialog {
             createLabel(comp, "", false);
             createLabel(comp, " Tint:", true);
             image2ColorField = createColorSelector(comp);
-            image2ColorPercentageField = createSpinner(comp, 0, 0, 100, 1);
+            image2ColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
 
             // notes
@@ -817,7 +816,7 @@ public class PropertiesDialog extends TrayDialog {
             createLabel(group, "Line color:", false);
             connectionColorField = createColorSelector(group);
             createLabel(group, "Line width:", true);
-            connectionWidthField = createSpinner(group, 0, 0, 100, 1);
+            connectionWidthField = createText(group, 5);
             createLabel(group, "px", false);
             createLabel(group, "Line style:", true);
             connectionStyleField = createCombo(group, IDisplayString.Prop.CONNECTION_STYLE.getEnumSpec().getNames());
@@ -833,7 +832,7 @@ public class PropertiesDialog extends TrayDialog {
             imageSizeField = createCombo(comp, IDisplayString.Prop.IMAGE_SIZE.getEnumSpec().getNames());
             createLabel(comp, " Tint:", true);
             imageColorField = createColorSelector(comp);
-            imageColorPercentageField = createSpinner(comp, 0, 0, 100, 1);
+            imageColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
 
             group = createGroup(page, "Shape", 1);
@@ -850,7 +849,7 @@ public class PropertiesDialog extends TrayDialog {
             createUnitLabel(comp);
             comp = createComposite(group, 7);
             createLabel(comp, "Border width:", false);
-            shapeBorderWidthField = createSpinner(comp, 0, 0, 100, 1);
+            shapeBorderWidthField = createText(comp, 5);
             createLabel(comp, "px", false);
             createLabel(comp, "Border color:", true);
             shapeBorderColorField = createColorSelector(comp);
@@ -880,7 +879,7 @@ public class PropertiesDialog extends TrayDialog {
             createLabel(comp, "", false);
             createLabel(comp, " Tint:", true);
             image2ColorField = createColorSelector(comp);
-            image2ColorPercentageField = createSpinner(comp, 0, 0, 100, 1);
+            image2ColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
 
             // Q tag
@@ -894,7 +893,7 @@ public class PropertiesDialog extends TrayDialog {
             createLabel(group, "Line color:", false);
             connectionColorField = createColorSelector(group);
             createLabel(group, "Line width:", true);
-            connectionWidthField = createSpinner(group, 0, 0, 100, 1);
+            connectionWidthField = createText(group, 5);
             createLabel(group, "px", false);
             createLabel(group, "Line style:", true);
             connectionStyleField = createCombo(group, IDisplayString.Prop.CONNECTION_STYLE.getEnumSpec().getNames());
@@ -956,7 +955,7 @@ public class PropertiesDialog extends TrayDialog {
         createLabel(comp, "Border color:", true);
         bgBorderColorField = createColorSelector(comp);
         createLabel(comp, "Border width:", true);
-        bgBorderWidthField = createSpinner(comp, 0, 0, 100, 1);
+        bgBorderWidthField = createText(comp, 5);
         createLabel(comp, "px", false);
 
         // BGI tag
@@ -977,7 +976,7 @@ public class PropertiesDialog extends TrayDialog {
         bgGridDistanceField = createText(group, 10);
         createUnitLabel(group);
         createLabel(group, "Subdivision:", true);
-        bgGridSubdivisionField = createSpinner(group, 0, 0, 100, 1);
+        bgGridSubdivisionField = createText(group, 5);
         createLabel(group, "Color:", true);
         bgGridColorField = createColorSelector(group);
 
@@ -1182,17 +1181,7 @@ public class PropertiesDialog extends TrayDialog {
         return fieldEditor;
     }
 
-    protected SpinnerFieldEditor createSpinner(Composite parent, int digitsAfterPoint, int minimum, int maximum, int increment) {
-        SpinnerFieldEditor fieldEditor = new SpinnerFieldEditor(parent, SWT.BORDER);
-        fieldEditor.addModifyListener(modifyListener);
-        Spinner spinner = fieldEditor.getControl();
-        spinner.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
-        spinner.setDigits(digitsAfterPoint);
-        spinner.setMinimum(minimum);
-        spinner.setMaximum(maximum);
-        spinner.setIncrement(increment);
-        return fieldEditor;
-    }
+    
 
     protected ComboFieldEditor createCombo(Composite parent, String[] items) {
         return createCombo(parent, items, SWT.DEFAULT);
