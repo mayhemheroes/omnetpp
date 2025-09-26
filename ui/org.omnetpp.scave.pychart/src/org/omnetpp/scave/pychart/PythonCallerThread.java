@@ -8,6 +8,7 @@
 package org.omnetpp.scave.pychart;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.omnetpp.common.Debug;
@@ -42,6 +43,7 @@ public class PythonCallerThread extends Thread {
     private PythonProcess proc;
     private ConcurrentLinkedQueue<EventStreamRunnable> queue = new ConcurrentLinkedQueue<EventStreamRunnable>();
     private ReentrantLock lock = new ReentrantLock();
+    private final Condition cond = lock.newCondition();
 
     public interface ExceptionHandler {
         void handle(PythonProcess proc, Exception e);
@@ -105,7 +107,7 @@ public class PythonCallerThread extends Thread {
             if (eventStream >= 0)
                 queue.removeIf(icr -> icr.getEventStream() == eventStream);
             queue.add(cr);
-            queue.notify();
+            cond.signal();
         }
     }
 
@@ -137,7 +139,7 @@ public class PythonCallerThread extends Thread {
                 try {
                     // There is nothing to do, wait until a Runnable is submitted...
                     if (queue.isEmpty())
-                        queue.wait();
+                        cond.await();
                 }
                 catch (InterruptedException e) {
                     break; // rude...
