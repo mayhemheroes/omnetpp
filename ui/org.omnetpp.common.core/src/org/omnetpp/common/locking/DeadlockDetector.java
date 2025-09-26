@@ -7,9 +7,13 @@
 package org.omnetpp.common.locking;
 
 import java.lang.Thread.State;
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -111,6 +115,14 @@ public class DeadlockDetector implements Runnable {
         if (deadlockedThreadIds != null && deadlockedThreadIds.length > 0 && !ArrayUtils.contains(deadlockedThreadIds, uiThreadId)) {
             ThreadInfo[] infos = threadMxBean.getThreadInfo(deadlockedThreadIds, true, true);
             StringBuilder logMessage = new StringBuilder("=== DEADLOCK DETECTED ===\n");
+
+            // Add deadlock cycle analysis
+            String deadlockCycle = analyzeDeadlockCycle(infos);
+            if (deadlockCycle != null) {
+                logMessage.append(deadlockCycle).append("\n");
+            }
+
+            // Add detailed thread information
             for (ThreadInfo ti : infos)
                 logMessage.append(buildThreadInfoString(ti)).append("\n");
             log.error(logMessage.toString());
@@ -145,6 +157,21 @@ public class DeadlockDetector implements Runnable {
                     logMessage.append(buildThreadInfoString(info));
                     log.error(logMessage.toString());
 
+
+                    ThreadInfo[] infos = threadMxBean.getThreadInfo(deadlockedThreadIds, true, true);
+
+                    // Add deadlock cycle analysis
+                    String deadlockCycle = analyzeDeadlockCycle(infos);
+                    if (deadlockCycle != null) {
+                        logMessage.append(deadlockCycle).append("\n");
+                    }
+
+                    // Add detailed thread information
+                    for (ThreadInfo ti : infos)
+                        logMessage.append(buildThreadInfoString(ti)).append("\n");
+                    log.error(logMessage.toString());
+
+
                     handleUiDeadlock(info);
                 }
             }
@@ -153,9 +180,39 @@ public class DeadlockDetector implements Runnable {
 
     protected String buildThreadInfoString(ThreadInfo ti) {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("\"%s\" Id=%d%n", ti.getThreadName(), ti.getThreadId()));
+        sb.append(String.format("\"%s\" Id=%d", ti.getThreadName(), ti.getThreadId()));
+
+        // Add lock information if thread is blocked
+        if (ti.getLockInfo() != null) {
+            sb.append(String.format(" BLOCKED on %s", formatLockInfo(ti.getLockInfo())));
+            if (ti.getLockOwnerName() != null) {
+                sb.append(String.format(" (owned by \"%s\" Id=%d)", ti.getLockOwnerName(), ti.getLockOwnerId()));
+            }
+        }
+        sb.append("\n");
+
+        // Show owned synchronizers (ReentrantLock, Semaphore, etc.)
+        var lockedSynchronizers = ti.getLockedSynchronizers();
+        if (lockedSynchronizers.length > 0) {
+            sb.append("  Locked synchronizers:\n");
+            for (var sync : lockedSynchronizers) {
+                sb.append("    - ").append(formatLockInfo(sync)).append("\n");
+            }
+        }
+
+        // Show owned monitors (synchronized blocks/methods)
+        var lockedMonitors = ti.getLockedMonitors();
+        if (lockedMonitors.length > 0) {
+            sb.append("  Locked monitors:\n");
+            for (var monitor : lockedMonitors) {
+                sb.append("    - ").append(formatMonitorInfo(monitor)).append("\n");
+            }
+        }
+
+        // Add stack trace
+        sb.append("  Stack trace:\n");
         for (StackTraceElement ste : ti.getStackTrace())
-            sb.append("\tat " + ste + "\n");
+            sb.append("    at " + ste + "\n");
         return sb.toString();
     }
 
@@ -225,6 +282,107 @@ public class DeadlockDetector implements Runnable {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * Analyze deadlock cycle and create a visual representation.
+     */
+    protected String analyzeDeadlockCycle(ThreadInfo[] infos) {
+        if (infos == null || infos.length < 2) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("DEADLOCK CYCLE ANALYSIS:\n");
+
+        // Create a map of thread ID to thread info for quick lookup
+        Map<Long, ThreadInfo> threadMap = new HashMap<>();
+        for (ThreadInfo info : infos) {
+            threadMap.put(info.getThreadId(), info);
+        }
+
+        // Build the cycle visualization
+        sb.append("Lock dependency chain:\n");
+        for (ThreadInfo info : infos) {
+            String threadName = String.format("\"%s\" (Id=%d)", info.getThreadName(), info.getThreadId());
+
+            if (info.getLockInfo() != null) {
+                String lockName = formatLockInfo(info.getLockInfo());
+                sb.append("  ").append(threadName).append(" → waiting for ").append(lockName);
+
+                if (info.getLockOwnerName() != null) {
+                    sb.append(" (owned by \"").append(info.getLockOwnerName())
+                      .append("\" Id=").append(info.getLockOwnerId()).append(")");
+                }
+                sb.append("\n");
+            }
+        }
+
+        // Show what each thread owns that might be blocking others
+        sb.append("\nLock ownership:\n");
+        for (ThreadInfo info : infos) {
+            String threadName = String.format("\"%s\" (Id=%d)", info.getThreadName(), info.getThreadId());
+
+            // Show owned synchronizers
+            var lockedSynchronizers = info.getLockedSynchronizers();
+            if (lockedSynchronizers.length > 0) {
+                sb.append("  ").append(threadName).append(" owns:\n");
+                for (var sync : lockedSynchronizers) {
+                    sb.append("    - ").append(formatLockInfo(sync));
+
+                    // Check if any other deadlocked thread is waiting for this lock
+                    String syncName = formatLockInfo(sync);
+                    for (ThreadInfo otherInfo : infos) {
+                        if (otherInfo.getThreadId() != info.getThreadId() &&
+                            otherInfo.getLockInfo() != null &&
+                            formatLockInfo(otherInfo.getLockInfo()).equals(syncName)) {
+                            sb.append(" (blocking \"").append(otherInfo.getThreadName()).append("\")");
+                            break;
+                        }
+                    }
+                    sb.append("\n");
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Format lock information for display.
+     */
+    protected String formatLockInfo(LockInfo lockInfo) {
+        if (lockInfo == null)
+            return "null";
+
+        String className = lockInfo.getClassName();
+        int identityHashCode = lockInfo.getIdentityHashCode();
+
+        // Simplify class name for readability
+        String simpleName = className.substring(className.lastIndexOf('.') + 1);
+
+        return String.format("%s@%x", simpleName, identityHashCode);
+    }
+
+    /**
+     * Format monitor information for display.
+     */
+    protected String formatMonitorInfo(MonitorInfo monitorInfo) {
+        if (monitorInfo == null)
+            return "null";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(formatLockInfo(monitorInfo));
+
+        // Add location information if available
+        StackTraceElement lockedAt = monitorInfo.getLockedStackFrame();
+        if (lockedAt != null) {
+            sb.append(" (locked at ").append(lockedAt.getClassName())
+              .append(".").append(lockedAt.getMethodName())
+              .append(":").append(lockedAt.getLineNumber()).append(")");
+        }
+
+        return sb.toString();
     }
 
     protected void displayDialog(boolean success) {
