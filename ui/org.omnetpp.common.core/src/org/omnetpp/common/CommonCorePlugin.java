@@ -42,7 +42,7 @@ public class CommonCorePlugin extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
 
-        if (System.getenv("OMNETPP_DISABLE_DEADLOCK_DETECTION") != null) {
+        if (System.getenv("OMNETPP_DISABLE_DEADLOCK_DETECTION") == null) {
             deadlockDetector = new DeadlockDetector();
             deadlockDetector.start();
         }
