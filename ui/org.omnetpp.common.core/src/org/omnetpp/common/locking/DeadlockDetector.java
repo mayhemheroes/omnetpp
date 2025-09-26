@@ -62,7 +62,7 @@ public class DeadlockDetector implements Runnable {
     private final ScheduledExecutorService scheduler;
     private final ThreadMXBean threadMxBean;
     private final ILog log;
-
+    private boolean dialogVisible = false;
 
     public DeadlockDetector() {
         this.threadMxBean = ManagementFactory.getThreadMXBean();
@@ -165,7 +165,8 @@ public class DeadlockDetector implements Runnable {
             log.info("Calling interrupt() on UI thread to resolve lasting blocking (it is blocked on a call like ReentrantLock.lockInterruptibly())");
             Thread uiThread = threadFromInfo(uiThreadInfo);
             uiThread.interrupt();
-            displayDialog(true);
+            if (!dialogVisible)
+                displayDialog(true);
         }
         else {
             log.info("Cannot resolve potential UI deadlock: UI thread is not interruptible (it does not appear to wait in a call that respects interrupt() such as ReentrantLock.lockInterruptibly())");
@@ -175,7 +176,8 @@ public class DeadlockDetector implements Runnable {
 
     public void handleDeadlock(Deadlock deadlock) {
         boolean success = resolveDeadlock(deadlock);
-        displayDialog(success);
+        if (!dialogVisible)
+            displayDialog(success);
     }
 
     public boolean resolveDeadlock(Deadlock deadlock) {
@@ -226,6 +228,7 @@ public class DeadlockDetector implements Runnable {
     }
 
     protected void displayDialog(boolean success) {
+        dialogVisible = true;
         Display.getDefault().asyncExec(() -> {
             String title = success ? "Deadlock Resolved" : "Deadlock Detected"; // TODO UI or bg thread deadlock, list the threads!!! note: false UI deadlock!!!
             String message = success
@@ -236,6 +239,7 @@ public class DeadlockDetector implements Runnable {
             message += "\n\nInclude the IDE log file (<workspace>/.metadata/.log) with your report and describe what you were doing when this occurred.";
 
             MessageDialog.openInformation(null, title, message);
+            dialogVisible = false;
         });
     }
 }
