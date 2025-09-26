@@ -101,7 +101,6 @@ public class NedResources extends NedTypeResolver implements INedResources, IRes
     // job that performs NED validation in the background
     private Job nedValidationJob;
 
-    private ReentrantLock lock = new ReentrantLock();
 
     // a delayed job that initiates NED validation when the user idles a little
     private DelayedJob nedValidationStarterJob = new DelayedJob(400) {

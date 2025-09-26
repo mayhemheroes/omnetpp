@@ -57,7 +57,7 @@ public class NedTypeResolver implements INedTypeResolver {
     // file element to contain built-in declarations (does not correspond to any physical file)
     protected NedFileElementEx builtInDeclarationsFile;
 
-    private ReentrantLock lock = new ReentrantLock();
+    protected ReentrantLock lock = new ReentrantLock();
 
     protected static class ProjectData {
         // NED Source Folders for the project (contents of the .nedfolders file)
