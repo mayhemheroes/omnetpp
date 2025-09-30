@@ -1,5 +1,7 @@
 - Linux:
-  o -static-libstdc++ and -static-libgcc should be added to LDFLAGS to avoid binary dependency on GLIBCXX which can cause issues with old systems
+  o -static-libstdc++ and -static-libgcc should NOT be added to LDFLAGS, to avoid having two instances of them
+    (the other libstdc++ being brought in by WebKit), resulting in conflicting linker symbols and cryptic errors.
+    Previously this was done to avoid binary dependency on GLIBCXX which can cause issues with old systems.
 - Windows:
   o you should use the mingw cross compiler (x86_64-w64-mingw32-g++)
   o Additionally you MUST add the -mthreads option to both CFLAGS and LDFLAGS otherwise the resulting lib will CRASH.
