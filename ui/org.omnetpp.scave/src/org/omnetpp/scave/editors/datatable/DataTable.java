@@ -438,6 +438,10 @@ public class DataTable extends LargeTable implements IDataControl {
         return columnNames;
     }
 
+    public boolean isColumnVisible(ColumnRole column) {
+        return visibleColumns.contains(column);
+    }
+
     public String[] getVisibleColumnNames() {
         String[] columnNames = new String[visibleColumns.size()];
         for (int i = 0; i < visibleColumns.size(); ++i)
@@ -815,16 +819,27 @@ public class DataTable extends LargeTable implements IDataControl {
             }
             case COL_MODULEDISPLAYPATH: {
                 String name = result.getAttribute(Scave.MODULEDISPLAYPATH);
+                // If the MODULE column is also visible, and equal, grey out the MODULEDISPLAYPATH.
+                boolean greyedOut = false;
+                if (name.isEmpty()) {
+                    name = result.getModuleName();
+                    greyedOut = isColumnVisible(ColumnRole.COL_MODULE);
+                }
                 if (!showNetworkNames) {
                     int index = name.indexOf('.');
-                    return new StyledString(name.substring(index+1));
+                    StyledString styledString = new StyledString(name.substring(index+1));
+                    if (greyedOut)
+                        styledString.setStyle(0, styledString.getString().length(), GREYED_OUT_STYLER);
+                    return styledString;
                 }
                 StyledString styledString = new StyledString(name);
-                if (colorNetworkNames) {
-                    int index = name.indexOf('.');
-                    if (index != -1)
-                        styledString.setStyle(0, index, GREYED_OUT_STYLER);
-                }
+                int greyedOutLength = -1;
+                if (greyedOut)
+                    greyedOutLength = name.length();
+                else if (colorNetworkNames)
+                    greyedOutLength = name.indexOf('.');
+                if (greyedOutLength != -1)
+                    styledString.setStyle(0, greyedOutLength, GREYED_OUT_STYLER);
                 return styledString;
             }
             case COL_NAME: {
