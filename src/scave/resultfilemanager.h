@@ -209,6 +209,7 @@ class SCAVE_API ResultFileManager
     inline const VectorResult *uncheckedGetVector(ID id) const;
     inline const StatisticsResult *uncheckedGetStatistics(ID id) const;
     inline const HistogramResult *uncheckedGetHistogram(ID id) const;
+    inline const StatisticsResult *uncheckedGetStatisticsOrHistogram(ID id) const;
 
     void fillFieldScalar(ScalarResult& scalar, ID id) const;
     const std::string *getPooledNameWithSuffix(const std::string *name, FieldNum fieldId) const;
@@ -458,6 +459,11 @@ inline const StatisticsResult *ResultFileManager::uncheckedGetStatistics(ID id) 
 inline const HistogramResult *ResultFileManager::uncheckedGetHistogram(ID id) const
 {
     return &fileRunList[_filerunid(id)]->histogramResults[_pos(id)];
+}
+
+inline const StatisticsResult *ResultFileManager::uncheckedGetStatisticsOrHistogram(ID id) const
+{
+    return _type(id) == STATISTICS ? uncheckedGetStatistics(id) : uncheckedGetHistogram(id);
 }
 
 inline FileRun *ResultFileManager::getFileRunForID(ID id) const

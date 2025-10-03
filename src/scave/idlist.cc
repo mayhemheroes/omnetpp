@@ -177,6 +177,12 @@ void IDList::assertAllHistograms() const
         throw opp_runtime_error("These items are not all histograms");
 }
 
+void IDList::assertAllStatisticsOrHistograms() const
+{
+    if (!areAllStatisticsOrHistograms())
+        throw opp_runtime_error("These items are not all statistics or histograms");
+}
+
 void IDList::checkIntegrityAllScalars(ResultFileManager *mgr) const
 {
     checkIntegrity(mgr);
@@ -422,50 +428,50 @@ void IDList::sortVectorsByEndTime(ResultFileManager *mgr, bool ascending, std::v
 
 void IDList::sortStatisticsByCount(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<int64_t>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getCount();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<int64_t>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getCount();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsByMean(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getMean();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getMean();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsByStdDev(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getStddev();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getStddev();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsByMin(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getMin();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getMin();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsByMax(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getMax();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getMax();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsByVariance(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getVariance();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getVariance();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsBySum(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getSum();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getSum();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortStatisticsBySumWeights(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllStatistics();
-    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatistics(id)->getStatistics().getSumWeights();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getSumWeights();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortHistogramsByNumBins(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
@@ -521,6 +527,12 @@ bool IDList::areAllHistograms() const
 {
     int types = getItemTypes();
     return !types || types == ResultFileManager::HISTOGRAM;
+}
+
+bool IDList::areAllStatisticsOrHistograms() const
+{
+    int types = getItemTypes();
+    return !types || types == ResultFileManager::STATISTICS || types == ResultFileManager::HISTOGRAM || types == (ResultFileManager::STATISTICS | ResultFileManager::HISTOGRAM);
 }
 
 IDList IDList::filterByTypes(int typeMask) const

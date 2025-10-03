@@ -698,13 +698,13 @@ public class DataTable extends LargeTable implements IDataControl {
             ; //TODO
             break;
         case COL_COUNT:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByCount(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByCount(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_SUMWEIGHTS:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsBySumWeights(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortStatisticsBySumWeights(manager, ascending, selectionIndices, interrupted);
@@ -713,31 +713,31 @@ public class DataTable extends LargeTable implements IDataControl {
             //TODO
             break;
         case COL_MEAN:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByMean(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByMean(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_STDDEV:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByStdDev(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByStdDev(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_MIN:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByMin(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByMin(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_MAX:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByMax(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByMax(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_VARIANCE:
-            if (idList.areAllStatistics())
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortStatisticsByVariance(manager, ascending, selectionIndices, interrupted);
             else if (idList.areAllVectors())
                 idList.sortVectorsByVariance(manager, ascending, selectionIndices, interrupted);

@@ -65,6 +65,7 @@ class SCAVE_API IDList
         void assertAllVectors() const;
         void assertAllStatistics() const;
         void assertAllHistograms() const;
+        void assertAllStatisticsOrHistograms() const;
 
         static void sort(/*non-*/const V& cv) {V& v = const_cast<V&>(cv); std::sort(v.begin(), v.end());}
 
@@ -117,6 +118,7 @@ class SCAVE_API IDList
         bool areAllVectors() const;
         bool areAllStatistics() const;
         bool areAllHistograms() const;
+        bool areAllStatisticsOrHistograms() const;
         IDList filterByTypes(int typeMask) const;
         int countByTypes(int typeMask) const;
 
