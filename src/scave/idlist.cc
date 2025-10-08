@@ -476,14 +476,19 @@ void IDList::sortStatisticsBySumWeights(ResultFileManager *mgr, bool ascending, 
 
 void IDList::sortHistogramsByNumBins(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllHistograms();
-    doSort<int>([mgr](ID id) {return mgr->uncheckedGetHistogram(id)->getHistogram().getNumBins();}, mgr, ascending, selectionIndices, interrupted);
+    assertAllStatisticsOrHistograms();
+    doSort<int>([mgr](ID id) {return ResultFileManager::_type(id) == ResultFileManager::STATISTICS ? 0 : mgr->uncheckedGetHistogram(id)->getHistogram().getNumBins();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortHistogramsByHistogramRange(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
-    assertAllHistograms();
-    doSort<int>([mgr](ID id) {return mgr->uncheckedGetHistogram(id)->getHistogram().getBinEdge(0);}, mgr, ascending, selectionIndices, interrupted); // actually, lower edge of histogram range
+    assertAllStatisticsOrHistograms();
+    doSort<double>([mgr](ID id) {
+        if (ResultFileManager::_type(id) == ResultFileManager::STATISTICS)
+            return NEGATIVE_INFINITY;
+        const Histogram& hist = mgr->uncheckedGetHistogram(id)->getHistogram();
+        return hist.getNumBins() == 0 ? NEGATIVE_INFINITY : hist.getBinEdge(0);
+    }, mgr, ascending, selectionIndices, interrupted); // actually, lower edge of histogram range
 }
 
 void IDList::reverse()

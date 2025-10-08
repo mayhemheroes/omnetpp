@@ -743,11 +743,11 @@ public class DataTable extends LargeTable implements IDataControl {
                 idList.sortVectorsByVariance(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_NUMBINS:
-            if (idList.areAllHistograms()) //TODO areAllStatistics(), and sorting should not crash
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortHistogramsByNumBins(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_HISTOGRAMRANGE:
-            if (idList.areAllHistograms()) //TODO areAllStatistics(), and sorting should not crash
+            if (idList.areAllStatisticsOrHistograms())
                 idList.sortHistogramsByHistogramRange(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_EXPERIMENT:
