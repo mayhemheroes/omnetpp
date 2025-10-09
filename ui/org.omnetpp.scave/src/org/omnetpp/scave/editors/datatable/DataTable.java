@@ -680,7 +680,7 @@ public class DataTable extends LargeTable implements IDataControl {
             idList.sortByModule(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_MODULEDISPLAYPATH:
-            idList.sortByAttribute(manager, Scave.MODULEDISPLAYPATH, ascending, selectionIndices, interrupted);
+            idList.sortByModuleDisplayPath(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_NAME:
             idList.sortByName(manager, ascending, selectionIndices, interrupted);

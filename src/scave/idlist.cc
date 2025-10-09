@@ -25,6 +25,7 @@
 #include "interruptedflag.h"
 #include "resultfilemanager.h"
 #include "scaveutils.h"
+#include "fields.h"
 
 #ifdef THREADED
 #include "common/rwlock.h"
@@ -328,6 +329,16 @@ void IDList::sortByAttribute(ResultFileManager *mgr, const char *attrName, bool 
 {
     ScalarResult tmp;
     doSort<const char *>([mgr,&tmp,attrName](ID id) {return mgr->uncheckedGetItem(id, tmp)->getAttribute(attrName).c_str();}, mgr, ascending, selectionIndices, interrupted);
+}
+
+void IDList::sortByModuleDisplayPath(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
+{
+    ScalarResult tmp;
+    doSort<const char *>([mgr,&tmp](ID id) {
+        const ResultItem *item = mgr->uncheckedGetItem(id, tmp);
+        const std::string& attr = item->getAttribute(Scave::MODULEDISPLAYPATH);
+        return (!attr.empty()) ? attr.c_str() : item->getModuleName().c_str();
+    }, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortScalarsByValue(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
