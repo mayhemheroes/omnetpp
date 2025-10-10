@@ -135,6 +135,7 @@ class SCAVE_API IDList
         void sortByName(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortByAttribute(ResultFileManager *mgr, const char *attrName, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortByModuleDisplayPath(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
+        void sortByType(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortScalarsByValue(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortParametersByValue(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortVectorsByVectorId(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
@@ -156,6 +157,7 @@ class SCAVE_API IDList
         void sortStatisticsByVariance(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortStatisticsBySum(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortStatisticsBySumWeights(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
+        void sortStatisticsByIsWeighted(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortHistogramsByNumBins(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
         void sortHistogramsByHistogramRange(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted);
 

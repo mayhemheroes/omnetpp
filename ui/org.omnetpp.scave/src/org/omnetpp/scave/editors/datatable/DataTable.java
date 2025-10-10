@@ -695,7 +695,7 @@ public class DataTable extends LargeTable implements IDataControl {
             idList.sortVectorsByVectorId(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_KIND:
-            ; //TODO
+            idList.sortByType(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_COUNT:
             if (idList.areAllStatisticsOrHistograms())
@@ -710,7 +710,7 @@ public class DataTable extends LargeTable implements IDataControl {
                 idList.sortStatisticsBySumWeights(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_ISWEIGHTED:
-            //TODO
+            idList.sortStatisticsByIsWeighted(manager, ascending, selectionIndices, interrupted);
             break;
         case COL_MEAN:
             if (idList.areAllStatisticsOrHistograms())

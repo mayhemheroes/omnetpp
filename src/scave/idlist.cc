@@ -347,6 +347,11 @@ void IDList::sortByModuleDisplayPath(ResultFileManager *mgr, bool ascending, std
     }, mgr, ascending, selectionIndices, interrupted);
 }
 
+void IDList::sortByType(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
+{
+    doSort<int>([](ID id) {return ResultFileManager::_type(id);}, mgr, ascending, selectionIndices, interrupted);
+}
+
 void IDList::sortScalarsByValue(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
 {
     assertAllScalars();
@@ -472,6 +477,12 @@ void IDList::sortStatisticsBySumWeights(ResultFileManager *mgr, bool ascending, 
 {
     assertAllStatisticsOrHistograms();
     doSort<double>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().getSumWeights();}, mgr, ascending, selectionIndices, interrupted);
+}
+
+void IDList::sortStatisticsByIsWeighted(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
+{
+    assertAllStatisticsOrHistograms();
+    doSort<bool>([mgr](ID id) {return mgr->uncheckedGetStatisticsOrHistogram(id)->getStatistics().isWeighted();}, mgr, ascending, selectionIndices, interrupted);
 }
 
 void IDList::sortHistogramsByNumBins(ResultFileManager *mgr, bool ascending, std::vector<int>& selectionIndices, InterruptedFlag *interrupted)
