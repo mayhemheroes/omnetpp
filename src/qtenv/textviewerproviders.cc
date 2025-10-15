@@ -247,7 +247,7 @@ const char *ModuleOutputContentProvider::getLineText(int lineIndex)
     if (!isIndexValid())
         rebuildIndex();
 
-    Q_ASSERT(lineIndex >= 0 && lineIndex < lineCount);
+    ASSERT(lineIndex >= 0 && lineIndex < lineCount);
     if (lineIndex == lineCount-1)  // empty last line
         return "";
 
@@ -405,7 +405,9 @@ int ModuleOutputContentProvider::getIndexOfEntryAt(int lineIndex)
     if (!isIndexValid())
         rebuildIndex();
 
-    return entryIndex.lookupLine(lineIndex);
+    int result = entryIndex.lookupLine(lineIndex);
+    ASSERT(result >= 0 && result < logBuffer->getNumEntries());
+    return result;
 }
 
 void ModuleOutputContentProvider::rebuildIndex()
