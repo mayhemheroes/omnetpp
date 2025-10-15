@@ -418,6 +418,7 @@ protected Q_SLOTS:
     void onLogLineAdded(LogBuffer::Entry *entry);
     void onMessageSendAdded(LogBuffer::Entry *entry);
     void onEntryDiscarded(LogBuffer::Entry *discardedEntry); // TODO (rename to onFirstEntryDiscarded to convey implicit contract about which entry it is?)
+    void onBufferCleared();
 };
 
 }  // namespace qtenv

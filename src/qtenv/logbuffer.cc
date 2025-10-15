@@ -232,6 +232,7 @@ void LogBuffer::clear()
     entries.clear();
     entriesDiscarded = 0;
     messageDups.clear();
+    Q_EMIT cleared();
 
     // just so log lines can be put somewhere even before initialization
     Entry *genesisEntry = new Entry(Entry::Kind::GENESIS, 0, SimTime::ZERO, nullptr, nullptr);

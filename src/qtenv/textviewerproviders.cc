@@ -184,6 +184,7 @@ ModuleOutputContentProvider::ModuleOutputContentProvider(Qtenv *qtenv, cComponen
     connect(logBuffer, SIGNAL(logLineAdded(LogBuffer::Entry *)), this, SLOT(onLogLineAdded(LogBuffer::Entry *)));
     connect(logBuffer, SIGNAL(messageSendAdded(LogBuffer::Entry *)), this, SLOT(onMessageSendAdded(LogBuffer::Entry *)));
     connect(logBuffer, SIGNAL(entryDiscarded(LogBuffer::Entry *)), this, SLOT(onEntryDiscarded(LogBuffer::Entry *)));
+    connect(logBuffer, SIGNAL(cleared()), this, SLOT(onBufferCleared()));
 }
 
 ModuleOutputContentProvider::~ModuleOutputContentProvider()
@@ -485,6 +486,13 @@ void ModuleOutputContentProvider::onEntryDiscarded(LogBuffer::Entry *entry)
         Q_EMIT linesDiscarded(numDiscardedLines);
     }
 
+    Q_EMIT statusTextChanged();
+}
+
+void ModuleOutputContentProvider::onBufferCleared()
+{
+    invalidateIndex();
+    Q_EMIT textChanged();
     Q_EMIT statusTextChanged();
 }
 

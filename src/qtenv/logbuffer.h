@@ -157,6 +157,8 @@ Q_SIGNALS:
     // When this signal is fired, the entry in the parameter is
     // no longer in the buffer, but is not deleted yet.
     void entryDiscarded(LogBuffer::Entry *discardedEntry);
+    // When the buffer is completely cleared (e.g. when restarting the simulation).
+    void cleared();
 };
 
 }  // namespace qtenv
