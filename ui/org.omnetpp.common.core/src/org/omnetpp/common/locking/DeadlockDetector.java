@@ -57,6 +57,8 @@ import org.omnetpp.common.Debug;
  */
 ///TODO deadlock examples, and way to activate them
 public class DeadlockDetector implements Runnable {
+    public static boolean debug = Debug.isChannelEnabled("deadlockdetector");
+
     // Deadlock checking frequency
     private static final long CHECK_PERIOD_MS = 2000;
 
@@ -97,7 +99,8 @@ public class DeadlockDetector implements Runnable {
     public void start() {
         // initial delay == CHECK_PERIOD_MS, so first check happens after one CHECK_PERIOD_MS elapses
         scheduler.scheduleAtFixedRate(this, CHECK_PERIOD_MS, CHECK_PERIOD_MS, TimeUnit.MILLISECONDS);
-        Debug.println("Deadlock detection started, period is " + CHECK_PERIOD_MS + "ms");
+        if (debug)
+            Debug.println("Deadlock detection started, period is " + CHECK_PERIOD_MS + "ms");
     }
 
     /**
@@ -135,7 +138,8 @@ public class DeadlockDetector implements Runnable {
             Thread uiThread = Display.getDefault().getThread();
             State uiThreadState = uiThread.getState();
 
-            Debug.println("UI thread state: " + uiThreadState);
+            if (debug)
+                Debug.println("UI thread state: " + uiThreadState);
 
             if (uiThreadState == Thread.State.BLOCKED || uiThreadState == Thread.State.WAITING) {
                 ThreadInfo info = threadMxBean.getThreadInfo(uiThread.getId(), 100);
@@ -144,10 +148,11 @@ public class DeadlockDetector implements Runnable {
                 long blockedTime = threadMxBean.isThreadContentionMonitoringEnabled() ? info.getBlockedTime() : -1;
                 long waitedTime = threadMxBean.isThreadContentionMonitoringEnabled() ? info.getWaitedTime() : -1;
 
-                // Log the current state for diagnostic purposes
-                Debug.println("UI thread state: " + uiThreadState +
-                             ", blocked time: " + (blockedTime >= 0 ? blockedTime + "ms" : "unknown") +
-                             ", waited time: " + (waitedTime >= 0 ? waitedTime + "ms" : "unknown"));
+                // Log the current state for diagnostic purposes if requested
+                if (debug)
+                    Debug.println("UI thread state: " + uiThreadState +
+                                 ", blocked time: " + (blockedTime >= 0 ? blockedTime + "ms" : "unknown") +
+                                 ", waited time: " + (waitedTime >= 0 ? waitedTime + "ms" : "unknown"));
 
                 // Only consider it a deadlock if the thread has been blocked/waiting for longer than the threshold
                 if (blockedTime > UI_THREAD_BLOCKING_THRESHOLD_MS || waitedTime > UI_THREAD_BLOCKING_THRESHOLD_MS) {
