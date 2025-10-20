@@ -19,7 +19,7 @@ public interface NedElementConstants
         "types","parameters","gates","submodules","connections","allowunconnected",
         "double","int","string","bool","object","xml","volatile","input","output","inout",
         "if","for","true","false","null","nullptr","undefined","inf","nan",
-        "this","default","const","sizeof","index","xmldoc"};
+        "this","parent","default","const","sizeof","index","xmldoc"};
 
 
     public static final int  NED_GATETYPE_NONE = 100;
