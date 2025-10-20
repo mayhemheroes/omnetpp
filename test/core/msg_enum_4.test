@@ -24,6 +24,12 @@ enum Foo3 {
     TWO = 2;
 };
 
+class EnumUsage {
+    Foo foo;
+    Foo2 foo2;
+    Foo3 foo3;
+}
+
 %activity:
 EV << "." << std::endl;
 

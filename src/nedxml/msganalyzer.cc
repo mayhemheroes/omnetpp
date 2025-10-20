@@ -507,7 +507,7 @@ void MsgAnalyzer::analyzeField(ClassInfo& classInfo, FieldInfo *field, const std
     field->fromString = fieldClassInfo.fromString;
     field->toString = fieldClassInfo.toString;
     if (!field->enumName.empty()) {
-        field->toString = str("enum2string($, \"") + field->enumQName + "\")";
+        field->toString = str("enum2string(static_cast<int>($), \"") + field->enumQName + "\")";
         field->fromString = str("(") + field->enumQName + ")string2enum($, \"" + field->enumQName + "\")";
     }
     field->fromString = getProperty(field->props, PROP_FROMSTRING, field->fromString);
@@ -708,7 +708,7 @@ MsgAnalyzer::ClassInfo MsgAnalyzer::extractEnumInfo(ASTNode *enumElem, const std
 
     enumInfo.dataTypeBase = enumInfo.qname;
     enumInfo.fromString = str("(") + enumInfo.qname + ")string2enum($, \"" + enumInfo.qname + "\")";
-    enumInfo.toString = str("enum2string($, \"") + enumInfo.qname + "\")";
+    enumInfo.toString = str("enum2string(static_cast<int>($), \"") + enumInfo.qname + "\")";
     enumInfo.defaultValue = str("static_cast<") + enumInfo.qname + ">(-1)";
     enumInfo.toValue = "static_cast<int>($)";
     enumInfo.fromValue = str("static_cast<") + enumInfo.qname + ">($.intValue())";
