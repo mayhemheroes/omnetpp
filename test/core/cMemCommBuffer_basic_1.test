@@ -4,7 +4,7 @@ Tests cMemCommBuffer.
 %includes:
 #include <cstring>
 #ifdef WITH_PARSIM
-#include <sim/parsim/cmemcommbuffer.h>
+#include <omnetpp/cmemcommbuffer.h>
 #endif
 
 %activity:

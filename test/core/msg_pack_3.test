@@ -34,7 +34,7 @@ message TestMessage {
 %includes:
 #include <cstring>
 #ifdef WITH_PARSIM
-  #include <sim/parsim/cfilecommbuffer.h> // from src/sim/parsim
+  #include <omnetpp/cfilecommbuffer.h> // from src/sim/parsim
 #endif
 #include <envir/objectprinter.h>   // from src/envir
 #include "test_m.h"

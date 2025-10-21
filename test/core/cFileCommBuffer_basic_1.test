@@ -3,9 +3,7 @@ Tests cFileCommBuffer.
 
 %includes:
 #include <cstring>
-#ifdef WITH_PARSIM
-#include <sim/parsim/cfilecommbuffer.h>
-#endif
+#include <omnetpp/cfilecommbuffer.h>
 
 %activity:
 #ifndef WITH_PARSIM

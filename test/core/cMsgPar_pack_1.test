@@ -4,7 +4,7 @@ Tests cMsgPar.parsimPack/parsimUnpack.
 %includes:
 #include <string.h>
 #ifdef WITH_PARSIM
-#include <sim/parsim/cfilecommbuffer.h>
+#include <omnetpp/cfilecommbuffer.h>
 #endif
 
 %global:
