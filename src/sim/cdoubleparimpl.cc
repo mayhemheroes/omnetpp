@@ -92,17 +92,17 @@ void cDoubleParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cDoubleParImpl::boolValue(cComponent *) const
+bool cDoubleParImpl::boolValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "bool");
 }
 
-intval_t cDoubleParImpl::intValue(cComponent *context) const
+intval_t cDoubleParImpl::intValue(cComponent *context, const cPar *targetPar) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "integer");
 }
 
-double cDoubleParImpl::doubleValue(cComponent *context) const
+double cDoubleParImpl::doubleValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -112,7 +112,7 @@ double cDoubleParImpl::doubleValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE); // eventually dispose of potential object result
-            cValue v = evaluate(expr, context);
+            cValue v = evaluate(expr, context, targetPar);
             return v.doubleValueInUnit(getUnit()); // allows conversion from INT
         }
         catch (std::exception& e) {
@@ -121,22 +121,22 @@ double cDoubleParImpl::doubleValue(cComponent *context) const
     }
 }
 
-const char *cDoubleParImpl::stringValue(cComponent *) const
+const char *cDoubleParImpl::stringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "string");
 }
 
-std::string cDoubleParImpl::stdstringValue(cComponent *) const
+std::string cDoubleParImpl::stdstringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "string");
 }
 
-cObject *cDoubleParImpl::objectValue(cComponent *) const
+cObject *cDoubleParImpl::objectValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "object");
 }
 
-cXMLElement *cDoubleParImpl::xmlValue(cComponent *) const
+cXMLElement *cDoubleParImpl::xmlValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "double", "XML");
 }
@@ -156,10 +156,10 @@ bool cDoubleParImpl::isNumeric() const
     return true;
 }
 
-void cDoubleParImpl::convertToConst(cComponent *context)
+void cDoubleParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
     auto loc = getSourceLocation();
-    setDoubleValue(doubleValue(context));
+    setDoubleValue(doubleValue(context, targetPar));
     setSourceLocation(loc);
 }
 
@@ -179,7 +179,7 @@ std::string cDoubleParImpl::str() const
     }
 }
 
-void cDoubleParImpl::parse(const char *text, FileLine loc)
+void cDoubleParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
     cDynamicExpression *dynexpr = new cDynamicExpression();
@@ -195,7 +195,7 @@ void cDoubleParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

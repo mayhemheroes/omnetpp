@@ -77,7 +77,7 @@ class SIM_API cParImpl : public cNamedObject
     typedef cPar::Type Type;
 
   protected:
-    cValue evaluate(cExpression *expr, cComponent *context) const;
+    cValue evaluate(cExpression *expr, cComponent *context, const cPar *targetPar) const;
     void deleteOld(cExpression *expr);
 
   public:
@@ -171,10 +171,10 @@ class SIM_API cParImpl : public cNamedObject
     virtual bool isSet() const {return flags & FL_ISSET;}
 
     /**
-     * Sets the isVolatile flag. 
-     * 
+     * Sets the isVolatile flag.
+     *
      * Note: It may be necessary to invoke
-     * convertToConst(cComponent *context) as well.
+     * convertToConst(cComponent *context, const cPar *targetPar) as well.
      */
     virtual void setIsVolatile(bool f) {setFlag(FL_ISVOLATILE,f);}
 
@@ -291,19 +291,19 @@ class SIM_API cParImpl : public cNamedObject
     /**
      * Returns value as a boolean. The cParImpl type must be BOOL.
      */
-    virtual bool boolValue(cComponent *context) const = 0;
+    virtual bool boolValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as an integer. The cParImpl type must be INT.
      * Note: Implicit conversion from DOUBLE is intentionally missing.
      */
-    virtual intval_t intValue(cComponent *context) const = 0;
+    virtual intval_t intValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as a double. The cParImpl type must be DOUBLE.
      * Note: Implicit conversion from INT is intentionally missing.
      */
-    virtual double doubleValue(cComponent *context) const = 0;
+    virtual double doubleValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as const char *. The cParImpl type must be STRING.
@@ -313,22 +313,22 @@ class SIM_API cParImpl : public cNamedObject
      * on parameters declared as "volatile string" in NED; they can only be
      * accessed using stdstringValue().
      */
-    virtual const char *stringValue(cComponent *context) const = 0;
+    virtual const char *stringValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as string. The cParImpl type must be STRING.
      */
-    virtual std::string stdstringValue(cComponent *context) const = 0;
+    virtual std::string stdstringValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as pointer to a cObject. The cParImpl type must be OBJECT.
      */
-    virtual cObject *objectValue(cComponent *context) const = 0;
+    virtual cObject *objectValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns value as pointer to cXMLElement. The cParImpl type must be XML.
      */
-    virtual cXMLElement *xmlValue(cComponent *context) const = 0;
+    virtual cXMLElement *xmlValue(cComponent *context, const cPar *targetPar) const = 0;
 
     /**
      * Returns pointer to the expression stored by the object, or nullptr.
@@ -344,14 +344,14 @@ class SIM_API cParImpl : public cNamedObject
      * expression with its evaluation. It preserves the stored file/line info,
      * which may or may not be what is intended.
      */
-    virtual void convertToConst(cComponent *context) = 0;
+    virtual void convertToConst(cComponent *context, const cPar *targetPar) = 0;
 
     /**
      * Convert the value from string, and store the result.
      * If the text cannot be parsed, an exception is thrown, which
      * can be caught as std::runtime_error& if necessary.
      */
-    virtual void parse(const char *text, FileLine loc) = 0;
+    virtual void parse(const char *text, FileLine loc, const cPar *targetPar) = 0;
 
     /**
      * Factory method: creates a parameter object representing the given type.

@@ -122,37 +122,37 @@ class SIM_API cBoolParImpl : public cParImpl
     /**
      * Returns the value of the parameter.
      */
-    virtual bool boolValue(cComponent *context) const override;
+    virtual bool boolValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to integer.
      */
-    virtual intval_t intValue(cComponent *context) const override;
+    virtual intval_t intValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to double.
      */
-    virtual double doubleValue(cComponent *context) const override;
+    virtual double doubleValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to string.
      */
-    virtual const char *stringValue(cComponent *context) const override;
+    virtual const char *stringValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to string.
      */
-    virtual std::string stdstringValue(cComponent *context) const override;
+    virtual std::string stdstringValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to object.
      */
-    virtual cObject *objectValue(cComponent *context) const override;
+    virtual cObject *objectValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Raises an error: cannot convert bool to XML.
      */
-    virtual cXMLElement *xmlValue(cComponent *context) const override;
+    virtual cXMLElement *xmlValue(cComponent *context, const cPar *targetPar) const override;
 
     /**
      * Returns pointer to the expression stored by the object, or nullptr.
@@ -181,7 +181,7 @@ class SIM_API cBoolParImpl : public cParImpl
      * Replaces for non-const values, replaces the stored expression with its
      * evaluation.
      */
-    virtual void convertToConst(cComponent *context) override;
+    virtual void convertToConst(cComponent *context, const cPar *targetPar) override;
 
     /**
      * Returns the value in text form.
@@ -191,7 +191,7 @@ class SIM_API cBoolParImpl : public cParImpl
     /**
      * Converts from text.
      */
-    virtual void parse(const char *text, FileLine loc) override;
+    virtual void parse(const char *text, FileLine loc, const cPar *targetPar) override;
 
     /**
      * Object comparison.

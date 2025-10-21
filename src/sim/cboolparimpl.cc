@@ -88,7 +88,7 @@ void cBoolParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cBoolParImpl::boolValue(cComponent *context) const
+bool cBoolParImpl::boolValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -98,7 +98,7 @@ bool cBoolParImpl::boolValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE); // eventually dispose of potential object result
-            cValue v = evaluate(expr, context);
+            cValue v = evaluate(expr, context, targetPar);
             if (v.type != cValue::BOOL)
                 throw cRuntimeError(E_BADCAST, v.getTypeName(), "bool");
             return v.boolValue();
@@ -109,32 +109,32 @@ bool cBoolParImpl::boolValue(cComponent *context) const
     }
 }
 
-intval_t cBoolParImpl::intValue(cComponent *) const
+intval_t cBoolParImpl::intValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "integer");
 }
 
-double cBoolParImpl::doubleValue(cComponent *) const
+double cBoolParImpl::doubleValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "double");
 }
 
-const char *cBoolParImpl::stringValue(cComponent *) const
+const char *cBoolParImpl::stringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "string");
 }
 
-std::string cBoolParImpl::stdstringValue(cComponent *) const
+std::string cBoolParImpl::stdstringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "string");
 }
 
-cObject *cBoolParImpl::objectValue(cComponent *) const
+cObject *cBoolParImpl::objectValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "object");
 }
 
-cXMLElement *cBoolParImpl::xmlValue(cComponent *) const
+cXMLElement *cBoolParImpl::xmlValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "bool", "XML");
 }
@@ -154,10 +154,10 @@ bool cBoolParImpl::isNumeric() const
     return false;  // because doubleValue() and intValue() throw error
 }
 
-void cBoolParImpl::convertToConst(cComponent *context)
+void cBoolParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
     auto loc = getSourceLocation();
-    setBoolValue(boolValue(context));
+    setBoolValue(boolValue(context, targetPar));
     setSourceLocation(loc);
 }
 
@@ -168,7 +168,7 @@ std::string cBoolParImpl::str() const
     return val ? "true" : "false";
 }
 
-void cBoolParImpl::parse(const char *text, FileLine loc)
+void cBoolParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // shortcut: recognize "true" and "false"
     if (strcmp(text, "true") == 0 || strcmp(text, "false") == 0) {
@@ -191,7 +191,7 @@ void cBoolParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

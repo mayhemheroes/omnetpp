@@ -269,7 +269,7 @@ void cNedNetworkBuilder::doParam(cComponent *component, ParamElement *paramNode,
                 auto nodeLoc = paramNode->getSourceLocation();
                 omnetpp::FileLine loc(nodeLoc.file.c_str(), nodeLoc.line);
                 if (expr->isAConstant())
-                    impl->convertToConst(nullptr);
+                    impl->convertToConst(nullptr, nullptr);
                 else
                     expr->setSourceLocation(loc); // note: if we do it earlier, file:line may show up TWICE in the error message: one added inside convertToConst(), the other in the 'catch' block at the bottom of this function
                 impl->setIsSet(!paramNode->getIsDefault());
@@ -406,7 +406,7 @@ void cNedNetworkBuilder::doAssignParameterFromPattern(cPar& par, ParamElement *p
             auto nodeLoc = patternNode->getSourceLocation();
             omnetpp::FileLine loc(nodeLoc.file.c_str(), nodeLoc.line);
             if (expr->isAConstant())
-                impl->convertToConst(nullptr);
+                impl->convertToConst(nullptr, nullptr);
             else
                 expr->setSourceLocation(loc); // note: if we do it earlier, file:line may show up TWICE in the error message: one added inside convertToConst(), the other in the 'catch' block at the bottom of this function
             par.setEvaluationContext(evalContext);
@@ -455,12 +455,12 @@ void cNedNetworkBuilder::doGateSize(cModule *module, GateElement *gateNode)
                     value->setBaseDirectory(gateNode->getSourceFileDirectory());
                     value->setExpression(dynamicExpr);
                     if (dynamicExpr->isAConstant())
-                        value->convertToConst(nullptr);
+                        value->convertToConst(nullptr, nullptr);
                     currentDecl->putSharedParImplFor(gateNode, value);
                 }
 
                 // evaluate the expression, and set the gate vector size
-                int gatesize = value->intValue(module);
+                int gatesize = value->intValue(module, nullptr);
                 module->setGateSize(gateNode->getName(), gatesize);
             }
         }

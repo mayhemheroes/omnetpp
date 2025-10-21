@@ -88,14 +88,14 @@ void cParImpl::clearSourceLocation()
     sourceLoc = FileLine();
 }
 
-cValue cParImpl::evaluate(cExpression *expr, cComponent *contextComponent) const
+cValue cParImpl::evaluate(cExpression *expr, cComponent *contextComponent, const cPar *targetPar) const
 {
     static int depth;
     try {
         depth++;
         if (depth >= 5)
             throw cRuntimeError("Evaluation nesting too deep (circular parameter references?)");
-        cExpression::Context context(contextComponent, baseDirectory.c_str(), getName());
+        cExpression::Context context(contextComponent, baseDirectory.c_str(), targetPar);
         cValue ret = expr->evaluate(&context);
         depth--;
         return ret;

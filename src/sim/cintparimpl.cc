@@ -90,12 +90,12 @@ void cIntParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cIntParImpl::boolValue(cComponent *) const
+bool cIntParImpl::boolValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "bool");
 }
 
-intval_t cIntParImpl::intValue(cComponent *context) const
+intval_t cIntParImpl::intValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -105,7 +105,7 @@ intval_t cIntParImpl::intValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE); // eventually dispose of potential object result
-            cValue v = evaluate(expr, context);
+            cValue v = evaluate(expr, context, targetPar);
             return v.intValueInUnit(getUnit());
         }
         catch (std::exception& e) {
@@ -114,27 +114,27 @@ intval_t cIntParImpl::intValue(cComponent *context) const
     }
 }
 
-double cIntParImpl::doubleValue(cComponent *context) const
+double cIntParImpl::doubleValue(cComponent *context, const cPar *targetPar) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "double");
 }
 
-const char *cIntParImpl::stringValue(cComponent *) const
+const char *cIntParImpl::stringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "string");
 }
 
-std::string cIntParImpl::stdstringValue(cComponent *) const
+std::string cIntParImpl::stdstringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "string");
 }
 
-cObject *cIntParImpl::objectValue(cComponent *) const
+cObject *cIntParImpl::objectValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "object");
 }
 
-cXMLElement *cIntParImpl::xmlValue(cComponent *) const
+cXMLElement *cIntParImpl::xmlValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "integer", "XML");
 }
@@ -154,10 +154,10 @@ bool cIntParImpl::isNumeric() const
     return true;
 }
 
-void cIntParImpl::convertToConst(cComponent *context)
+void cIntParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
     auto loc = getSourceLocation();
-    setIntValue(intValue(context));
+    setIntValue(intValue(context, targetPar));
     setSourceLocation(loc);
 }
 
@@ -176,7 +176,7 @@ std::string cIntParImpl::str() const
     }
 }
 
-void cIntParImpl::parse(const char *text, FileLine loc)
+void cIntParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
     cDynamicExpression *dynexpr = new cDynamicExpression();
@@ -192,7 +192,7 @@ void cIntParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

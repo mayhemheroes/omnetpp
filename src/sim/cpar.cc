@@ -198,17 +198,17 @@ bool cPar::isExpression() const
 
 bool cPar::boolValue() const
 {
-    TRY(return p->boolValue(evalContext));
+    TRY(return p->boolValue(evalContext, this));
 }
 
 intval_t cPar::intValue() const
 {
-    TRY(return p->intValue(evalContext));
+    TRY(return p->intValue(evalContext, this));
 }
 
 double cPar::doubleValue() const
 {
-    TRY(return p->doubleValue(evalContext));
+    TRY(return p->doubleValue(evalContext, this));
 }
 
 double cPar::doubleValueInUnit(const char *targetUnit) const
@@ -226,22 +226,22 @@ const char *cPar::getUnit() const
 
 const char *cPar::stringValue() const
 {
-    TRY(return p->stringValue(evalContext));
+    TRY(return p->stringValue(evalContext, this));
 }
 
 std::string cPar::stdstringValue() const
 {
-    TRY(return p->stdstringValue(evalContext));
+    TRY(return p->stdstringValue(evalContext, this));
 }
 
 cObject *cPar::objectValue() const
 {
-    TRY(return p->objectValue(evalContext));
+    TRY(return p->objectValue(evalContext, this));
 }
 
 cXMLElement *cPar::xmlValue() const
 {
-    TRY(return p->xmlValue(evalContext));
+    TRY(return p->xmlValue(evalContext, this));
 }
 
 cValue cPar::getValue() const
@@ -444,7 +444,7 @@ void cPar::doConvertToConst(bool isInternalChange)
     copyIfShared();
     beforeChange(isInternalChange);
     try {
-        p->convertToConst(evalContext);
+        p->convertToConst(evalContext, this);
     }
     catch (std::exception& e) {
         throw cRuntimeError(E_PARAM, getFullName(), e.what());
@@ -488,7 +488,7 @@ void cPar::parse(const char *text, const char *baseDirectory, FileLine loc, bool
         cParImpl *tmp = p->dup();
         try {
             tmp->setBaseDirectory(baseDirectory);
-            tmp->parse(text, loc);
+            tmp->parse(text, loc, this);
         }
         catch (std::exception& e) {
             delete tmp;

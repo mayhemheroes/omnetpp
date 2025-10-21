@@ -107,27 +107,27 @@ void cObjectParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cObjectParImpl::boolValue(cComponent *) const
+bool cObjectParImpl::boolValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "bool");
 }
 
-intval_t cObjectParImpl::intValue(cComponent *) const
+intval_t cObjectParImpl::intValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "integer");
 }
 
-double cObjectParImpl::doubleValue(cComponent *) const
+double cObjectParImpl::doubleValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "double");
 }
 
-const char *cObjectParImpl::stringValue(cComponent *) const
+const char *cObjectParImpl::stringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "string");
 }
 
-std::string cObjectParImpl::stdstringValue(cComponent *) const
+std::string cObjectParImpl::stdstringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "string");
 }
@@ -220,7 +220,7 @@ void cObjectParImpl::checkOwnership(cObject *obj, cTemporaryOwner& tmp) const
     obj->forEachChild(&visitor);
 }
 
-cObject *cObjectParImpl::objectValue(cComponent *context) const
+cObject *cObjectParImpl::objectValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -230,7 +230,7 @@ cObject *cObjectParImpl::objectValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE);
-            cValue value = evaluate(expr, context);
+            cValue value = evaluate(expr, context, targetPar);
             cObject *obj = (value.containsObject() || value.isNullptr()) ? value.objectValue() : new cValueHolder("holder", value);
             if (obj)
                 checkOwnership(obj, tmp);
@@ -246,7 +246,7 @@ cObject *cObjectParImpl::objectValue(cComponent *context) const
     }
 }
 
-cXMLElement *cObjectParImpl::xmlValue(cComponent *) const
+cXMLElement *cObjectParImpl::xmlValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "object", "XML");
 }
@@ -320,9 +320,9 @@ void cObjectParImpl::setExpectedType(const char *s)
     expectedType = s;
 }
 
-void cObjectParImpl::convertToConst(cComponent *context)
+void cObjectParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
-    cObject *saved = objectValue(context);
+    cObject *saved = objectValue(context, targetPar);
     auto loc = getSourceLocation();
     obj = nullptr;
     setObjectValue(saved);
@@ -343,7 +343,7 @@ std::string cObjectParImpl::str() const
         return obj->getClassAndFullName() + ": " + obj->str(); // non-parseable...
 }
 
-void cObjectParImpl::parse(const char *text, FileLine loc)
+void cObjectParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
     cDynamicExpression *dynexpr = new cDynamicExpression();
@@ -359,7 +359,7 @@ void cObjectParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

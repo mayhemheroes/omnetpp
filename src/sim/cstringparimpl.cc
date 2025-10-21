@@ -115,22 +115,22 @@ void cStringParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cStringParImpl::boolValue(cComponent *context) const
+bool cStringParImpl::boolValue(cComponent *context, const cPar *targetPar) const
 {
     throw cRuntimeError(this, E_BADCAST, "string", "bool");
 }
 
-intval_t cStringParImpl::intValue(cComponent *) const
+intval_t cStringParImpl::intValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "string", "integer");
 }
 
-double cStringParImpl::doubleValue(cComponent *) const
+double cStringParImpl::doubleValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "string", "double");
 }
 
-const char *cStringParImpl::stringValue(cComponent *context) const
+const char *cStringParImpl::stringValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -142,7 +142,7 @@ const char *cStringParImpl::stringValue(cComponent *context) const
     return val.c_str();
 }
 
-std::string cStringParImpl::stdstringValue(cComponent *context) const
+std::string cStringParImpl::stdstringValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -152,7 +152,7 @@ std::string cStringParImpl::stdstringValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE); // eventually dispose of potential object result
-            cValue v = evaluate(expr, context);
+            cValue v = evaluate(expr, context, targetPar);
             if (v.type != cValue::STRING)
                 throw cRuntimeError(E_BADCAST, v.getTypeName(), "string");
             const char *s = v.stringValue();
@@ -165,12 +165,12 @@ std::string cStringParImpl::stdstringValue(cComponent *context) const
     }
 }
 
-cObject *cStringParImpl::objectValue(cComponent *) const
+cObject *cStringParImpl::objectValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "string", "object");
 }
 
-cXMLElement *cStringParImpl::xmlValue(cComponent *) const
+cXMLElement *cStringParImpl::xmlValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "string", "XML");
 }
@@ -190,10 +190,10 @@ bool cStringParImpl::isNumeric() const
     return false;
 }
 
-void cStringParImpl::convertToConst(cComponent *context)
+void cStringParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
     auto loc = getSourceLocation();
-    setStringValue(stdstringValue(context).c_str());
+    setStringValue(stdstringValue(context, targetPar).c_str());
     setSourceLocation(loc);
 }
 
@@ -205,7 +205,7 @@ std::string cStringParImpl::str() const
     return opp_quotestr(val);
 }
 
-void cStringParImpl::parse(const char *text, FileLine loc)
+void cStringParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
     cDynamicExpression *dynexpr = new cDynamicExpression();
@@ -221,7 +221,7 @@ void cStringParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

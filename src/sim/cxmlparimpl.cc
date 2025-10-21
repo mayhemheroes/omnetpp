@@ -97,37 +97,37 @@ void cXMLParImpl::setExpression(cExpression *e)
     flags |= FL_ISEXPR | FL_CONTAINSVALUE | FL_ISSET;
 }
 
-bool cXMLParImpl::boolValue(cComponent *) const
+bool cXMLParImpl::boolValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "bool");
 }
 
-intval_t cXMLParImpl::intValue(cComponent *) const
+intval_t cXMLParImpl::intValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "integer");
 }
 
-double cXMLParImpl::doubleValue(cComponent *) const
+double cXMLParImpl::doubleValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "double");
 }
 
-const char *cXMLParImpl::stringValue(cComponent *) const
+const char *cXMLParImpl::stringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "string");
 }
 
-std::string cXMLParImpl::stdstringValue(cComponent *) const
+std::string cXMLParImpl::stdstringValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "string");
 }
 
-cObject *cXMLParImpl::objectValue(cComponent *) const
+cObject *cXMLParImpl::objectValue(cComponent *, const cPar *) const
 {
     throw cRuntimeError(this, E_BADCAST, "XML", "object");
 }
 
-cXMLElement *cXMLParImpl::xmlValue(cComponent *context) const
+cXMLElement *cXMLParImpl::xmlValue(cComponent *context, const cPar *targetPar) const
 {
     if ((flags & FL_ISSET) == 0)
         throw cRuntimeError(E_PARNOTSET);
@@ -137,7 +137,7 @@ cXMLElement *cXMLParImpl::xmlValue(cComponent *context) const
     else {
         try {
             cTemporaryOwner tmp(cTemporaryOwner::DestructorMode::DISPOSE); // eventually dispose of potential object result
-            cValue v = evaluate(expr, context);
+            cValue v = evaluate(expr, context, targetPar);
             if (v.type != cValue::POINTER)
                 throw cRuntimeError(E_BADCAST, v.getTypeName(), "XML");
             cXMLElement *newObj = v.xmlValue();
@@ -179,9 +179,9 @@ bool cXMLParImpl::isNumeric() const
     return false;
 }
 
-void cXMLParImpl::convertToConst(cComponent *context)
+void cXMLParImpl::convertToConst(cComponent *context, const cPar *targetPar)
 {
-    cXMLElement *saved = xmlValue(context);
+    cXMLElement *saved = xmlValue(context, targetPar);
     auto loc = getSourceLocation();
     obj = nullptr;
     if (saved)
@@ -198,7 +198,7 @@ std::string cXMLParImpl::str() const
         return obj ? obj->str() : "nullptr";
 }
 
-void cXMLParImpl::parse(const char *text, FileLine loc)
+void cXMLParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
     cDynamicExpression *dynexpr = new cDynamicExpression();
@@ -214,7 +214,7 @@ void cXMLParImpl::parse(const char *text, FileLine loc)
 
     // simplify if possible: store as constant instead of expression
     if (dynexpr->isAConstant())
-        convertToConst(nullptr);
+        convertToConst(nullptr, targetPar);
 
     setSourceLocation(loc);
 }

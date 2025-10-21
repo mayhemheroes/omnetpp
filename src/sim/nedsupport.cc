@@ -278,7 +278,7 @@ ExprValue Parameter::evaluate(Context *context) const
         throw cRuntimeError("Parameter references may only occur in component context");
 
     cExpression::Context *simContext = dynamic_cast<cExpression::Context*>(context->simContext);
-    if (qualifier == NONE && simContext->paramName != nullptr && paramName == simContext->paramName)
+    if (qualifier == NONE && simContext->targetPar && strcmp(paramName.c_str(), simContext->targetPar->getName()) == 0)
         throw cRuntimeError("Parameter refers to itself in its assignment (did you mean 'parent.%s'?)", paramName.c_str());
 
     int parId = component->findPar(paramName.c_str());
