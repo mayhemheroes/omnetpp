@@ -554,7 +554,9 @@ void MsgCodeGenerator::generateClassImpl(const ClassInfo& classInfo)
         if (!field.isArray)
             CC << takeElem.str();
     }
-    generateMethodCplusplusBlock(classInfo, classInfo.className);
+    generateMethodCplusplusBlock(classInfo, classInfo.name);
+    if (classInfo.customize)
+        generateMethodCplusplusBlock(classInfo, classInfo.className); // accept "Foo::Foo_Base" variant, too
     CC << "}\n\n";
 
     // copy constructor:
@@ -574,7 +576,9 @@ void MsgCodeGenerator::generateClassImpl(const ClassInfo& classInfo)
             CC << "        take(&" << varElem(field) << ");\n";
         }
     }
-    generateMethodCplusplusBlock(classInfo, classInfo.className + "&");
+    generateMethodCplusplusBlock(classInfo, classInfo.name + "&");
+    if (classInfo.customize)
+        generateMethodCplusplusBlock(classInfo, classInfo.className + "&"); // accept "Foo::Foo_Base&" variant, too
     CC << "    copy(other);\n";
     CC << "}\n\n";
 
@@ -601,7 +605,9 @@ void MsgCodeGenerator::generateClassImpl(const ClassInfo& classInfo)
             CC << releaseElem.str();
         }
     }
-    generateMethodCplusplusBlock(classInfo, std::string("~") + classInfo.className);
+    generateMethodCplusplusBlock(classInfo, "~" + classInfo.name);
+    if (classInfo.customize)
+        generateMethodCplusplusBlock(classInfo, "~" + classInfo.className); // accept "Foo::~Foo_Base" variant, too
     CC << "}\n\n";
 
     // operator = :
@@ -1002,7 +1008,9 @@ void MsgCodeGenerator::generateStructImpl(const ClassInfo& classInfo)
             }
         }
     }
-    generateMethodCplusplusBlock(classInfo, classInfo.className);
+    if (classInfo.customize)
+        generateMethodCplusplusBlock(classInfo, classInfo.className);
+    generateMethodCplusplusBlock(classInfo, classInfo.name);
     CC << "}\n\n";
 
     // doPacking/doUnpacking go to the global namespace
