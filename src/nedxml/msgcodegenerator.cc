@@ -1730,7 +1730,7 @@ void MsgCodeGenerator::generateOwnershipOp(const FieldInfo& field, const std::st
         else if (field.iscOwnedObject)
             code = "if (" + var + " != nullptr) dropAndDelete(" + var +");";
         else // plain cObject*
-            code = "if (" + var + " != nullptr && " + var + "->isOwnedObject()) dropAndDelete((cOwnedObject*)" + var +"); else delete " + var + ";";
+            code = "if (" + var + " != nullptr && " + var + "->isOwnedObject()) dropAndDelete((omnetpp::cOwnedObject*)" + var +"); else delete " + var + ";";
     }
     else {
         Assert(op == "take" || op == "drop");
@@ -1739,7 +1739,7 @@ void MsgCodeGenerator::generateOwnershipOp(const FieldInfo& field, const std::st
         else if (field.iscOwnedObject)
             code = "if (" + var + " != nullptr) " + op + "(" + var + ");";
         else // plain cObject*
-            code = "if (" + var + " != nullptr && " + var +"->isOwnedObject()) " + op + "((cOwnedObject*)" + var +");";
+            code = "if (" + var + " != nullptr && " + var +"->isOwnedObject()) " + op + "((omnetpp::cOwnedObject*)" + var +");";
     }
     if (!code.empty())
         CC << "    " + code + "\n";
