@@ -15,6 +15,8 @@
 
 simple Tester
 {
+    parameters:
+        bool throwInInitialize = default(false);
 }
 
 simple Dummy

@@ -54,6 +54,9 @@ void Tester::initialize()
     getSimulation()->getFES()->insert(ev);
 
     scheduleAt(SimTime(20, SIMTIME_MS), new cMessage("createDummy"));
+
+    if (par("throwInInitialize").boolValue())
+        throw cRuntimeError("throwInInitialize");
 }
 
 void Tester::handleMessage(cMessage *msg)
