@@ -57,6 +57,7 @@ public abstract class AbstractLargeTableRowRenderer implements ILargeTableRowRen
         StyledString styledString = getStyledText(rowIndex, columnIndex, gc, alignment);
         final Color foregroundColor = gc.getForeground();
         if (selected) {
+            styledString = new StyledString().append(styledString); // clone before modifying
             styledString.setStyle(0, styledString.length(), new StyledString.Styler() {
                 @Override
                 public void applyStyles(TextStyle textStyle) {

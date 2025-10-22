@@ -97,6 +97,7 @@ public class DataTable extends LargeTable implements IDataControl {
     private static final String COLUMNROLE_KEY = "role";
 
     private static final StyledString NA = new StyledString("-"); // "not applicable"
+    private static final StyledString EMPTY = new StyledString("");
 
     private enum ColumnRole {
         COL_DIRECTORY("Folder", null, 60, false, false),
@@ -243,7 +244,7 @@ public class DataTable extends LargeTable implements IDataControl {
                     return getCellValue(rowIndex, column, gc, width);
                 }
                 else
-                    return new StyledString("");
+                    return EMPTY;
             }
 
             @Override
@@ -770,14 +771,14 @@ public class DataTable extends LargeTable implements IDataControl {
 
     protected StyledString getCellValue(int rowIndex, int columnIndex, GC gc, int width) {
         if (columnIndex >= visibleColumns.size())
-            return new StyledString("");
+            return EMPTY;
         ColumnRole column = visibleColumns.get(columnIndex);
         return getCellValue(rowIndex, column, gc, width);
     }
 
     protected StyledString getCellValue(int row, ColumnRole column, GC gc, int width) {
         if (manager == null)
-            return new StyledString("");
+            return EMPTY;
 
         try {
             // Note: code very similar to ResultItemPropertySource -- make them common?
@@ -997,12 +998,12 @@ public class DataTable extends LargeTable implements IDataControl {
             return new StyledString("<error>", ERROR_STYLER);
         }
 
-        return new StyledString("");
+        return EMPTY;
     }
 
     protected StyledString formatNumber(ResultItem resultItem, String column, double d, String unit, GC gc, int width) {
         if (width == 0) // note: width=-1 means "measure optimal width"
-            return new StyledString("");
+            return EMPTY;
         if (!numberFormattingEnabled) {
             return ScaveUtil.formatRaw(d, unit, gc, width, getColorMeasurementUnits() ? QUANTITY_UNIT_STYLER : null, GREYED_OUT_STYLER);
         }
