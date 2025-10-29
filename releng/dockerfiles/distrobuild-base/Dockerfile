@@ -1,4 +1,4 @@
-FROM ghcr.io/omnetpp/cross-compilers:ubuntu22.04-macos12.3-251003
+FROM ghcr.io/omnetpp/cross-compilers:ubuntu22.04-macos12.3-251029
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
 
 # install additional packages for building a complete OMNeT++ distro (with IDE and docs)
