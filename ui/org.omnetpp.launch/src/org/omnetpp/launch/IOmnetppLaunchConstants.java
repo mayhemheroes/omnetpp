@@ -242,7 +242,7 @@ public interface IOmnetppLaunchConstants {
     /**
      * The default value for starting gdb command (with arguments) 
      */
-    public static final String OPP_DEFAULT_GDB_CMD = "sh ${opp_root}/bin/opp_dbgmi";
+    public static final String OPP_DEFAULT_GDB_CMD = "gdb";
     
     /*
      * The default value for starting the lldb-dap debugger (without arguments)
