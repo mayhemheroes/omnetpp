@@ -49,8 +49,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
@@ -88,7 +86,7 @@ public class MakemakeOptionsPanel extends Composite {
     private PropertyPage ownerPage; // null when we're in MakemakeOptionsDialog
 
     // controls
-    private TabFolder tabfolder;
+    private CTabFolder tabfolder;
     private Composite targetPage;
     private Composite scopePage;
     private Composite compilePage;
@@ -161,7 +159,7 @@ public class MakemakeOptionsPanel extends Composite {
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         composite.setLayout(new GridLayout(1,false));
 
-        tabfolder = new TabFolder(composite, SWT.TOP);
+        tabfolder = new CTabFolder(composite, SWT.TOP);
         tabfolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         targetPage = createTabPage(tabfolder, "Target");
@@ -357,8 +355,8 @@ public class MakemakeOptionsPanel extends Composite {
         return text;
     }
 
-    protected Composite createTabPage(TabFolder tabfolder, String text) {
-        TabItem item = new TabItem(tabfolder, SWT.NONE);
+    protected Composite createTabPage(CTabFolder tabfolder, String text) {
+        CTabItem item = new CTabItem(tabfolder, SWT.NONE);
         item.setText(text);
         Composite composite = new Composite(tabfolder, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -455,7 +453,7 @@ public class MakemakeOptionsPanel extends Composite {
     }
 
     protected boolean isPreviewPageSelected() {
-        return tabfolder.getSelection().length>0 && tabfolder.getSelection()[0].getControl() == previewPage;
+        return tabfolder.getSelection() != null && tabfolder.getSelection().getControl() == previewPage;
     }
 
     /**

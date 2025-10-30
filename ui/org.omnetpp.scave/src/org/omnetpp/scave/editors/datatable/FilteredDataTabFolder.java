@@ -3,27 +3,27 @@ package org.omnetpp.scave.editors.datatable;
 import java.text.NumberFormat;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.omnetpp.scave.engine.IDList;
 import org.omnetpp.scave.engineext.ResultFileManagerEx;
 
 /**
- * A TabFolder that contains All, Vectors, Scalars, Histograms tabs with
+ * A CTabFolder that contains All, Vectors, Scalars, Histograms tabs with
  * corresponding data trees/tables. This is a passive UI component.
  *
  * @author Levy
  */
-public class FilteredDataTabFolder extends TabFolder {
-    protected TabItem allTab;
-    protected TabItem vectorsTab;
-    protected TabItem scalarsTab;
-    protected TabItem parametersTab;
-    protected TabItem histogramsTab;
+public class FilteredDataTabFolder extends CTabFolder {
+    protected CTabItem allTab;
+    protected CTabItem vectorsTab;
+    protected CTabItem scalarsTab;
+    protected CTabItem parametersTab;
+    protected CTabItem histogramsTab;
 
     protected FilteredDataPanel allPanel;
     protected FilteredDataPanel vectorsPanel;
@@ -40,10 +40,10 @@ public class FilteredDataTabFolder extends TabFolder {
     }
 
     /**
-     * Override the ban on subclassing of TabFolder, after having read the doc of
+     * Override the ban on subclassing of CTabFolder, after having read the doc of
      * checkSubclass(). In this class we only build upon the public interface
-     * of TabFolder, so there can be no unwanted side effects. We prefer subclassing
-     * to delegating all 1,000,000 TabFolder methods to an internal TabFolder instance.
+     * of CTabFolder, so there can be no unwanted side effects. We prefer subclassing
+     * to delegating all 1,000,000 CTabFolder methods to an internal CTabFolder instance.
      */
     @Override
     protected void checkSubclass() {
@@ -74,30 +74,30 @@ public class FilteredDataTabFolder extends TabFolder {
         });
     }
 
-    protected TabItem addItem(Control control) {
-        TabItem tabItem = new TabItem(this, SWT.NONE);
+    protected CTabItem addItem(Control control) {
+        CTabItem tabItem = new CTabItem(this, SWT.NONE);
         tabItem.setControl(control);
 
         return tabItem;
     }
 
-    public TabItem getAllTab() {
+    public CTabItem getAllTab() {
         return allTab;
     }
 
-    public TabItem getScalarsTab() {
+    public CTabItem getScalarsTab() {
         return scalarsTab;
     }
 
-    public TabItem getParametersTab() {
+    public CTabItem getParametersTab() {
         return parametersTab;
     }
 
-    public TabItem getVectorsTab() {
+    public CTabItem getVectorsTab() {
         return vectorsTab;
     }
 
-    public TabItem getHistogramsTab() {
+    public CTabItem getHistogramsTab() {
         return histogramsTab;
     }
 
@@ -127,10 +127,10 @@ public class FilteredDataTabFolder extends TabFolder {
     }
 
     public void setActivePanel(Control control) {
-        TabItem[] items = getItems();
+        CTabItem[] items = getItems();
 
         for (int i = 0; i < items.length; i++) {
-            TabItem tabItem = items[i];
+            CTabItem tabItem = items[i];
 
             if (tabItem.getControl() == control) {
                 setSelection(i);
@@ -185,7 +185,7 @@ public class FilteredDataTabFolder extends TabFolder {
         setPanelTitle(histogramsTab, "&Histograms");
     }
 
-    private void setPanelTitle(TabItem tab, String title) {
+    private void setPanelTitle(CTabItem tab, String title) {
         FilteredDataPanel panel = (FilteredDataPanel)tab.getControl();
         IDList filtered = panel.getDataControl().getIDList();
         IDList total = panel.getIDList();

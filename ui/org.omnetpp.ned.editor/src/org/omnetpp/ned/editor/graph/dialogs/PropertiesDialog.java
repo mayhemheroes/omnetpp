@@ -46,6 +46,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -65,8 +67,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.omnetpp.common.color.ColorFactory;
 import org.omnetpp.common.displaymodel.IDisplayString;
@@ -139,7 +139,7 @@ public class PropertiesDialog extends TrayDialog {
 
     private boolean initializing = true;  // while dialog is being set up and created
 
-    private TabFolder tabfolder;
+    private CTabFolder tabfolder;
     private Composite previewArea;
 
     private Composite positionPage;
@@ -525,7 +525,7 @@ public class PropertiesDialog extends TrayDialog {
         composite.setLayout(new GridLayout(1,false));
 
         // tabfolder and pages
-        tabfolder = new TabFolder(composite, SWT.TOP);
+        tabfolder = new CTabFolder(composite, SWT.TOP);
         tabfolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
         createGeneralPage(tabfolder);
@@ -585,8 +585,9 @@ public class PropertiesDialog extends TrayDialog {
         Display.getCurrent().asyncExec(new Runnable() {
             public void run() {
                 if (!PropertiesDialog.this.getShell().isDisposed()) {
-                    if (tabfolder.getSelection().length > 0)
-                        tabfolder.getSelection()[0].getControl().setFocus();
+                    CTabItem sel = tabfolder.getSelection();
+                    if (sel != null)
+                        sel.getControl().setFocus();
                     validateDialogContents();
                 }
             }
@@ -605,7 +606,7 @@ public class PropertiesDialog extends TrayDialog {
         return averageWidth;
     }
 
-    protected Composite createGeneralPage(TabFolder tabfolder) {
+    protected Composite createGeneralPage(CTabFolder tabfolder) {
         INedElement e = elements[0];  // all elements are of the same class (i.e. same tag code)
         Composite page = createTabPage(tabfolder, "General");
         page.setLayout(new GridLayout(2,false));
@@ -681,7 +682,7 @@ public class PropertiesDialog extends TrayDialog {
         return page;
     }
 
-    protected Composite createEndpointsPage(TabFolder tabfolder) {
+    protected Composite createEndpointsPage(CTabFolder tabfolder) {
         Assert.isTrue(elements[0] instanceof ConnectionElement);
 
         Composite page = createTabPage(tabfolder, "Endpoints");
@@ -719,7 +720,7 @@ public class PropertiesDialog extends TrayDialog {
         return page;
     }
 
-    protected Composite createPositionPage(TabFolder tabfolder) {
+    protected Composite createPositionPage(CTabFolder tabfolder) {
         Assert.isTrue(elements[0] instanceof SubmoduleElement);
 
         Composite page = createTabPage(tabfolder, "Position");
@@ -772,7 +773,7 @@ public class PropertiesDialog extends TrayDialog {
         return page;
     }
 
-    protected Composite createAppearancePage(TabFolder tabfolder) {
+    protected Composite createAppearancePage(CTabFolder tabfolder) {
         INedElement e = elements[0];  // all elements are of the same class (i.e. same tag code)
         IProject project = e.getSelfOrEnclosingTypeElement().getNedTypeInfo().getProject();
         Composite page = createTabPage(tabfolder, "Appearance");
@@ -916,7 +917,7 @@ public class PropertiesDialog extends TrayDialog {
         return page;
     }
 
-    protected Composite createBackgroundPage(TabFolder tabfolder) {
+    protected Composite createBackgroundPage(CTabFolder tabfolder) {
         Composite page = createTabPage(tabfolder, "Background");
         page.setLayout(new GridLayout(2,false));
         Group group;
@@ -1092,12 +1093,12 @@ public class PropertiesDialog extends TrayDialog {
         // if user goes to the Background page, display the background preview;
         // if user goes to Appearance or Position page, display the normal preview;
         // otherwise keep currently shown preview.
-        TabItem[] items = tabfolder.getSelection();
-        if (items.length != 0 && items[0] != null) {
+        CTabItem item = tabfolder.getSelection();
+        if (item != null) {
             Composite previewPageToShow = null;
-            if (items[0].getControl() == backgroundPage)
+            if (item.getControl() == backgroundPage)
                 previewPageToShow = bgPreviewComposite;
-            else if (items[0].getControl() == positionPage || items[0].getControl() == appearancePage)
+            else if (item.getControl() == positionPage || item.getControl() == appearancePage)
                 previewPageToShow = previewComposite;
 
             if (previewPageToShow != null && stackLayout.topControl != previewPageToShow) {
@@ -1249,8 +1250,8 @@ public class PropertiesDialog extends TrayDialog {
         return fieldEditor;
     }
 
-    protected Composite createTabPage(TabFolder tabfolder, String text) {
-        TabItem item = new TabItem(tabfolder, SWT.NONE);
+    protected Composite createTabPage(CTabFolder tabfolder, String text) {
+        CTabItem item = new CTabItem(tabfolder, SWT.NONE);
         item.setText(text);
         Composite composite = new Composite(tabfolder, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
