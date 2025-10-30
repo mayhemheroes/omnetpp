@@ -273,9 +273,29 @@ NB_MODULE(MODULENAME, m) {
         ;
 
 
+    nb::enum_<UnitConversion::Preference>(m, "UnitPreference")
+        .value("PREFER", UnitConversion::Preference::PREFER)
+        .value("AVOID", UnitConversion::Preference::AVOID)
+        .value("KEEP", UnitConversion::Preference::KEEP)
+        ;
+
+    nb::class_<UnitConversion::Options>(m, "UnitConversionOptions")
+        .def(nb::init<>())
+        .def_rw("convertZeroToBaseUnit", &UnitConversion::Options::convertZeroToBaseUnit)
+        .def_rw("allowOriginalUnit", &UnitConversion::Options::allowOriginalUnit)
+        .def_rw("allowNonmetricTimeUnits", &UnitConversion::Options::allowNonmetricTimeUnits)
+        .def_rw("logarithmicUnitsPolicy", &UnitConversion::Options::logarithmicUnitsPolicy)
+        .def_rw("bitBasedUnitsPolicy", &UnitConversion::Options::bitBasedUnitsPolicy)
+        .def_rw("binaryPrefixPolicy", &UnitConversion::Options::binaryPrefixPolicy)
+        .def_rw("preferSmallWholeNumbersForBitByte", &UnitConversion::Options::preferSmallWholeNumbersForBitByte)
+        .def_rw("kilobyteThreshold", &UnitConversion::Options::kilobyteThreshold)
+        .def("str", &UnitConversion::Options::str)
+        ;
+
     nb::class_<UnitConversion>(m, "UnitConversion")
         .def_static("getBaseUnit", [](const char *unitName) { auto baseUnit = UnitConversion::getBaseUnit(unitName); return opp_nulltoempty(baseUnit); })
         .def_static("getBestUnit",  nb::overload_cast<double, const char *>(&UnitConversion::getBestUnit))
+        .def_static("getBestUnit",  nb::overload_cast<double, const char *, const std::vector<const char *>&, const UnitConversion::Options&>(&UnitConversion::getBestUnit))
         .def_static("parseQuantity", nb::overload_cast<const char *, const char *>(&UnitConversion::parseQuantity))
         .def_static("parseQuantity", [](const char *str) {
             std::string actualUnit;
