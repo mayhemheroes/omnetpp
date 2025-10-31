@@ -21,8 +21,8 @@ network Tictoc
         tic: Txc;
         toc: Txc;
     connections:
-        tic.out --> {  delay = truncnormal(1ms,10us); datarate=1Mbps; } --> toc.in;
-        tic.in <-- {  delay = truncnormal(1ms,10us); datarate=1Mbps;  } <-- toc.out;
+        tic.out --> {  delay = uniform(1ms,1.01ms); datarate=1Mbps; } --> toc.in;
+        tic.in <-- {  delay = uniform(1ms,1.01ms); datarate=1Mbps;  } <-- toc.out;
 }
 
 %file: tictoc.msg
@@ -138,25 +138,25 @@ cmdenv-fake-gui = true  # for the "y" and "f" ingredients
 
 fingerprint =
     61ce-349b/e,
-    26dd-15b8/t,
+    aa84-1d2a/t,
     20e4-f8f4/n,
     8ce9-011d/c,
     fffc-0007/k,
     0000-0fa0/l,
     f1f9-3b6d/o,
     0010-8021/g,
-    3b8b-8bf5/d,
+    8df9-e67f/d,
     1e79-dd70/b,
     aaaa-0001/i,
     6db7-26c3/m,
     3390-d4b6/p,
     d6e1-5518/a,
-    0e71-a51a/r,
-    f452-f52a/s,
-    184b-4a3a/z,
-    c4ee-c126/v,
+    c39c-6936/r,
+    1ba6-e378/s,
+    316c-854a/z,
+    a959-ab54/v,
     d01e-f002/y,
-    b6e9-a98e/f,
+    1c76-3429/f,
     d139-0017/x
 
 %not-contains: stdout
