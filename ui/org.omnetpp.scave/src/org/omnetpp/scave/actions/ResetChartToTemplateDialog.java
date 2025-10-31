@@ -12,15 +12,19 @@ import java.util.List;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.omnetpp.common.ui.SWTFactory;
 import org.omnetpp.common.util.UIUtils;
 import org.omnetpp.scave.ScavePlugin;
+import org.omnetpp.scave.actions.analysismodel.CompareToTemplateAction;
 import org.omnetpp.scave.model.Chart;
 
 /**
@@ -86,12 +90,23 @@ public class ResetChartToTemplateDialog extends TitleAreaDialog {
         ((GridLayout)composite.getLayout()).marginLeft = 10;
 
         SWTFactory.createLabel(composite, "Choose which elements of the chart(s) to reset:", 1);
+
         resetChartScriptCheckbox = SWTFactory.createCheckButton(composite, "Python script", null, true, 1);
         resetDialogPagesCheckbox = SWTFactory.createCheckButton(composite, "Dialog pages", null, true, 1);
         resetPropertiesCheckbox = SWTFactory.createCheckButton(composite, "Properties  (i.e. settings in the Edit Chart dialog)", null, false, 1);
         SWTFactory.setIndent(resetPropertiesCheckbox, 10);
         SWTFactory.setIndent(resetDialogPagesCheckbox, 10);
         SWTFactory.setIndent(resetChartScriptCheckbox, 10);
+
+        // Add some spacing
+        SWTFactory.createLabel(composite, "", 1);
+
+        // Add "Compare to Template" link
+        Link compareLink = new Link(composite, SWT.NONE);
+        compareLink.setText("<a>Compare chart to template</a> to see what will be changed");
+        compareLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        compareLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> showComparisonResults()));
+
         applyDialogFont(composite);
 
         if (getDialogBoundsSettings().get("resetProperties") != null) {
@@ -109,5 +124,10 @@ public class ResetChartToTemplateDialog extends TitleAreaDialog {
 
     public Options getResult() {
         return result;
+    }
+
+    private void showComparisonResults() {
+        CompareToTemplateAction compareAction = new CompareToTemplateAction();
+        compareAction.run();
     }
 }
