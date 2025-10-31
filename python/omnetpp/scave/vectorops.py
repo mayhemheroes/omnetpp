@@ -673,6 +673,8 @@ def timediff(r):
 
     if "title" in r:
         r['title'] = r['title'] + " timediff"
+    if "unit" in r:
+        r['unit'] = "s"
     return r
 
 
