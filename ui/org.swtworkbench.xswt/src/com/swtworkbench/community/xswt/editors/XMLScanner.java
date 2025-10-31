@@ -10,7 +10,7 @@ import org.eclipse.jface.text.rules.WhitespaceRule;
 
 public class XMLScanner extends RuleBasedScanner {
     public XMLScanner(ColorManager manager) {
-        IToken procInstr = new Token(new TextAttribute(manager.getColor(IXMLColorConstants.PROC_INSTR)));
+        IToken procInstr = new Token(new TextAttribute(manager.getColor(IXMLColorConstants.getProcInstrColor())));
 
         IRule[] rules = new IRule[2];
 

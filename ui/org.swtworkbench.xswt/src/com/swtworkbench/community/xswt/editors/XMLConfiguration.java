@@ -33,7 +33,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
         if (this.scanner == null) {
             this.scanner = new XMLScanner(this.colorManager);
             this.scanner.setDefaultReturnToken(new Token(
-                    new TextAttribute(this.colorManager.getColor(IXMLColorConstants.DEFAULT))));
+                    new TextAttribute(this.colorManager.getColor(IXMLColorConstants.getDefaultColor()))));
         }
         return this.scanner;
     }
@@ -42,7 +42,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
         if (this.tagScanner == null) {
             this.tagScanner = new XMLTagScanner(this.colorManager);
             this.tagScanner
-                    .setDefaultReturnToken(new Token(new TextAttribute(this.colorManager.getColor(IXMLColorConstants.TAG))));
+                    .setDefaultReturnToken(new Token(new TextAttribute(this.colorManager.getColor(IXMLColorConstants.getTagColor()))));
         }
         return this.tagScanner;
     }
@@ -59,7 +59,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
         reconciler.setRepairer(dr, "__dftl_partition_content_type");
 
         NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(this.colorManager
-                .getColor(IXMLColorConstants.XML_COMMENT)));
+                .getColor(IXMLColorConstants.getXmlCommentColor())));
         reconciler.setDamager(ndr, "__xml_comment");
         reconciler.setRepairer(ndr, "__xml_comment");
 
