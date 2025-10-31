@@ -960,6 +960,8 @@ def plot_histograms(df, props, legend_func=make_legend_label, sort=True):
     - `legend` (string, optional): Legend label for the series. If missing,
        legend labels are derived from other columns.
     - `name`, `title`, `module`, etc. (optional): Provide input for the legend.
+    - `unit` (string, optional): The unit for the X-axis values. If present, it is required
+       to be the same for all series.
 
     Notable properties that affect the plot:
 
@@ -974,7 +976,8 @@ def plot_histograms(df, props, legend_func=make_legend_label, sort=True):
     - `drawstyle`: Selects whether to fill the area below the histogram line.
     - `linestyle`, `linecolor`, `linewidth`: Styling.
     - `cycle_seed`: Alters the sequence in which colors and markers are assigned to series.
-    - `unit`: If present, it is required to be the same for all series and will be used in the automatic x-axis label.
+    - `xaxis_unit`: If present, specifies the unit for the X-axis. If empty string, automatically selects the best unit.
+    - `yaxis_unit`: If present, specifies the unit for the Y-axis. If empty string, automatically selects the best unit.
     """
     x_unit = _check_same_unit(df)
     y_unit = props.get("yaxis_unit")
