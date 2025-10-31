@@ -52,6 +52,7 @@ import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.IOConsole;
@@ -936,11 +937,36 @@ public class ChartScriptEditor extends PyEdit {  //TODO ChartEditor?
         saveImageAction.update();
     }
 
+    protected void showChartConsole() {
+        try {
+            // Open or bring forward Console View, then make it switch to our content page
+            IViewPart view = getEditorSite().getPage().showView(IConsoleConstants.ID_CONSOLE_VIEW);
+            if (view instanceof ConsoleView)
+                ((ConsoleView)view).display(console);
+        }
+        catch (PartInitException e) {
+            ScavePlugin.logError("Failed to show console view", e);
+        }
+    }
+
+    protected void switchConsolePage() {
+        // Display our page in the Console view (Note: does NOT open or bring forward the console view)
+        for (IViewReference viewRef : getEditorSite().getWorkbenchWindow().getActivePage().getViewReferences()) {
+            IViewPart view = viewRef.getView(false);
+            if (view instanceof ConsoleView)
+                ((ConsoleView)view).display(console);
+        }
+    }
+
     public void setShowSource(boolean show) {
         toggleShowSourceAction.setChecked(show);
         sourceEditorContainer.setVisible(show);
         sashForm.layout();
         showSource = show;
+
+        // When showing the source editor, also bring the Console view forward
+        if (show)
+            showChartConsole();
     }
 
     @Override
@@ -1139,12 +1165,7 @@ public class ChartScriptEditor extends PyEdit {  //TODO ChartEditor?
             runChartScript();
         scaveEditor.setSelection(new StructuredSelection(chart));
 
-        // TODO: also do this when the editor tab is activated
-        for (IViewReference viewRef : getEditorSite().getWorkbenchWindow().getActivePage().getViewReferences()) {
-            IViewPart view = viewRef.getView(false);
-            if (view instanceof ConsoleView)
-                ((ConsoleView)view).display(console);
-        }
+        switchConsolePage();
 
         getChartViewer().getWidget().setFocus();
     }
