@@ -7,10 +7,13 @@
 
 package org.omnetpp.common.util;
 
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.services.IStylingEngine;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 
 public class DisplayUtils {
     public static void runNowOrAsyncInUIThread(Runnable runnable) {
@@ -54,7 +57,54 @@ public class DisplayUtils {
         }
     }
 
+    @SuppressWarnings("restriction")
     public static boolean isDarkTheme() {
+        try {
+            // Approach 1: Use Eclipse E4 Theme Engine to detect current theme
+            IThemeEngine themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+            String activeThemeId = themeEngine != null ? themeEngine.getActiveTheme().getId() : null;
+            if (activeThemeId != null) {
+                // known theme IDs: "org.eclipse.e4.ui.css.theme.e4_dark", "....e4_light", "....e4_default", "....e4_classic"
+                // WTF is "default"?
+                activeThemeId = activeThemeId.toLowerCase();
+                if (activeThemeId.contains("dark"))
+                    return true;
+                if (activeThemeId.contains("light") || activeThemeId.contains("default") || activeThemeId.contains("classic"))
+                    return false;
+                // undecided, fall through
+            }
+        }
+        catch (Exception e) {
+            // Theming may be disabled, or theme engine may not be available right now (e.g. during startup)
+        }
+
+        try {
+            // Approach 2: Use IStylingEngine with direct color query
+            IStylingEngine stylingEngine = PlatformUI.getWorkbench().getService(IStylingEngine.class);
+            if (stylingEngine != null) {
+                // Create a temporary shell to query theme-aware colors
+                Display display = Display.getCurrent();
+                org.eclipse.swt.widgets.Shell tempShell = new org.eclipse.swt.widgets.Shell(display);
+                try {
+                    // Apply styling to get current theme's colors applied to the shell
+                    stylingEngine.style(tempShell);
+
+                    // Query the background color directly from the styled shell
+                    Color backgroundColor = tempShell.getBackground();
+                    if (backgroundColor != null) {
+                        int brightness = (backgroundColor.getRed() + backgroundColor.getGreen() + backgroundColor.getBlue()) / 3;
+                        return brightness < 128; // Threshold: values below 128 are considered dark
+                    }
+                }
+                finally {
+                    tempShell.dispose();
+                }
+            }
+        } catch (Exception e) {
+            // Styling engine might not be available or accessible
+        }
+
+        // Fallback: If both approaches fail, fall back to system theme as last resort
         return Display.isSystemDarkTheme();
     }
 

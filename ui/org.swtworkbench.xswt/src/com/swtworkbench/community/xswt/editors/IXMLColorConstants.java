@@ -1,7 +1,7 @@
 package com.swtworkbench.community.xswt.editors;
 
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
+import org.omnetpp.common.util.DisplayUtils;
 
 public abstract interface IXMLColorConstants {
     // Light theme colors (original)
@@ -41,6 +41,6 @@ public abstract interface IXMLColorConstants {
 
     // Helper method to detect dark theme
     private static boolean isDarkTheme() {
-        return Display.isSystemDarkTheme();
+        return DisplayUtils.isDarkTheme();
     }
 }
