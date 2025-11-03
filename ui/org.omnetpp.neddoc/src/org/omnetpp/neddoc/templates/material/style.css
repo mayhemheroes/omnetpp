@@ -168,6 +168,10 @@ pre.dark-bg { background-color: #202020; }
     position: relative;
 }
 
+.mdl-layout--fixed-drawer > .mdl-layout__content {
+    margin-left: var(--drawer-width, 100px);
+}
+
 #nav-tree .selected a {
     text-decoration:none;
     color: rgb(33,150,243);
