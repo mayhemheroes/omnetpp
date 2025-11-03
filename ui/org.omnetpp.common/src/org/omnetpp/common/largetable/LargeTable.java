@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.e4.ui.services.IStylingEngine;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.util.SafeRunnable;
@@ -53,6 +54,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.PlatformUI;
 import org.omnetpp.common.Debug;
 import org.omnetpp.common.collections.IntRangeSet;
 import org.omnetpp.common.color.ColorFactory;
@@ -207,6 +209,8 @@ public class LargeTable extends Composite
     protected Color selectionBackground;
     protected Color unfocusedSelectionForeground; // selection in an unfocused table
     protected Color unfocusedSelectionBackground;
+    protected Color selectedFocusBorderColor;
+    protected Color unselectedFocusBorderColor;
 
     public LargeTable(Composite parent, int style) {
         super(parent, style | SWT.V_SCROLL);
@@ -263,18 +267,43 @@ public class LargeTable extends Composite
 
     protected void initColors() {
         Display display = Display.getCurrent();
-        Color bg = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        setBackground(bg);
-        setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+        Color systemBg = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        int brightness = (systemBg.getRed() + systemBg.getGreen() + systemBg.getBlue()) / 3;
+        boolean systemUsesDarkBg = brightness < 128;
 
-        selectionBackground = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
-        selectionForeground = display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        unfocusedSelectionBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND); // ?
-        unfocusedSelectionForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+        boolean isDarkTheme = DisplayUtils.isDarkTheme();
 
-        // Resolve potentially transparent background colors by blending them onto the list background
-        selectionBackground = ColorFactory.blendOver(selectionBackground, bg);
-        unfocusedSelectionBackground = ColorFactory.blendOver(unfocusedSelectionBackground, bg);
+        if (isDarkTheme == systemUsesDarkBg) {
+            // System colors match the Eclipse theme, use them
+            setBackground(systemBg);
+            setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+
+            selectionBackground = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
+            selectionForeground = display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+            unfocusedSelectionBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND); // ?
+            unfocusedSelectionForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+            selectedFocusBorderColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+            unselectedFocusBorderColor = display.getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+        }
+        else {
+            // Fall back to hardcoded colors for the theme
+            Color bg = isDarkTheme ? ColorFactory.GREY15 : ColorFactory.WHITE;
+            Color fg = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+
+            setBackground(bg);
+            setForeground(fg);
+
+            selectionBackground = isDarkTheme ? ColorFactory.GREY30 : ColorFactory.LIGHT_BLUE3;
+            selectionForeground = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+            unfocusedSelectionBackground = isDarkTheme ? ColorFactory.GREY25 : ColorFactory.GREY90;
+            unfocusedSelectionForeground = isDarkTheme ? ColorFactory.GREY80 : ColorFactory.BLACK;
+
+            selectionBackground = ColorFactory.blendOver(selectionBackground, bg);
+            unfocusedSelectionBackground = ColorFactory.blendOver(unfocusedSelectionBackground, bg);
+            selectedFocusBorderColor = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+            unselectedFocusBorderColor = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+        }
+
     }
 
     /**
@@ -950,7 +979,8 @@ public class LargeTable extends Composite
 
             if (rowIndex == focusIndex) {
                 if (!isSelectedElement || selectionIndices.size() > 1) { // suppress focus border if it's the only selected element
-                    gc.setForeground(Display.getCurrent().getSystemColor(isSelectedElement ? SWT.COLOR_LIST_SELECTION_TEXT : SWT.COLOR_LIST_FOREGROUND));
+                    Color focusBorderColor = isSelectedElement ? selectedFocusBorderColor : unselectedFocusBorderColor;
+                    gc.setForeground(focusBorderColor);
                     gc.setLineStyle(SWT.LINE_DOT);
                     gc.drawRectangle(1, i * getRowHeight(), table.getSize().x - 2, getRowHeight() - 2);
                     gc.setLineStyle(SWT.LINE_SOLID);
