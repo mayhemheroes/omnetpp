@@ -136,6 +136,9 @@ sim-time-limit = 1s
 
 cmdenv-fake-gui = true  # for the "y" and "f" ingredients
 
+# z fingerprints have multiple versions (x86_64 aarch64) because of the slightly different statistical results
+# generated on different architectures
+
 fingerprint =
     61ce-349b/e,
     aa84-1d2a/t,
@@ -153,7 +156,7 @@ fingerprint =
     d6e1-5518/a,
     c39c-6936/r,
     1ba6-e378/s,
-    316c-854a/z,
+    316c-854a/z d16c-c3c4/z,
     a959-ab54/v,
     d01e-f002/y,
     1c76-3429/f,
