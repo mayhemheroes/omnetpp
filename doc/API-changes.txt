@@ -206,6 +206,19 @@ OMNeT++ 6.0
 (+)     Added opp_component_ptr<T>, which is a smart pointer to a cComponent.
         When the respective component is deleted, the pointer becomes nullptr.
 
+(+)     Added about 40 string-related utility functions: opp_isempty(),
+        opp_nulltoempty(), opp_emptytodefault(), opp_isblank(),
+        opp_trim(), opp_stringf(), opp_vstringf(), opp_replacesubstring(),
+        opp_splitandtrim(), opp_split(), opp_splitandtrim(),
+        opp_stringbeginswith(), opp_stringendswith(), opp_substringbefore(),
+        opp_substringafter(), opp_substringbeforelast(),
+        opp_substringafterlast(), opp_removestart(), opp_removeend(),
+        opp_strlower(), opp_strupper(), opp_strnistr(), opp_strdictcmp(),
+        several overloads of opp_join(), opp_itoa(), opp_ltoa(), opp_i64toa(),
+        opp_dtoa(), opp_strtol(), opp_atol(), opp_strtoul(), opp_atoul(),
+        opp_strtoll(), opp_atoll(), opp_strtoull(), opp_atoull(), opp_strtod(),
+        opp_atof().
+
 (!)     cIOutputScalarManager: Recording methods changed to return a bool,
         indicating whether the value was actually recorded. This was done
         for consistency with cIOutputVectorManager's record method.
