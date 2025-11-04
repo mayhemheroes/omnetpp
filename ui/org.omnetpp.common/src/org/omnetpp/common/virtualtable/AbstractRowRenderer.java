@@ -71,13 +71,6 @@ public abstract class AbstractRowRenderer<T> implements IVirtualTableRowRenderer
 
     @Override
     public void drawCell(GC gc, T element, int index, boolean isSelected) {
-        if (isSelected) {
-            gc.setForeground(selectionForegroundColor);
-            gc.setBackground(selectionBackgroundColor);
-        }
-        else
-            gc.setForeground(foregroundColor);
-
         StyledString styledString = getStyledText(element, index, isSelected);
         int indent = getIndentation(element, index);
         drawStyledString(gc, styledString, indent, 0);
