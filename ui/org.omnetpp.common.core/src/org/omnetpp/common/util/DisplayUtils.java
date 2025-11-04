@@ -7,13 +7,27 @@
 
 package org.omnetpp.common.util;
 
+import java.util.Set;
+
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.services.IStylingEngine;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
+import org.omnetpp.common.color.ColorFactory;
 
 public class DisplayUtils {
     public static void runNowOrAsyncInUIThread(Runnable runnable) {
@@ -108,62 +122,143 @@ public class DisplayUtils {
         return Display.isSystemDarkTheme();
     }
 
-    /*
+    private static final int[] SYSTEM_COLORS = {
+        SWT.COLOR_INFO_BACKGROUND,
+        SWT.COLOR_INFO_FOREGROUND,
+        SWT.COLOR_LINK_FOREGROUND,
+        SWT.COLOR_LIST_BACKGROUND,
+        SWT.COLOR_LIST_FOREGROUND,
+        SWT.COLOR_LIST_SELECTION,
+        SWT.COLOR_LIST_SELECTION_TEXT,
+        SWT.COLOR_TEXT_DISABLED_BACKGROUND,
+        SWT.COLOR_TITLE_BACKGROUND,
+        SWT.COLOR_TITLE_BACKGROUND_GRADIENT,
+        SWT.COLOR_TITLE_FOREGROUND,
+        SWT.COLOR_TITLE_INACTIVE_BACKGROUND,
+        SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT,
+        SWT.COLOR_TITLE_INACTIVE_FOREGROUND,
+        SWT.COLOR_WIDGET_BACKGROUND,
+        SWT.COLOR_WIDGET_BORDER,
+        SWT.COLOR_WIDGET_DARK_SHADOW,
+        SWT.COLOR_WIDGET_DISABLED_FOREGROUND,
+        SWT.COLOR_WIDGET_FOREGROUND,
+        SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW,
+        SWT.COLOR_WIDGET_LIGHT_SHADOW,
+        SWT.COLOR_WIDGET_NORMAL_SHADOW,
+    };
+
+    private static final String[] COLOR_NAMES = {
+        "COLOR_INFO_BACKGROUND",
+        "COLOR_INFO_FOREGROUND",
+        "COLOR_LINK_FOREGROUND",
+        "COLOR_LIST_BACKGROUND",
+        "COLOR_LIST_FOREGROUND",
+        "COLOR_LIST_SELECTION",
+        "COLOR_LIST_SELECTION_TEXT",
+        "COLOR_TEXT_DISABLED_BACKGROUND",
+        "COLOR_TITLE_BACKGROUND",
+        "COLOR_TITLE_BACKGROUND_GRADIENT",
+        "COLOR_TITLE_FOREGROUND",
+        "COLOR_TITLE_INACTIVE_BACKGROUND",
+        "COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT",
+        "COLOR_TITLE_INACTIVE_FOREGROUND",
+        "COLOR_WIDGET_BACKGROUND",
+        "COLOR_WIDGET_BORDER",
+        "COLOR_WIDGET_DARK_SHADOW",
+        "COLOR_WIDGET_DISABLED_FOREGROUND",
+        "COLOR_WIDGET_FOREGROUND",
+        "COLOR_WIDGET_HIGHLIGHT_SHADOW",
+        "COLOR_WIDGET_LIGHT_SHADOW",
+        "COLOR_WIDGET_NORMAL_SHADOW",
+    };
+
+    /**
      * Dumps SWT system colors to the console.
      */
     public static void dumpSwtSystemColors() {
-        Object[][] colorConstants = {
-            {SWT.COLOR_BLACK, "COLOR_BLACK"},
-            {SWT.COLOR_WHITE, "COLOR_WHITE"},
-            {SWT.COLOR_RED, "COLOR_RED"},
-            {SWT.COLOR_DARK_RED, "COLOR_DARK_RED"},
-            {SWT.COLOR_GREEN, "COLOR_GREEN"},
-            {SWT.COLOR_DARK_GREEN, "COLOR_DARK_GREEN"},
-            {SWT.COLOR_YELLOW, "COLOR_YELLOW"},
-            {SWT.COLOR_DARK_YELLOW, "COLOR_DARK_YELLOW"},
-            {SWT.COLOR_BLUE, "COLOR_BLUE"},
-            {SWT.COLOR_DARK_BLUE, "COLOR_DARK_BLUE"},
-            {SWT.COLOR_MAGENTA, "COLOR_MAGENTA"},
-            {SWT.COLOR_DARK_MAGENTA, "COLOR_DARK_MAGENTA"},
-            {SWT.COLOR_CYAN, "COLOR_CYAN"},
-            {SWT.COLOR_DARK_CYAN, "COLOR_DARK_CYAN"},
-            {SWT.COLOR_GRAY, "COLOR_GRAY"},
-            {SWT.COLOR_DARK_GRAY, "COLOR_DARK_GRAY"},
-
-    	    {SWT.COLOR_WIDGET_DARK_SHADOW, "COLOR_WIDGET_DARK_SHADOW"},
-    	    {SWT.COLOR_WIDGET_NORMAL_SHADOW, "COLOR_WIDGET_NORMAL_SHADOW"},
-    	    {SWT.COLOR_WIDGET_LIGHT_SHADOW, "COLOR_WIDGET_LIGHT_SHADOW"},
-    	    {SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW, "COLOR_WIDGET_HIGHLIGHT_SHADOW"},
-    	    {SWT.COLOR_WIDGET_FOREGROUND, "COLOR_WIDGET_FOREGROUND"},
-    	    {SWT.COLOR_WIDGET_BACKGROUND, "COLOR_WIDGET_BACKGROUND"},
-    	    {SWT.COLOR_WIDGET_BORDER, "COLOR_WIDGET_BORDER"},
-    	    {SWT.COLOR_LIST_FOREGROUND, "COLOR_LIST_FOREGROUND"},
-    	    {SWT.COLOR_LIST_BACKGROUND, "COLOR_LIST_BACKGROUND"},
-    	    {SWT.COLOR_LIST_SELECTION, "COLOR_LIST_SELECTION"},
-    	    {SWT.COLOR_LIST_SELECTION_TEXT, "COLOR_LIST_SELECTION_TEXT"},
-    	    {SWT.COLOR_INFO_FOREGROUND, "COLOR_INFO_FOREGROUND"},
-    	    {SWT.COLOR_INFO_BACKGROUND, "COLOR_INFO_BACKGROUND"},
-    	    {SWT.COLOR_TITLE_FOREGROUND, "COLOR_TITLE_FOREGROUND"},
-    	    {SWT.COLOR_TITLE_BACKGROUND, "COLOR_TITLE_BACKGROUND"},
-    	    {SWT.COLOR_TITLE_BACKGROUND_GRADIENT, "COLOR_TITLE_BACKGROUND_GRADIENT"},
-    	    {SWT.COLOR_TITLE_INACTIVE_FOREGROUND, "COLOR_TITLE_INACTIVE_FOREGROUND"},
-    	    {SWT.COLOR_TITLE_INACTIVE_BACKGROUND, "COLOR_TITLE_INACTIVE_BACKGROUND"},
-    	    {SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT, "COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT"},
-    	    {SWT.COLOR_LINK_FOREGROUND, "COLOR_LINK_FOREGROUND"},
-    	    {SWT.COLOR_TRANSPARENT, "COLOR_TRANSPARENT"},
-    	    {SWT.COLOR_TEXT_DISABLED_BACKGROUND, "COLOR_TEXT_DISABLED_BACKGROUND"},
-    	    {SWT.COLOR_WIDGET_DISABLED_FOREGROUND, "COLOR_WIDGET_DISABLED_FOREGROUND"},
-        };
-        
         var display = Display.getCurrent();
         // Print the name and RGB values of the system colors
-        for (Object[] colorConstant : colorConstants) {
-            int colorId = (int) colorConstant[0];
-            String colorName = (String) colorConstant[1];
-            Color color = display.getSystemColor(colorId);
+        for (int i = 0; i < SYSTEM_COLORS.length; ++i) {
+            String colorName = COLOR_NAMES[i];
+            Color color = display.getSystemColor(SYSTEM_COLORS[i]);
             System.out.println("Color Name: " + colorName + ", RGB: " 
                                + color.getRed() + "," + color.getGreen() + "," + color.getBlue());
         }
+    }
 
+    /**
+     * Dumps Eclipse theme colors to the console.
+     */
+    public static void dumpEclipseThemeColors() {
+        IThemeManager tm = PlatformUI.getWorkbench().getThemeManager();
+        ITheme theme = tm.getCurrentTheme();
+        ColorRegistry reg = theme.getColorRegistry();
+
+        Set<String> keys = reg.getKeySet();
+
+        for (String k : keys) {
+            System.out.println(k);
+            System.out.println(reg.get(k));
+        }
+    }
+
+    /**
+     * Shows a window with colored squares of all SWT and Eclipse colors.
+     */
+    public static void openSwatch() {
+        Shell shell = new Shell(SWT.CLOSE | SWT.RESIZE);
+        shell.setText("Color Swatch");
+        shell.setLayout(new FillLayout());
+
+        ScrolledComposite scroll = new ScrolledComposite(shell, SWT.V_SCROLL);
+        scroll.setExpandHorizontal(true);
+        scroll.setExpandVertical(true);
+
+        Composite content = new Composite(scroll, SWT.NONE);
+
+        content.setLayout(new GridLayout(2, false));
+
+        Device device = shell.getDisplay();
+
+        for (int i = 0; i < SYSTEM_COLORS.length; i++) {
+            Color color = device.getSystemColor(SYSTEM_COLORS[i]);
+
+            Label colorBox = new Label(content, SWT.NONE);
+            colorBox.setLayoutData(new GridData(15, 15));
+            colorBox.setImage(ColorFactory.createColorImage(color.getRGB()));
+
+            Label label = new Label(content, SWT.NONE);
+            label.setText(COLOR_NAMES[i]);
+        }
+
+        Label sep = new Label(content, SWT.NONE);
+        sep.setText("Eclipse theme colors:");
+        GridData gd = new GridData();
+        gd.horizontalSpan = 2;
+        sep.setLayoutData(gd);
+
+        IThemeManager tm = PlatformUI.getWorkbench().getThemeManager();
+        ITheme theme = tm.getCurrentTheme();
+        ColorRegistry reg = theme.getColorRegistry();
+
+        Set<String> keys = reg.getKeySet();
+
+        for (String k : keys) {
+            Color color = reg.get(k);
+
+             Label colorBox = new Label(content, SWT.NONE);
+             colorBox.setLayoutData(new GridData(15, 15));
+             colorBox.setImage(ColorFactory.createColorImage(color.getRGB()));
+
+             Label label = new Label(content, SWT.NONE);
+             label.setText(k);
+        }
+
+        // Tell ScrolledComposite which control to scroll
+        scroll.setContent(content);
+        scroll.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+
+        shell.setSize(500, 400);
+        shell.open();
     }
 }
