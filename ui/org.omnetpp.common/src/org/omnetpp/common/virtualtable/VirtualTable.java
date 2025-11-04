@@ -98,6 +98,16 @@ public class VirtualTable<T>
 
     private final static boolean debug = false;
 
+    // Colors. Default colors (focused table, unselected row) are taken from the widget fg/bg colors
+    protected Color unfocusedForeground = null; // null = same as for focused table
+    protected Color unfocusedBackground = null; // null = same as for focused table
+    protected Color selectionForeground;
+    protected Color selectionBackground;
+    protected Color unfocusedSelectionForeground; // selection in an unfocused table
+    protected Color unfocusedSelectionBackground;
+    protected Color selectedFocusBorderColor;
+    protected Color unselectedFocusBorderColor;
+
     /**
      * This is an element close enough to the top of the visible area or null if there are no elements at all.
      */
@@ -201,7 +211,7 @@ public class VirtualTable<T>
 
         drawLines = true;
         setLayout(new FillLayout());
-        setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        initColors();
 
         createComposite(this);
         createCanvas(composite);
@@ -292,6 +302,47 @@ public class VirtualTable<T>
                 recomputeTableSize();
             }
         });
+    }
+
+    protected void initColors() {
+        Display display = Display.getCurrent();
+        Color systemBg = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        int brightness = (systemBg.getRed() + systemBg.getGreen() + systemBg.getBlue()) / 3;
+        boolean systemUsesDarkBg = brightness < 128;
+
+        boolean isDarkTheme = DisplayUtils.isDarkTheme();
+
+        if (isDarkTheme == systemUsesDarkBg) {
+            // System colors match the Eclipse theme, use them
+            setBackground(systemBg);
+            setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+
+            selectionBackground = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
+            selectionForeground = display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+            unfocusedSelectionBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+            unfocusedSelectionForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+            selectedFocusBorderColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+            unselectedFocusBorderColor = display.getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+        }
+        else {
+            // Fall back to hardcoded colors for the theme
+            Color bg = isDarkTheme ? ColorFactory.GREY15 : ColorFactory.WHITE;
+            Color fg = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+
+            setBackground(bg);
+            setForeground(fg);
+
+            selectionBackground = isDarkTheme ? ColorFactory.GREY30 : ColorFactory.LIGHT_BLUE3;
+            selectionForeground = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+            unfocusedSelectionBackground = isDarkTheme ? ColorFactory.GREY25 : ColorFactory.GREY90;
+            unfocusedSelectionForeground = isDarkTheme ? ColorFactory.GREY80 : ColorFactory.BLACK;
+
+            selectionBackground = ColorFactory.blendOver(selectionBackground, bg);
+            unfocusedSelectionBackground = ColorFactory.blendOver(unfocusedSelectionBackground, bg);
+            selectedFocusBorderColor = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+            unselectedFocusBorderColor = isDarkTheme ? ColorFactory.GREY90 : ColorFactory.BLACK;
+        }
+
     }
 
     /**
@@ -1003,13 +1054,21 @@ public class VirtualTable<T>
 
                 if (element != null) {
                     boolean isSelectedElement = selectionElements != null && selectionElements.contains(element);
+                    boolean haveFocus = canvas.isFocusControl();
 
-                    if (isSelectedElement) {
-                        gc.setBackground(Display.getCurrent().getSystemColor(canvas.isFocusControl() ? SWT.COLOR_LIST_SELECTION : SWT.COLOR_WIDGET_BACKGROUND));
+                    Color fg = isSelectedElement ?
+                            (haveFocus ? selectionForeground : unfocusedSelectionForeground) :
+                            (haveFocus || unfocusedForeground == null ? getForeground() : unfocusedForeground);
+
+                    Color bg = isSelectedElement ?
+                            (haveFocus ? selectionBackground : unfocusedSelectionBackground) :
+                            (haveFocus || unfocusedBackground == null ? getBackground() : unfocusedBackground);
+
+                    gc.setForeground(fg);
+                    gc.setBackground(bg);
+
+                    if (isSelectedElement)
                         gc.fillRectangle(new Rectangle(0, i * getRowHeight(), clipping.x + clipping.width, getRowHeight()));
-                    }
-                    else
-                        gc.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
                     int y = i * getRowHeight();
 
@@ -1030,8 +1089,8 @@ public class VirtualTable<T>
                         rowTransform.translate(x+LINE_WIDTH, y);
                         gc.setTransform(rowTransform);
 
-                        if (isSelectedElement && canvas.isFocusControl())
-                            gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+                        gc.setForeground(fg);
+                        gc.setBackground(bg);
 
                         rowRenderer.drawCell(gc, element, columnOrder[j], isSelectedElement);
 
@@ -1048,7 +1107,8 @@ public class VirtualTable<T>
 
                     if (element.equals(focusElement)) {
                         if (!isSelectedElement || selectionElements.approximateSize() > 1) { // suppress focus border if it's the only selected element
-                            gc.setForeground(Display.getCurrent().getSystemColor(isSelectedElement ? SWT.COLOR_LIST_SELECTION_TEXT : SWT.COLOR_LIST_FOREGROUND));
+                            Color focusBorderColor = isSelectedElement ? selectedFocusBorderColor : unselectedFocusBorderColor;
+                            gc.setForeground(focusBorderColor);
                             gc.setLineStyle(SWT.LINE_DOT);
                             gc.drawRectangle(1, i * getRowHeight(), getClientArea().width - 2, getRowHeight() - 2);
                             gc.setLineStyle(SWT.LINE_SOLID);
