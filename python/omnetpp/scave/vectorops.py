@@ -153,6 +153,11 @@ def aggregate(df, function='average'):
     y values *at the same time coordinate* with the specified function.
     Possible values: 'sum', 'average', 'count', 'maximum', 'minimum'
     """
+    # Validate that all input vectors have the same unit,
+    # only importing in here to avoid a dependency circle.
+    from omnetpp.scave import utils
+    utils._check_same_unit(df)
+
     vectimes = df['vectime']
     vecvalues = df['vecvalue']
 
@@ -229,6 +234,11 @@ def merge(df):
     Merges several series into a single one, maintaining increasing
     time order in the output.
     """
+    # Validate that all input vectors have the same unit,
+    # only importing in here to avoid a dependency circle.
+    from omnetpp.scave import utils
+    utils._check_same_unit(df)
+
     vectimes = df['vectime']
     vecvalues = df['vecvalue']
 
