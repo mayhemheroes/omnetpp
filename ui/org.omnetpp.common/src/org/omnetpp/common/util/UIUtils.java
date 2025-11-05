@@ -106,9 +106,8 @@ public class UIUtils {
         // Note: don't register the context menu with the editor site, or "Run As", "Debug As", "Team", and other irrelevant menu items appear...
     }
 
-    private static IStylingEngine stylingEngine = PlatformUI.getWorkbench().getService(IStylingEngine.class);
-
     public static void setWidgetClassName(Widget widget, String className) {
+        IStylingEngine stylingEngine = PlatformUI.getWorkbench().getService(IStylingEngine.class);
         stylingEngine.setClassname(widget, className);
     }
 
