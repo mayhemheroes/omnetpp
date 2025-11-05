@@ -109,6 +109,14 @@ public interface IMatplotlibFigureCanvas {
     /**
      * The members are actually Double instances, but we don't use them from
      * Java, only pass them back in to the next Python process.
+     * The (flat) list contains 4 elements [x0, y0, width, height] for each
+     * axes object ("subplot") of the figure.
+     */
+    List<Object> getDataBounds();
+
+    /**
+     * The members are actually Double instances, but we don't use them from
+     * Java, only pass them back in to the next Python process.
      * The (flat) list contains 4 elements [xmin, xmax, ymin, ymax] for each
      * axes object ("subplot") of the figure.
      */

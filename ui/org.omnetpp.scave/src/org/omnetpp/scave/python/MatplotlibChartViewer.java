@@ -92,9 +92,12 @@ public class MatplotlibChartViewer extends ChartViewerBase {
             return;
 
         final List<Object> limits = new ArrayList<Object>();
+        final List<Object> dataBounds = new ArrayList<Object>();
         try {
-            if (getPythonProcess() != null && getPythonProcess().isAlive() && plotWidget.getCanvas() != null)
+            if (getPythonProcess() != null && getPythonProcess().isAlive() && plotWidget.getCanvas() != null) {
                 limits.addAll(plotWidget.getCanvas().getAxisLimits());
+                dataBounds.addAll(plotWidget.getCanvas().getDataBounds());
+            }
         }
         catch (Exception e) {
             // ignore, since this is mostly a convenience feature
@@ -131,8 +134,14 @@ public class MatplotlibChartViewer extends ChartViewerBase {
         Runnable ownRunAfterDone = () -> {
             runAfterDone.run();
             try {
-                if (getPythonProcess() != null && getPythonProcess().isAlive() && plotWidget.getCanvas() != null && limits != null)
-                    plotWidget.getCanvas().setAxisLimits(limits);
+                if (getPythonProcess() != null && getPythonProcess().isAlive() && plotWidget.getCanvas() != null && limits != null) {
+                    List<Object> newDataBounds = plotWidget.getCanvas().getDataBounds();
+
+                    // If data bounds have changed, the old viewport likely doesn't make sense anymore.
+                    // Only restore it if the data bounds is still the same.
+                    if (newDataBounds.equals(dataBounds))
+                        plotWidget.getCanvas().setAxisLimits(limits);
+                }
             } catch (Exception e) {
                 // ignore, since this is mostly a convenience feature
             }

@@ -147,6 +147,8 @@ public class NativeChartViewer extends ChartViewerBase {
                 chartPlotter.applyPendingPropertyChanges();
                 plot.update();
 
+                // If data bounds have changed, the old viewport likely doesn't make sense anymore.
+                // Only restore it if the data bounds is still the same.
                 double dimensions[] = { plot.getMinX(), plot.getMaxX(), plot.getMinY(), plot.getMaxY() };
                 boolean restoreViewPort = Arrays.equals(oldDimensions, dimensions);
                 if (restoreViewPort) {

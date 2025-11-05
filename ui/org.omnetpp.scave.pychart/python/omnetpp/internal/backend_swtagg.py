@@ -259,6 +259,15 @@ class FigureCanvasSWTAgg(FigureCanvasSWT, FigureCanvasAgg):
             self.shm.close()
             self.shm.unlink()
 
+    def getDataBounds(self):
+        limits = list()
+        for ax in self.figure.axes:
+            limits += list(ax.dataLim.bounds)
+        # we may get `np.float64` values, and `ListConverter` can't handle those
+        limits = [float(x) for x in limits]
+        java_list = ListConverter().convert(limits, Gateway.gateway._gateway_client)
+        return java_list
+
     def getAxisLimits(self):
         limits = list()
         for ax in self.figure.axes:
