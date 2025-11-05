@@ -9,6 +9,7 @@ package org.omnetpp.scave.python;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -68,6 +69,7 @@ public class NativeChartViewer extends ChartViewerBase {
         if (plot.isDisposed())
             return;
 
+        final double oldDimensions[] = { plot.getMinX(), plot.getMaxX(), plot.getMinY(), plot.getMaxY() };
         final double zx = chartPlotter.isEmpty() || !plot.isZoomedOutX() ? Double.NaN : plot.getZoomX();
         final double zy = chartPlotter.isEmpty() || !plot.isZoomedOutY() ? Double.NaN : plot.getZoomY();
         final long vt = plot.getViewportTop();
@@ -145,13 +147,17 @@ public class NativeChartViewer extends ChartViewerBase {
                 chartPlotter.applyPendingPropertyChanges();
                 plot.update();
 
-                if (Double.isFinite(zx)) {
-                    plot.setZoomX(zx);
-                    plot.scrollHorizontalTo(vl);
-                }
-                if (Double.isFinite(zy)) {
-                    plot.setZoomY(zy);
-                    plot.scrollVerticalTo(vt);
+                double dimensions[] = { plot.getMinX(), plot.getMaxX(), plot.getMinY(), plot.getMaxY() };
+                boolean restoreViewPort = Arrays.equals(oldDimensions, dimensions);
+                if (restoreViewPort) {
+                    if (Double.isFinite(zx)) {
+                        plot.setZoomX(zx);
+                        plot.scrollHorizontalTo(vl);
+                    }
+                    if (Double.isFinite(zy)) {
+                        plot.setZoomY(zy);
+                        plot.scrollVerticalTo(vt);
+                    }
                 }
 
                 boolean restoreLegend = false;
