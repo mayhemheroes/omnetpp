@@ -74,6 +74,7 @@ import org.omnetpp.common.displaymodel.IDisplayString.Prop;
 import org.omnetpp.common.engine.UnitConversion;
 import org.omnetpp.common.image.ImageFactory;
 import org.omnetpp.common.image.NedImageDescriptor;
+import org.omnetpp.common.ui.CTabFolderRendererWithItemPadding;
 import org.omnetpp.common.ui.TristateCheckButton;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.common.util.UIUtils;
@@ -526,6 +527,7 @@ public class PropertiesDialog extends TrayDialog {
 
         // tabfolder and pages
         tabfolder = new CTabFolder(composite, SWT.TOP);
+        tabfolder.setRenderer(new CTabFolderRendererWithItemPadding(tabfolder));
         tabfolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
         createGeneralPage(tabfolder);

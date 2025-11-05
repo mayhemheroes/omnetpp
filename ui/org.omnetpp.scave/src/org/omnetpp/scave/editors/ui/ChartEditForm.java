@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.omnetpp.common.Debug;
 import org.omnetpp.common.contentassist.ContentAssistUtil;
+import org.omnetpp.common.ui.CTabFolderRendererWithItemPadding;
 import org.omnetpp.common.ui.SWTFactory;
 import org.omnetpp.common.ui.StyledTextUndoRedoManager;
 import org.omnetpp.common.ui.TimeTriggeredProgressMonitorDialog2;
@@ -374,6 +375,7 @@ public class ChartEditForm {
 
     private CTabFolder createCTabFolder(Composite parent) {
         CTabFolder tabfolder = new CTabFolder(parent, SWT.NONE);
+        tabfolder.setRenderer(new CTabFolderRendererWithItemPadding(tabfolder));
         tabfolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         return tabfolder;
 

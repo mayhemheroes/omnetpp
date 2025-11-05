@@ -9,6 +9,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.omnetpp.common.ui.CTabFolderRendererWithItemPadding;
 import org.omnetpp.scave.engine.IDList;
 import org.omnetpp.scave.engineext.ResultFileManagerEx;
 
@@ -37,6 +38,7 @@ public class FilteredDataTabFolder extends CTabFolder {
         numFormat = NumberFormat.getIntegerInstance();
         numFormat.setGroupingUsed(true);
         initialize();
+        setRenderer(new CTabFolderRendererWithItemPadding(this));
     }
 
     /**

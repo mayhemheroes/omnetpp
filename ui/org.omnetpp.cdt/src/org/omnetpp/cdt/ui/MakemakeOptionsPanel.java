@@ -57,6 +57,7 @@ import org.omnetpp.cdt.build.BuildSpecification;
 import org.omnetpp.cdt.build.MakemakeOptions;
 import org.omnetpp.cdt.build.MakemakeOptions.Type;
 import org.omnetpp.cdt.build.MetaMakemake;
+import org.omnetpp.common.ui.CTabFolderRendererWithItemPadding;
 import org.omnetpp.common.ui.HelpLink;
 import org.omnetpp.common.ui.ToggleLink;
 import org.omnetpp.common.util.FileUtils;
@@ -160,6 +161,7 @@ public class MakemakeOptionsPanel extends Composite {
         composite.setLayout(new GridLayout(1,false));
 
         tabfolder = new CTabFolder(composite, SWT.TOP);
+        tabfolder.setRenderer(new CTabFolderRendererWithItemPadding(tabfolder));
         tabfolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         targetPage = createTabPage(tabfolder, "Target");
