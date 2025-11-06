@@ -1,3 +1,50 @@
+2025-09-25  Andras Varga
+
+	* omnetpp.scave.utils, histogram_bin_edges() was replaced with a more
+	capable implementation to support the new "Histogram Bins" page in the
+	"Histogram from vectors" chart template.
+
+2025-11-04  Attila Torok
+
+	* omnetpp.scave.vectorops: Require vectors to be in the same unit for
+	the `aggregate` and `merge` vector operations (otherwise the result is
+	likely meaningless).
+
+2025-10-31  Attila Torok
+
+	* omnetpp.scave.vectorops: Fix: Set "unit" to "s" in the `timediff`
+	vector operation. Before, the original unit was left in place, which was
+	simply wrong.
+
+2025-10-31  Andras Varga
+
+	* omnetpp.scave.utils: plot_histograms(): document missing properties
+
+2025-10-27  Attila Torok
+
+	* omnetpp.scave.utils: Fix color/marker cycles in charts not being
+	deterministic with seed != 0.
+
+2025-10-27  Rudolf Hornig
+
+	* omnetpp.lldb.formatters.omnetpp: #1453: Updated lldb pretty printer
+	summary functions to properly handle None and "" return values.
+
+2025-08-12  Rudolf Hornig
+
+	* omnetpp.lldb.formatters.omnetpp: Safer pretty printing for simtime_t.
+
+2025-08-07  Attila Torok
+
+	omnetpp.scave.utils: Follow change: Margins were reduced around data on
+	native line plots, do the same change when native is emulated with
+	Matplotlib for image export.
+
+2025-07-14  Attila Torok
+
+	* omnetpp.scave.utils: plot_boxwhiskers(), customized_box_plot(): Fix unit
+	conversion.
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-07-14  Rudolf Hornig

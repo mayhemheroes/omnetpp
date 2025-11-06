@@ -1,3 +1,36 @@
+2025-10-21  Andras Varga
+
+	* cExpression::Context: added targetPar field (cPar*), replacing parName.
+	The goal is to make the target parameter available to NED functions. This is
+	important for cases when the module of the parameter being assigned (the
+	target cPar) is cannot be inferred from the context module, that is, for
+	deep assignments. This is a step towards resolving issue #1447.
+
+2025-07-24  Andras Varga
+
+	* cCommBufferBase: Added setMode()/getMode()
+
+	* cSingleFingerprintCalculator: added alias MESSAGE_WITH_INTERNALS for
+    fingerprint ingredient MESSAGE_DATA='d'; new fingerprint ingredients
+	MESSAGE_CONTROL_INFO='g' and MESSAGE_CONTENTS='b'.
+
+2025-07-17  Andras Varga
+
+	* cCommBuffer classes moved out of sim/parsim/, and made available even
+	in the WITH_PARSIM=no configuration. They do not depend on parsim code,
+	and have uses outside parallel simulation (e.g. fingerprint).
+
+2024-08-03  Rudolf Hornig
+
+	* DEBUG_TRAP macro: changed to use __builtin_debugtrap() where available
+	(gcc, clang) for raising breakpoints. This fixes the issue that
+	DEBUG_TRAP was not working correctly on ARM in x86_64 emulation mode.
+
+2025-09-22  Andras Varga
+
+	* DemuxFilter: add getDemuxLabel() protected method to make demuxLabel
+	production more easily customizable (just redefine getDemuxLabel()).
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------

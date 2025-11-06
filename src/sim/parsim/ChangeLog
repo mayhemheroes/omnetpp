@@ -1,3 +1,9 @@
+2025-07-17  Andras Varga
+
+	* cCommBuffer and subclasses moved out of parsim/, to make them available
+	even in WITH_PARSIM=no configurations. They do not depend on parsim code,
+	and have uses outside parallel simulation (e.g. fingerprint).
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------

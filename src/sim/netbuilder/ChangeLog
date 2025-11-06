@@ -1,3 +1,7 @@
+2025-10-21  Andras Varga
+
+	* Follow cParImpl method signature changes.
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-06-05  ------ omnetpp-6.2.0pre1 released ------

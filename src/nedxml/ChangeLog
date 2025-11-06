@@ -1,3 +1,26 @@
+2025-10-22  Zoltan Bojthe
+
+	* opp_msgc: Fixed #1425 "inconsistent naming in cplusplus blocks". In MSG
+	files, cplusplus blocks now accept consistent naming for constructors, copy
+	constructors, and destructors. When used with @customize, both Foo::Foo_Base
+	and Foo::Foo syntax are now supported.
+
+2025-10-22  Zoltan Bojthe
+
+	* opp_msgc: Fixed #1428 "missing 'omnetpp::' prefixes in generated code".
+	At some places, cOwnedObject was referred to without the omnetpp:: prefix.
+
+2025-10-20  Andras Varga
+
+	* opp_msgc: Fixed #1449 "MSG enum class doesn't compile".
+
+	Fixed enum class compilation by adding static_cast in generated code, since
+	enum class values aren't implicitly convertible to int like plain enums.
+	The existing test missed this because it only had declarations, not usage.
+
+	Note: enum2string/string2enum still use int representation, which may cause
+	issues with non-int underlying types, but this is not practically significant.
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-06-06  Zoltan Bojthe

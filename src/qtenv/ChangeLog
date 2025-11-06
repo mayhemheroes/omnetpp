@@ -1,3 +1,78 @@
+2025-10-15  Attila Torok
+
+	* Fix second part of #1448: If a module throws during network initialization
+	and the user clicks "Rebuild network", Qtenv exited with an "ASSERT failed"
+	error message.
+
+2025-10-13  Attila Torok
+
+	* Fix first part of #1448: Initialization messages were not shown in the log
+	viewer (and the network was not shown either) if there was an exception
+	during network initialization.
+
+2025-08-20  Attila Torok
+
+	* Image export: Require a supported file name extension in the Save dialog.
+	Fix missing error dialog when saving was unsuccessful.
+
+2025-09-10  Attila Torok, Rudolf Hornig
+
+	* Added global menu support via a "Move menu to the toolbar" checkbox in the
+	Preferences dialog. When this option is enabled, the window's menu bar
+	is hidden, and replaced by a "hamburger" icon on the toolbar. The option is
+	automatically enabled by default on systems where global menu is used
+	(macOS and certain Linux desktop environments such as Unity).
+
+	This feature can lessen the confusion when multiple simulation windows are
+	open by keeping the main menu close to the related simulation window. It
+	also saves a bit of vertical space on desktop environments that use local
+	menus.
+
+2025-07-23  Attila Torok
+
+	* Rename columns for clarity in the log inspector: "Event#" -> "Sender Event#",
+	"Time" -> "Sending Time".
+
+2025-07-17  Attila Torok
+
+	* Object Inspector: Use a fixed color for highlighted range for improved
+	readability in dark themes.
+
+2025-07-17  Attila Torok
+
+	* ModuleCanvasViewer: Fixed toolbar margin setup on macOS.
+
+2025-07-17  Attila Torok
+
+	* ModuleCanvasViewer: Remove macOS-specific workaround for the old zoom
+	label. Now that this label is no longer a part of the QGraphicsScene, it
+	doesn't cause any glitches, and the workaround is no longer needed.
+
+2025-07-17  Attila Torok
+
+	* Fix crash when right-clicking on an empty region in LogInspector. For some
+	reason, this only happened on macOS.
+
+2025-07-15  Andras Varga
+
+	* Log view: Use distinct terminal color palettes for dark and light modes.
+	This improves readability of colored text in dark mode.
+
+2025-07-16  Attila Torok
+
+	* Add an option for resetting the UI palette to factory defaults ("Use the
+	Fusion default color palette" checkbox).
+
+2025-07-15  Attila Torok
+
+	* Make application style configurable in the Preferences
+	dialog ("Application style" combo).
+
+2025-07-15  Attila Torok
+
+	* Fix: Print warning if toolbar icons cannot be displayed due to missing SVG
+	icon support in Qt.
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-05-29  Attila Torok

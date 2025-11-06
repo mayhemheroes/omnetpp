@@ -1,3 +1,189 @@
+2025-11-03  Rudolf Hornig
+
+	* NED documentation generator: Made the navigation tree area resizable in the
+	generated HTML. To resize, grab the handle at the bottom right corner
+	of the navigation area.
+
+2025-11-05  Rudolf Hornig
+
+	* Fixed a bug that prevented the opp_neddoc command from working properly
+	(#1439). The problem was caused by an unintentional access of the workspace,
+	which does not exist in headless mode.
+
+2025-11-05  Andras Varga, Attila Torok
+
+	* Analysis Tool: When re-running the chart script, the previous chart viewport
+	is preserved only if the chart area remains unchanged; otherwise the view
+	automatically zooms out fully (equivalent to the "Home" function).
+
+	The intended effect is that the viewport resets (zoom to fit) after
+	significant changes in the plot configuration, but is preserved after
+	styling-only changes. This approach mostly achieves the desired behavior.
+
+	This change makes the Apply button in the Chart Properties dialog much more
+	useful: users no longer need to close the dialog to click the "Home" button
+	to see the updated plot after making non-cosmetic changes. This improvement
+	is particularly noticeable with the new Histogram Bins tab of the
+	"Histogram from Vectors" chart.
+
+2025-10-30  Attila Torok
+
+	* As part of our effort to improve dark theme support of the IDE, we
+	replaced TabFolder with CTabFolder throughout the application. TabFolder
+	does not properly follow dark themes on some platforms (notably Windows) and
+	has visual glitches in dark mode rendering on other platforms.
+
+2025-11-03  Andras Varga, Attila Torok
+
+	* Fixed dark theme color issues in custom-drawn tables throughout the IDE.
+
+	Due to special scalability requirements, the IDE uses custom-drawn table
+	widgets in several parts: Browse Data pages in the Analysis Tool, Eventlog
+	View in the Sequence Chart Tool, etc. When using dark theme, these tables
+	would often appear in light theme colors instead, or use incorrect colors
+	that made text difficult to read.
+
+	The IDE now detects when the colors to be used by default do not match the
+	chosen theme, and chooses another set of colors to enhance UI consistency
+	and content readability.
+
+2025-09-25  Attila Torok
+
+	* Analysis Tool: Made histogram bins configurable in "Histogram from
+	vectors" charts.
+
+	Added a new "Histogram Bins" page to the chart configuration dialog. You can
+	now specify any combination of: bin width, number of bins, histogram
+	interval lower and upper bounds. The histogram will be calculated using
+	smart defaults for any unspecified parameters. Manual specification of bin
+	edges is also supported.
+
+2025-10-31  Andras Varga
+
+	* XSWT Editor: Fixed color scheme for Dark Theme.
+
+	The XSWT Editor was unusable in Dark Theme mode due to poor color choices
+	that displayed dark blue and black text on a black background, making content
+	completely unreadable. The editor now uses appropriate colors for both light
+	and dark themes.
+
+2025-10-31  Andras Varga
+
+	* Analysis Tool: Console view now automatically opens with the chart script
+	editor.
+
+	When opening the chart script editor, the Console view is automatically
+	displayed to show relevant output such as warnings and results from print()
+	statements. This provides immediate access to debugging information without
+	being intrusive, since the chart script editor is typically opened
+	infrequently and remains open during use.
+
+2025-10-31  Andras Varga
+
+	* Analysis Tool: Added 'Compare chart to template' link to the Reset to
+	Template dialog for easier comparison before resetting.
+
+2025-10-22  Rudolf Hornig
+
+	* Analysis Tool: Fixed incorrect text color for missing data entries ("-")
+	in Browse Data tables.
+
+2025-10-10  Attila Torok
+
+	* Analysis Tool: Added sorting support for 'Kind' and 'Weighted' columns
+	in Browse Data tables.
+
+2025-10-08  Attila Torok
+
+	* Analysis Tool: Fixed sorting by histogram number of bins and range when
+	statistics are present in the data table.
+
+2025-10-03  Attila Torok
+
+	* Analysis Tool: Fixed sorting by common numeric columns (count, mean, standard
+	deviation, min, max, variance, sum, etc.) on the "Histograms" tab of the
+	"Browse Data" page when non-histogram statistics are also present in the table.
+
+2025-10-01  Attila Torok
+
+	* Analysis Tool: Module Display Path column now falls back to Module column
+	when empty. Matching values are grayed out when both columns are visible
+	to reduce visual redundancy.
+
+2025-10-01  Attila Torok
+
+	* Analysis Tool: Updated label text on Browse Data page for better clarity.
+
+2025-10-20  Levente Meszaros
+
+	* NED and INI Editors: Fix syntax highlight: the "parent" keyword was not
+	colored as such.
+
+2025-09-25  Rudolf Hornig
+
+	* NED Editor: Fix #1397 "NED editor adds extra display string tag args when
+	changing icon". Notably, editing a submodule with the Properties added ",,0"
+	to the display string "i" tag.
+
+	After experimenting with several possible solutions, we finally replaced
+	spinner widgets in the Properties dialog with plain text edit fields.
+	Spinners were problematic because they cannot reliably represent the
+	"missing" value. (E.g. it is possible to manually delete the content of the
+	spinner, but then tabbing over the it will write back a "0".)
+
+2025-09-24  Attila Torok
+
+	* Analysis Tool: Added 'Module Display Path' column to Browse Data tables
+	for better module identification.
+
+2025-09-26  Andras Varga, Levente Meszaros, Attila Torok
+
+	* Added automatic freeze detection and recovery to prevent occasional IDE lockups.
+
+	The IDE can sometimes become unresponsive due to internal conflicts where
+	different parts of the system are waiting for each other. The new detection
+	system automatically identifies when the IDE has frozen and attempts to
+	recover by interrupting the conflicting processes. This should significantly
+	reduce instances where users need to restart the IDE due to freezes.
+
+	Note: This feature can be disabled by setting the environment variable
+	OMNETPP_DISABLE_DEADLOCK_DETECTION if needed.
+
+2025-07-24  Attila Torok
+
+	* Analysis Tool: Removed the "right" legend placement option in the Chart
+	Properties dialog.
+
+	This option was an inconsistent alias for "center right" that was only
+	included because Matplotlib accepts it for backward compatibility. Removing
+	it simplifies the interface.
+
+2025-08-07  Attila Torok
+
+	* Analysis Tool: Reduce margins around data on native line plots.
+	The margins (padding) was changed from 0.1 to 0.01 on the left and right
+	and from 0.2 to 0.1 on the top and bottom (these are multipliers).
+
+	In internal testing and usage, the horizontal margin was deemed to be a
+	waste of screen real estate, especially considering that they are
+	proportional, and chart viewports are usually much wider than they are
+	tall (on common widescreen displays, and without the chart script editor
+	being open).
+
+	The vertical margin was reduced only slightly, because it was found to be
+	useful more often to keep the data points at the extrema further away
+	from the border of the chart area in the value dimension. For example,
+	when a vector is alternating between 0 and 1 (or other constant). If
+	there was no margin, only the transitions would be visible as vertical
+	lines, but not really where the value is 0 or not.
+
+2025-08-11  Rudolf Hornig
+
+	* C++ Development: Adjust template for makefile generation to fix #1432
+	"opp_msgc: sometimes invalid code generated in INET when -B is used and
+	parallel build is enabled". Problem was race condition with parallel build
+	when -B is used during build.
+
 2025-07-14  ------ omnetpp-6.2.0 released ------
 
 2025-07-07  Pascal
@@ -47,7 +233,7 @@
 	* Inifile Editor: Added support for the new config options, and made
 	a number of usability enhancements to the "Form" editor page:
 
-        - Split up the "Result Recording" page into separate "Scalar Results",
+	- Split up the "Result Recording" page into separate "Scalar Results",
 	      "Vector Results" and "Declared Statistics" pages. The "Result directory"
 	      configuration part went to the "General" page.
 
