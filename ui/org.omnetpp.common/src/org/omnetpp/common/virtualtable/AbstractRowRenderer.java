@@ -2,13 +2,10 @@ package org.omnetpp.common.virtualtable;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.TextLayout;
-import org.eclipse.swt.widgets.Display;
 
 /**
  * Base class for VirtualTable row renderers.
@@ -18,9 +15,6 @@ import org.eclipse.swt.widgets.Display;
 public abstract class AbstractRowRenderer<T> implements IVirtualTableRowRenderer<T> {
     protected Font font = JFaceResources.getDefaultFont();
     protected int fontHeight = 0;
-    protected Color foregroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-    protected Color selectionForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-    protected Color selectionBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION);
 
     public AbstractRowRenderer() {
         super();
@@ -32,30 +26,6 @@ public abstract class AbstractRowRenderer<T> implements IVirtualTableRowRenderer
 
     public void setFont(Font font) {
         this.font = font;
-    }
-
-    public Color getForegroundColor() {
-        return foregroundColor;
-    }
-
-    public void setForegroundColor(Color foregroundColor) {
-        this.foregroundColor = foregroundColor;
-    }
-
-    public Color getSelectionForegroundColor() {
-        return selectionForegroundColor;
-    }
-
-    public void setSelectionForegroundColor(Color selectionForegroundColor) {
-        this.selectionForegroundColor = selectionForegroundColor;
-    }
-
-    public Color getSelectionBackgroundColor() {
-        return selectionBackgroundColor;
-    }
-
-    public void setSelectionBackgroundColor(Color selectionBackgroundColor) {
-        this.selectionBackgroundColor = selectionBackgroundColor;
     }
 
     public int getRowHeight(GC gc) {
