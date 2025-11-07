@@ -1,5 +1,8 @@
 package org.omnetpp.dsp;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -34,6 +37,31 @@ public class DSPUtils {
                 new String[][] {
                     {"\"", "\\\""},
                     {"\\", "\\\\"}}).with(UnicodeEscaper.outsideOf(32, 0x7f));
+
+    // Detects if we are running inside a container or WSL environment.
+    public static boolean isRunningInContainer() {
+        // Check for Docker container (/.dockerenv file)
+        if (new File("/.dockerenv").exists())
+            return true;
+
+        // Check for container environment variable
+        String containerEnv = System.getenv("container");
+        if (containerEnv != null && !containerEnv.trim().isEmpty())
+            return true;
+
+        // Check for WSL (Microsoft in /proc/version_signature)
+        try {
+            if (Files.exists(Paths.get("/proc/version_signature"))) {
+                String versionSignature = Files.readString(Paths.get("/proc/version_signature"));
+                if (versionSignature.contains("Microsoft"))
+                    return true;
+            }
+        } catch (Exception e) {
+            // Ignore exceptions when reading the file
+        }
+
+        return false;
+    }
 
     /**
      * Attach the debugger to the provided PID
@@ -221,11 +249,13 @@ public class DSPUtils {
             StringJoiner debuggerInitCommandsJoiner = new StringJoiner(", ", "[", "]");
             for (String s : debuggerInitCommands)
                 debuggerInitCommandsJoiner.add("\"" + ESCAPE_JSON.translate(s) + "\"");
+            boolean inContainer = isRunningInContainer();
             String dspParam = """
                 {"type": "lldb-dap",
                  "request": "launch",
                  "name": "Debug",
                  "initCommands": """ + debuggerInitCommandsJoiner.toString() + ",\n " + """
+                 "disableASLR": """ + (inContainer ? "false" : "true") + ",\n " + """
                  "cwd": """ + "\"" + ESCAPE_JSON.translate(workingDirectory) + "\",\n " + """
                  "program": """ + "\"" + ESCAPE_JSON.translate(program) + "\",\n " + """
                  "args": """ + argsJoiner.toString() + "}";

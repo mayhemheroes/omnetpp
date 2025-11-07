@@ -47,6 +47,7 @@ import org.eclipse.lsp4e.debug.debugmodel.TransportStreams.SocketTransportStream
 import org.eclipse.osgi.util.NLS;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.dsp.Activator;
+import org.omnetpp.dsp.DSPUtils;
 import org.omnetpp.dsp.debug.debugmodel.SimulationDSPDebugTarget;
 import org.omnetpp.launch.IOmnetppLaunchConstants;
 import org.omnetpp.launch.SimulationRunLaunchDelegate;
@@ -318,9 +319,12 @@ public class SimulationDSPLaunchDelegate extends SimulationRunLaunchDelegate {
     		dspParameters.putIfAbsent("args", commandLine);
         }
 
+        boolean inContainer = DSPUtils.isRunningInContainer();
+        dspParameters.putIfAbsent("disableASLR", inContainer ? false : true);
+
 		// create init commands for lldb from a list of lldbinit files defined in the launch configuration 
 		// (.lldbinit file in each project root + omnetpp root)
-		var initCommands = new ArrayList<String>();
+        var initCommands = new ArrayList<String>();
 		cfg.getAttribute(IOmnetppLaunchConstants.OPP_LLDB_INIT_FILES, List.of()).forEach(file -> {
 			try {
 				var filePath = Path.of(StringUtils.substituteVariables(file));
