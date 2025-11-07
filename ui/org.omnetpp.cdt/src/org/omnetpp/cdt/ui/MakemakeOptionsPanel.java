@@ -264,7 +264,7 @@ public class MakemakeOptionsPanel extends Composite {
         createLabel(previewPage, "Makemake options modified with CDT settings, and with meta-options resolved:");
         translatedOptionsText = new Text(previewPage, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
         translatedOptionsText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        translatedOptionsText.setBackground(translatedOptionsText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        translatedOptionsText.setBackground(getBackground());
 
         Dialog.applyDialogFont(composite);
 

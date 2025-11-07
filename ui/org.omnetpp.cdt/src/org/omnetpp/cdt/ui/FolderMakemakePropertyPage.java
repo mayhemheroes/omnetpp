@@ -69,7 +69,6 @@ public class FolderMakemakePropertyPage extends PropertyPage {
         errorMessageLabel = new Link(composite, SWT.WRAP);
         errorMessageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
         errorMessageLabel.setForeground(ColorFactory.RED2);
-        //errorMessageLabel.setBackground(errorMessageLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
         // make the error text label wrap properly; see https://bugs.eclipse.org/bugs/show_bug.cgi?id=9866
         composite.addControlListener(new ControlAdapter(){
