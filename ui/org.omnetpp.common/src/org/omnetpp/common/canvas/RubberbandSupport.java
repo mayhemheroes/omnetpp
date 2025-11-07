@@ -146,7 +146,7 @@ public abstract class RubberbandSupport {
                     // erase, then draw new with updated coordinates
                     if (drawRubberBand) {
                         Graphics graphics = new SWTGraphics(new GC(canvas));
-                        graphics.setForegroundColor(canvas.getDisplay().getSystemColor(SWT.COLOR_RED));
+                        graphics.setForegroundColor(ColorFactory.RED);
                         drawRubberBand(graphics, origRect); // XXX how does it erase the old rect ???
                         drawRubberBand(graphics, rubberBand);
                     }
@@ -172,7 +172,7 @@ public abstract class RubberbandSupport {
 
 //                  GCData data = gc.getGCData();
 //                  data.uiState &= (~OS.UISF_HIDEFOCUS);
-            graphics.setForegroundColor(Display.getCurrent().getSystemColor(SWT.COLOR_GRAY));   // used if drawFocus() is not supported by the OS
+            graphics.setForegroundColor(ColorFactory.GREY);   // used if drawFocus() is not supported by the OS
             graphics.drawFocus(r.x, r.y, r.width, r.height);
         }
         else {
