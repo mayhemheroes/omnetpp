@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -64,7 +65,7 @@ public class ColorDataParser extends NonDisposableDataParser {
                 this.isDisposable = false;
             }
         }
-        return this.display.getSystemColor(3);
+        return this.display.getSystemColor(SWT.COLOR_RED);
     }
 
     public void setDisplay(Display display) {
