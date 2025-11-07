@@ -5,6 +5,193 @@ This file summarizes OMNeT++ changes in each release. For changes related to
 simulation model compatibility, see doc/API-Changes. For more detailed info
 about all changes, see include/ChangeLog, src/*/ChangeLog, and ide/ChangeLog.
 
+OMNeT++ 6.3 (November 2025)
+---------------------------
+
+This release focuses on incremental improvements and refinements rather than
+introducing major new features. Key enhancements include Analysis Tool
+improvements such as configurable bin setup for "histogram from vectors" charts,
+global menu support in Qtenv, enhanced dark theme support throughout the IDE,
+and various other usability and stability improvements across the platform.
+
+Simulation kernel:
+
+  - The `cCommBuffer` classes and `parsimPack()`/`parsimUnpack()` functions are
+    now always available, regardless of whether the simulation kernel was
+    compiled with parsim support. Previously, these functions would throw
+    "parsim not available" exceptions when used in non-parsim builds. This
+    change enables their use in other contexts such as fingerprint calculations.
+    The `cCommBuffer` classes have been moved out of `sim/parsim/` and are
+    included even with `WITH_PARSIM=no` configuration. Additionally,
+    `cCommBufferBase` now provides `setMode()`/`getMode()` methods to support
+    non-parsim use cases.
+
+  - NED functions now have access to the target parameter being assigned, which
+    is particularly important for deep assignments where the target module
+    cannot be inferred from the context module. This was implemented by adding a
+    `targetPar` field (type `cPar*`) to `cExpression::Context`, replacing the
+    previous `parName` field.
+
+  - Improved platform support for the `DEBUG_TRAP` macro, particularly on ARM
+    processors running in x86_64 emulation mode, by utilizing
+    `__builtin_debugtrap()` when available with `gcc` and `clang` compilers.
+
+  - Made `DemuxFilter` demux label generation more easily customizable by adding
+    a protected `getDemuxLabel()` method that can be overridden in subclasses to
+    define custom labeling logic.
+
+MSG files, opp_msgc:
+
+  - Improved naming flexibility for targeted `cplusplus` blocks in classes
+    marked with `@customize`. The code generator now accepts both
+    `Foo::Foo_Base` and `Foo::Foo` syntax when targeting constructors, copy
+    constructors, and destructors, making the feature more intuitive to use.
+
+  - Several bug fixes.
+
+Cmdenv:
+
+  - Enhanced event banners in normal (non-express) mode to include event
+    information and fingerprint data for improved debugging visibility.
+
+  - Fixed a bug where the "Refusing to run abstract configuration" error did
+    not cause the program to exit with a nonzero exit code, which could prevent
+    proper error detection in automated scripts.
+
+Qtenv:
+
+  - Added a "Move menu to the toolbar" checkbox in the Preferences dialog. When
+    this option is enabled, the window's menu bar is hidden, and a "hamburger"
+    icon is displayed on the toolbar instead. On systems where global menu is
+    used (macOS and certain Linux desktop environments), it fixes a usability
+    issue that the local menu was unavailable from the application window -- now
+    it is available via the hamburger menu. On other systems, enabling this
+    option may be used to free up vertical space when needed.
+
+  - Renamed columns in the log inspector for greater clarity: "Event#" was
+    changed to "Sender Event#", and "Time" was changed to "Sending Time" to
+    better reflect the displayed information.
+
+  - Improved dark theme support, particularly for styled text rendering in the
+    Log view, providing better readability and visual consistency.
+
+  - Made application style configurable through the Preferences dialog by adding
+    an "Application style" combo box. Additionally, a new "Use the Fusion default
+    color palette" checkbox was added to help overcome potential readability
+    issues in dark mode.
+
+  - Fixed a bug where log messages written during network initialization were
+    not shown in the log viewer, and the network graphics was not displayed in
+    the main area, when an exception occurred during network initialization.
+
+  - Further bug fixes and improvements.
+
+Fingerprints:
+
+  - Added two new fingerprint ingredients to provide more granular control over
+    fingerprint computation: message control info ('g') and message contents
+    ('b'). The message control info ingredient includes control information
+    objects attached to arriving messages. The message contents ingredient
+    incorporates the core message data, excludes both control info and technical
+    bookkeeping fields from the last transmission, and it is insensitive to
+    simulation time and the identity of the sender/receiver modules. Both
+    ingredients use `parsimPack()` to serialize objects into byte arrays for
+    fingerprint inclusion. These additions enable more detailed
+    fingerprint-based regression tests and can help detect subtle differences in
+    message traffic that might not be captured by other fingerprint ingredients.
+
+opp_makemake:
+
+  - Fixed race condition that could occur with parallel builds when the `-B`
+    option is used, ensuring more reliable compilation of large projects.
+
+opp_neddoc:
+
+  - Fixed a bug that prevented the `opp_neddoc` command from working properly
+    (#1439). The problem was caused by an unintentional access of the workspace,
+    which does not exist in headless mode.
+
+Python library:
+
+  - In `omnetpp.scave.utils`, `histogram_bin_edges()` was replaced with a more
+    capable implementation to support the new "Histogram Bins" page in the
+    "Histogram from vectors" chart template.
+
+  - Several bug fixes and minor improvements.
+
+Analysis Tool:
+
+  - Made histogram bins configurable in "Histogram from vectors" charts by
+    adding a new "Histogram Bins" page to the chart configuration dialog. Users
+    can now specify any combination of bin width, number of bins, and histogram
+    interval upper/lower bounds. The histogram calculation uses smart defaults
+    for unspecified parameters, and manual specification of bin edges is also
+    supported.
+
+  - Improved the logic for determining when to preserve the current view versus
+    zooming out fully after re-running chart scripts. This enhancement makes
+    the Apply button in the Chart Properties dialog much more useful, as users
+    no longer need to close the dialog and click the "Home" button to see
+    updated plots after making non-cosmetic changes.
+
+  - The Console view now automatically opens when launching the chart script
+    editor, displaying relevant output such as warnings and `print()` statement
+    results. This provides immediate access to debugging information without
+    being intrusive, since the chart script editor is typically opened
+    infrequently and remains open during extended use.
+
+  - In the 'CSV for Spreadsheet' export, added the 'weighted' and 'variance'
+    columns to statistics and histogram output.
+
+  - Added 'Module Display Path' column to Browse Data tables for better module
+    identification. (Display path is the module path composed of module display
+    names configured via `display-name` configuration options where available.)
+
+  - Added 'Compare chart to template' link to the 'Reset to Template' dialog for
+    easier comparison before resetting.
+
+  - Fixed sorting issues affecting certain columns in Browse Data tables.
+
+  - Reduced margins around data on native line plots for better space
+    utilization and cleaner appearance.
+
+Other IDE Components:
+
+  - Added automatic freeze detection and recovery to prevent occasional IDE lockups.
+    The IDE can sometimes become unresponsive due to internal conflicts where
+    different parts of the system are waiting for each other. The new detection
+    system automatically identifies when the IDE has frozen and attempts to
+    recover by interrupting the conflicting processes. This should significantly
+    reduce instances where users need to restart the IDE due to freezes.
+
+    Note: This feature can be disabled by setting the environment variable
+    `OMNETPP_DISABLE_DEADLOCK_DETECTION` if needed.
+
+  - Improved dark theme support throughout the IDE. Affected areas are tab
+    folders, custom-drawn tables used in the Analysis Tool and Sequence Chart
+    Tool, and the color scheme of the XSWT Editor.
+
+  - NED Editor: In the Properties dialog, replaced spinner controls with plain
+    text fields. Spinners were problematic because they cannot reliably
+    represent the "missing" value.
+
+  - NED documentation generator: Made the navigation tree area resizable in the
+    generated HTML. To resize, grab the handle at the bottom right corner
+    of the navigation tree area.
+
+  - C++ Development: Resolved race condition issues in generated Makefiles
+    during parallel builds when the -B option is used, improving build
+    reliability for large projects.
+
+  - The IDE is now based on Eclipse 2025-09.
+
+See ChangeLogs in individual folders for details.
+
+Bugs fixed: https://github.com/omnetpp/omnetpp/issues?q=is%3Aissue+is%3Aclosed+milestone%3A6.3
+
+
+
+
 
 OMNeT++ 6.2 (July 2025)
 -----------------------
