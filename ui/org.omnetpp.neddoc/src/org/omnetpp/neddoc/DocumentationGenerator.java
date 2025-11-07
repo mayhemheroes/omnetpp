@@ -247,10 +247,6 @@ public class DocumentationGenerator {
         IPreferenceStore store = CommonPlugin.getConfigurationPreferenceStore();
         dotExecutablePath = ProcessUtils.lookupExecutable(store.getString(IConstants.PREF_GRAPHVIZ_DOT_EXECUTABLE));
         doxyExecutablePath = ProcessUtils.lookupExecutable(store.getString(IConstants.PREF_DOXYGEN_EXECUTABLE));
-
-        // Making sure it will be initialized by the time the documentation
-        // generator workspace job is launched, so it doesn't deadlock.
-        SyntaxHighlightHelper.init();
     }
 
     // specify an extension file using a full file system path to the XML doc-extension fragment file
