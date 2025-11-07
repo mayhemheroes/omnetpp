@@ -86,7 +86,7 @@ public class DataTable extends LargeTable implements IDataControl {
     private static final Color GREYED_OUT_COLOR = isLightTheme ? ColorFactory.GREY60 : ColorFactory.GREY40;
     private static final Color QUANTITY_UNIT_COLOR = isLightTheme ? ColorFactory.BLUE3 : ColorFactory.LIGHT_SKY_BLUE;
     private static final Color BOOLCONSTANT_COLOR = SyntaxHighlightHelper.ECLIPSE_PURPLE;
-    private static final Color STRINGLITERAL_COLOR = isLightTheme ? Display.getDefault().getSystemColor(SWT.COLOR_DARK_GREEN) : ColorFactory.PALE_GREEN3; // also from SyntaxHighlightHelper
+    private static final Color STRINGLITERAL_COLOR = isLightTheme ? ColorFactory.DARK_GREEN : ColorFactory.PALE_GREEN3; // also from SyntaxHighlightHelper
 
     private static final Styler GREYED_OUT_STYLER = makeColorStyler(GREYED_OUT_COLOR);
     private static final Styler QUANTITY_UNIT_STYLER = makeColorStyler(QUANTITY_UNIT_COLOR);
