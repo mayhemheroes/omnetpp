@@ -3314,7 +3314,7 @@ public class SequenceChart
         int x = p.x / 2;
         int y = p.y / 2;
         String[] lines = text.split("\n");
-        var foregroundColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+        var foregroundColor = getForeground();
         gc.setForeground(foregroundColor);
         gc.setFont(JFaceResources.getHeaderFont());
         p = gc.textExtent(title);

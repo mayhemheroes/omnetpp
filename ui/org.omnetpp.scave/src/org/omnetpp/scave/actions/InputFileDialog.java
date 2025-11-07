@@ -138,7 +138,7 @@ public class InputFileDialog extends Dialog {
         text.addModifyListener(e -> validateInput());
         errorMessageText = new Text(composite, SWT.READ_ONLY | SWT.WRAP);
         errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_FILL));
-        errorMessageText.setBackground(errorMessageText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        errorMessageText.setBackground(composite.getBackground());
         setErrorMessage(errorMessage);
 
         applyDialogFont(composite);

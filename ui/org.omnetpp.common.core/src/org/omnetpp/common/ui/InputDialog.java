@@ -213,8 +213,7 @@ public class InputDialog extends Dialog {
         errorMessageText = new Text(composite, SWT.READ_ONLY | SWT.WRAP);
         errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL
                 | GridData.HORIZONTAL_ALIGN_FILL));
-        errorMessageText.setBackground(errorMessageText.getDisplay()
-                .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        errorMessageText.setBackground(composite.getBackground());
         // Set the error message text
         // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=66292
         setErrorMessage(errorMessage);
