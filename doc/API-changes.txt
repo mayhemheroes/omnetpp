@@ -24,6 +24,28 @@ Legend:
 (i)     information
 
 
+OMNeT++ 6.3
+~~~~~~~~~~~
+
+(!)     cExpression::Context: added targetPar field (cPar*), removed parName.
+        The goal is to make the target parameter available to NED functions.
+
+(+)     cCommBufferBase: Added setMode()/getMode() methods. Its purpose is to
+        allow parsimPack() / parsimUnpack() methods to have several operation
+        modes, without changing their signature.
+
+(+)     cSingleFingerprintCalculator: added alias MESSAGE_WITH_INTERNALS for
+        fingerprint ingredient MESSAGE_DATA='d'; new fingerprint ingredients
+        MESSAGE_CONTROL_INFO='g' and MESSAGE_CONTENTS='b'.
+
+(!)     cCommBuffer classes moved out of sim/parsim/, and made available even
+        in the WITH_PARSIM=no configuration. They do not depend on parsim code,
+        and have uses outside parallel simulation (e.g. fingerprint calculation).
+
+(+)     DemuxFilter: added getDemuxLabel() protected method to make demuxLabel
+        production more easily customizable (just redefine getDemuxLabel()).
+
+
 OMNeT++ 6.2
 ~~~~~~~~~~~
 
