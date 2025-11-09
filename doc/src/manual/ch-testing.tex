@@ -818,6 +818,11 @@ means that a fingerprint needs to be computed with the simulation time, the
 module's full path, received packet's bit length, the extra data included
 for each event, and the result should be \ttt{53de-64a7}.
 
+Ingredients may also be specified with the \fconfig{fingerprint-ingredients}
+configuration option. However, that is rarely necessary because the ingredients
+list included in the fingerprints takes precedence and is also more convenient
+to use.
+
 The full list of fingerprint ingredients:
 
 %% Latex formatting: compact two-column, use letter as bullet, using multicols and [noitemsep]
@@ -830,7 +835,9 @@ The full list of fingerprint ingredients:
   \item[\tbf{k}]: message kind
   \item[\tbf{l}]: message (packet) bit length
   \item[\tbf{o}]: message control info class name
-  \item[\tbf{d}]: message data (uses parsim pack/unpack)
+  \item[\tbf{b}]: message contents*
+  \item[\tbf{g}]: message control info*
+  \item[\tbf{d}]: message data (legacy)*
   \item[\tbf{i}]: module id
   \item[\tbf{m}]: module full name (name with index)
   \item[\tbf{p}]: module full path (hierarchical name)
@@ -839,17 +846,47 @@ The full list of fingerprint ingredients:
   \item[\tbf{s}]: scalar results
   \item[\tbf{z}]: statistic results (histogram, etc.)
   \item[\tbf{v}]: vector results
-  \item[\tbf{x}]: extra data added programmatically
+  \item[\tbf{x}]: extra data added programmatically*
   \item[\tbf{y}]: display strings
-  \item[\tbf{f}]: canvas figures
+  \item[\tbf{f}]: canvas figures*
   \item[\tbf{0}]: clean hasher
 \end{itemize}
 \end{multicols}
 
-Ingredients may also be specified with the
-\fconfig{fingerprint-ingredients} configuration option. However, that is
-rarely necessary because the ingredients list included in the fingerprints
-takes precedence and is also more convenient to use.
+Most fingerprint ingredients require no explanation, but the ones marked with
+asterisk above do:
+
+\begin{itemize}
+  \item[\tbf{b}] \textbf{message contents}: Incorporates the core message data,
+    excluding control info and technical bookkeeping fields from the last
+    transmission. This ingredient is insensitive to simulation time and the
+    identity of sender/receiver modules. Uses \ffunc{parsimPack()} to serialize
+    objects into byte arrays for fingerprint inclusion.
+
+  \item[\tbf{g}] \textbf{message control info}: Includes control information
+    objects attached to arriving messages. Uses \ffunc{parsimPack()} to serialize
+    objects into byte arrays for fingerprint inclusion.
+
+  \item[\tbf{d}] \textbf{message data}: Legacy ingredient for message data
+    inclusion. Uses \ffunc{parsimPack()} to serialize objects into byte arrays
+    for fingerprint inclusion. This is retained for backward compatibility with
+    older fingerprints.
+
+  \item[\tbf{x}] \textbf{extra data added programmatically}: Includes data
+    explicitly added to the fingerprint via \ffunc{addExtraData()} method calls in
+    the simulation code. This allows custom data to be incorporated into
+    fingerprint computation.
+
+  \item[\tbf{f}] \textbf{canvas figures}: Includes information about graphical
+    figures displayed on the simulation canvas. Primarily incorporates geometry
+    information (positions, sizes, shapes) but excludes styling details (colors,
+    fonts, line styles). This design choice makes fingerprints more practical for
+    regression testing, as geometry typically carries important functional
+    information while styling is often a matter of visual preference.
+\end{itemize}
+
+These ingredients enable more detailed fingerprint-based regression tests and can help detect subtle differences in message traffic and simulation behavior that might not be captured by other fingerprint ingredients.
+
 
 \subsubsection{Multiple Fingerprints, Alternative Values}
 \label{sec:testing:multiple-fingerprints-alternative-values}
