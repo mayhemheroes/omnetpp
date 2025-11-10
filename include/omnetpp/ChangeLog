@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-10-21  Andras Varga
 
 	* cExpression::Context: added targetPar field (cPar*), replacing parName.

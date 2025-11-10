@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-10-15  Attila Torok
 
 	* Fix second part of #1448: If a module throws during network initialization

@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-09-25  Andras Varga
 
 	* omnetpp.scave.utils, histogram_bin_edges() was replaced with a more

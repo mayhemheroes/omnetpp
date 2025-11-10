@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-07-17  Andras Varga
 
 	* cCommBuffer and subclasses moved out of parsim/, to make them available

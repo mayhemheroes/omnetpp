@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-10-21  Andras Varga
 
 	* Follow cPar and cParImpl changes that allow the target parameter pointer

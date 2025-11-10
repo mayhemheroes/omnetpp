@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-08-11  Rudolf Hornig
 
 	* opp_makemake: fix #1432 (race condition with parallel build when -B is

@@ -1,3 +1,5 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
 2025-10-22  Zoltan Bojthe
 
 	* opp_msgc: Fixed #1425 "inconsistent naming in cplusplus blocks". In MSG

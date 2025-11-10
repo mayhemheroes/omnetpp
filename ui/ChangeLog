@@ -1,3 +1,16 @@
+2025-11-10  ------ omnetpp-6.3.0 released ------
+
+2025-11-07  Rudolf Hornig
+
+	* Fixed a bug that prevented debuggig with lldb in containers and other restricted
+	environments like WSL.
+    
+    The IDE now detects whether we are running in a restricted environment (docker, wsl)
+    and pass disableASLR parameter to the debugger so it will not try to disable
+    the address space randomization because that call fails in a container.
+    
+    (NOTE: The same settings must be set also in the .lldbinit file to take effect properly)
+
 2025-11-03  Rudolf Hornig
 
 	* NED documentation generator: Made the navigation tree area resizable in the
