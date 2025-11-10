@@ -1496,6 +1496,8 @@ differentiate among the histograms.
   \item \ttt{legend} \textit{(string, optional)}: Legend label for the series. If missing,
     legend labels are derived from other columns.
   \item \ttt{name}, \ttt{title}, \ttt{module}, etc. \textit{(optional)}: Provide input for the legend.
+  \item \ttt{unit} \textit{(string, optional)}: The unit for the X-axis values. If present, it is required
+    to be the same for all series.
 
 \end{itemize}
 
@@ -1514,7 +1516,8 @@ differentiate among the histograms.
   \item \ttt{drawstyle}: Selects whether to fill the area below the histogram line.
   \item \ttt{linestyle}, \ttt{linecolor}, \ttt{linewidth}: Styling.
   \item \ttt{cycle\_seed}: Alters the sequence in which colors and markers are assigned to series.
-  \item \ttt{unit}: If present, it is required to be the same for all series and will be used in the automatic x-axis label.
+  \item \ttt{xaxis\_unit}: If present, specifies the unit for the X-axis. If empty string, automatically selects the best unit.
+  \item \ttt{yaxis\_unit}: If present, specifies the unit for the Y-axis. If empty string, automatically selects the best unit.
 
 \end{itemize}
 
@@ -1854,18 +1857,78 @@ from the chart properties because it is specific to each chart.
 If a relative filename is returned, it is relative to the
 working directory when the data export takes place.
 
+\subsubsection{histogram\_bin\_edges\_from\_props()}
+\label{cha:chart-api:omnetpp.scave.utils:histogram-bin-edges-from-props}
+
+\begin{flushleft}
+\ttt{histogram\_bin\_edges\_from\_props(values, unit, props)}
+\end{flushleft}
+
+\par Calculates histogram bin edges based on chart dialog properties.
+This is a convenience wrapper around \ttt{histogram\_bin\_edges()}. See that function
+for detailed documentation of the binning algorithm and parameters.
+
+\par Parameters:
+
+\begin{itemize}
+  \item \ttt{values}: Input data array
+  \item \ttt{unit}: Measurement unit of the input data
+  \item \ttt{props} \textit{(dict)}: Properties from the chart configuration dialog, containing
+    settings like "use\_manual", "manual\_edges", "num\_bins", "bin\_width",
+    "range\_min", "range\_max", "round\_bin\_widths", "method".
+
+\end{itemize}
+
+
+\par Returns:
+
+\begin{itemize}
+  \item bin\_edges: Array of bin edges
+
+\end{itemize}
+
 \subsubsection{histogram\_bin\_edges()}
 \label{cha:chart-api:omnetpp.scave.utils:histogram-bin-edges}
 
 \begin{flushleft}
-\ttt{histogram\_bin\_edges(values, bins=None, range=None, weights=None)}
+\ttt{histogram\_bin\_edges(values, num\_bins=None, bin\_width=None, range\_min=None, range\_max=None, method=None, round\_bin\_widths=True)}
 \end{flushleft}
 
-\par An improved version of numpy.histogram\_bin\_edges.
-This will only return integer edges for input arrays consisting entirely of integers
-(unless the \ttt{bins} are explicitly given otherwise).
-In addition, the rightmost edge will always be strictly greater than the maximum of \ttt{values}
-(unless explicitly given otherwise in \ttt{range}).
+\par Enhanced histogram bin edge calculator with flexible parameter combinations
+and smart defaults. Automatically returns integer-aligned edges for integer
+data and uses rounded "nice" bin widths for improved readability.
+
+\par Parameters:
+
+\begin{itemize}
+  \item values: Input data array
+  \item num\_bins: Number of bins to use. If round\_bin\_widths is True, this will be treated as a hint.
+  \item bin\_width: Fixed width for each bin
+  \item range\_min: Lower endpoint of histogram range
+  \item range\_max: Upper endpoint of histogram range
+  \item round\_bin\_widths: Choose "nice" bin widths such as 1, 2, 5 * 10{\textasciicircum}k.
+  \item method: Binning method (used if num\_bins is None, default: 'auto' if None)
+
+\end{itemize}
+
+
+\par When parameters are provided (not None), they are respected.
+If parameters are overconstrained, an exception will be thrown.
+
+\par Returns:
+
+\begin{itemize}
+  \item bin\_edges: Array of bin edges
+
+\end{itemize}
+
+
+\par Raises:
+
+\begin{itemize}
+  \item ValueError: If parameters are overconstrained or incompatible
+
+\end{itemize}
 
 \subsubsection{confidence\_interval()}
 \label{cha:chart-api:omnetpp.scave.utils:confidence-interval}
