@@ -396,15 +396,15 @@ output files during simulation.
         events into an event log file. The resulting \ttt{.elog} file can be
         analyzed later in the IDE with the Sequence Chart tool.
 
-  \item \fconfig{scalar-recording} : This option is originally a
-        per-object setting, intended for selectively turning on or off the
-        recording of certain scalar results. However, when it is specified
-        globally to turn off all scalars, no output scalar file
-        (\ttt{.sca}) will be created either.
+  \item \fconfig{record-scalar-results} :  This option can be used to completely
+        disable writing output scalar files (\ttt{.sca}). This is preferable to
+        \ttt{**.scalar-recording=false} when the goal is to disable writing \ttt{.sca} files
+        entirely, as the latter may still create \ttt{.sca} files containing only metadata.
 
-  \item \fconfig{vector-recording} : Similar to \fconfig{scalar-recording},
-        this option can be used to turn off creating an output vector file
-        (\ttt{.vec}).
+  \item \fconfig{record-vector-results} : This option can be used to completely
+        disable writing output vector files (\ttt{.vec}). This is preferable to
+        \ttt{**.vector-recording=false} when the goal is to disable writing \ttt{.vec} files
+        entirely, as the latter may still create \ttt{.vec} files containing only metadata.
 
   \item \fconfig{cmdenv-redirect-output} : This is a Cmdenv-specific option,
         only mentioned here for completeness. It tells Cmdenv to save its
@@ -417,7 +417,7 @@ These configuration options, like any others, can be specified both in ini
 files and on the command line. An example:
 
 \begin{commandline}
-$ ./fifo --record-eventlog=true --scalar-recording=false --vector-recording=false
+$ ./fifo --record-eventlog=true --record-vector-results=false
 \end{commandline}
 
 

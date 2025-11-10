@@ -120,24 +120,54 @@ number, respectively. Thus, the above defaults generate file names such as
 % \end{note}
 
 
+\subsection{Global Result File Control}
+\label{sec:ana-sim:global-result-file-control}
+
+The creation of result files can be controlled with global switches that determine
+whether vector or scalar files are written at all:
+
+\begin{itemize}
+  \item \fconfig{record-vector-results}: main switch for writing a vector file
+  \item \fconfig{record-scalar-results}: main switch for writing a scalar file
+\end{itemize}
+
+To completely disable vector recording, use \ttt{record-vector-results = false}.
+It is preferable to \ttt{**.vector-recording = false}, as the latter may still
+create vector files containing only metadata. Similarly,
+\ttt{record-scalar-results = false} should be preferred over
+\ttt{**.scalar-recording = false}.
+
+To disable all result recording, use the following three lines:
+
+\begin{inifile}
+**.statistic-recording = false
+record-scalar-results = false
+record-vector-results = false
+\end{inifile}
+
+The first line is not strictly necessary. However, it may improve runtime
+performance because it causes result recorders not to be added instead of adding
+and then disabling them.
+
+
 \subsection{Enabling/Disabling Result Items}
 \label{sec:ana-sim:disabling-result-items}
 
-The recording of simulation results can be enabled or disabled at multiple
-levels with various configuration options:
+Individual result items can be controlled with per-object options that can be
+configured individually for each \fprop{@statistic} and result item:
 
 \begin{itemize}
-  \item All recording from a \fprop{@statistic} can be enabled or disabled
-    together using the \fconfig{statistic-recording} option.
-  \item Recording of a scalar or a statistic object can be controlled with the
-    \fconfig{scalar-recording} option.
-  \item Recording of an output vector can be controlled with the
-    \fconfig{vector-recording} option.
-  \item Recording of the bins of a histogram object can be controlled with the
-    \fconfig{bin-recording} option.
+  \item \fconfig{statistic-recording}: per-object option that enables or
+    disables the recording of all items from a \fprop{@statistic}.
+  \item \fconfig{vector-recording}: per-object option that controls the
+    recording of output vectors.
+  \item \fconfig{scalar-recording}: per-object option that controls the
+    recording of non-vector items: scalars, statistic summaries and histograms.
+  \item \fconfig{bin-recording}: per-object option that controls the recording
+    of the bins of histograms.
 \end{itemize}
 
-All the above options are boolean per-object options; thus, they have similar syntaxes:
+The per-object options have similar syntaxes:
 
 \begin{itemize}
   \item \textit{<module-path>.<statistic-name>.}\fconfig{statistic-recording}\ttt{ = true/false}
@@ -184,17 +214,6 @@ results except those called \ttt{latency} and those produced by modules named
 **.scalar-recording = false
 \end{inifile}
 
-To disable all result recording, use the following three lines:
-
-\begin{inifile}
-**.statistic-recording = false
-**.scalar-recording = false
-**.vector-recording = false
-\end{inifile}
-
-The first line is not strictly necessary. However, it may improve runtime
-performance because it causes result recorders not to be added instead of adding
-and then disabling them.
 
 \subsection{Selecting Recording Modes for Signal-Based Statistics}
 \label{sec:ana-sim:configuring-recording-modes}
