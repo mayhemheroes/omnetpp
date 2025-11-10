@@ -24,7 +24,7 @@ config **.destAddresses "\"1\""
 config **.app.sendIaTime "exponential(280 ms)"
 config **.queue[*].useCutThroughSwitching true
 config **.queue[*].frameCapacity 100
-config **.vector-recording false
+config record-vector-results false
 config sim-time-limit 1200s
 config **.appType "\"App\""
 config **.app.packetLength "4096 bytes"
