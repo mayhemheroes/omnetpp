@@ -718,6 +718,11 @@ void Qtenv::doRun()
 
     connect(mainNetworkView, SIGNAL(inspectedObjectChanged(cObject *,cObject *)), mainLogView, SLOT(setObject(cObject *)));
     connect(mainNetworkView, SIGNAL(inspectedObjectChanged(cObject *,cObject *)), mainInspector, SLOT(setObject(cObject *)));
+    connect(mainNetworkView, &ModuleInspector::inspectedObjectChanged, this, [this](cObject *newObj, cObject *) {
+        // NOTE: this should always succeed anyway
+        if (cModule *module = dynamic_cast<cModule *>(newObj))
+            mainObjectTree->highlightModule(module);
+    });
 
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationStarts, mainWindow, &MainWindow::enterLayoutingMode);
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationEnds, mainWindow, &MainWindow::exitLayoutingMode);

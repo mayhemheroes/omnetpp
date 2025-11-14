@@ -45,6 +45,7 @@ private Q_SLOTS:
 
 public Q_SLOTS:
     void createContextMenu(QPoint pos);
+    void highlightModule(cModule *module);
 
 public:
     ObjectTreeInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f);

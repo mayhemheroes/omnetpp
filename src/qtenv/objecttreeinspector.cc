@@ -198,6 +198,67 @@ void ObjectTreeInspector::onDoubleClick(QModelIndex index)
         Q_EMIT objectDoubleClicked(model->getCObjectPointerToInspect(index));
 }
 
+void ObjectTreeInspector::highlightModule(cModule *module)
+{
+    if (!module || !model)
+        return;
+
+    // Build path from module up to network root
+    std::vector<cModule *> path;
+    cModule *current = module;
+    while (current) {
+        path.push_back(current);
+        current = current->getParentModule();
+    }
+
+    // Reverse to get root-to-target path
+    std::reverse(path.begin(), path.end());
+
+    // Walk the tree following the path
+    QModelIndex currentIndex = QModelIndex(); // Start at tree root
+
+    for (cModule *targetModule : path) {
+        // Ensure children are loaded at this level
+        if (model->canFetchMore(currentIndex))
+            model->fetchMore(currentIndex);
+
+        // Search for targetModule among children
+        int rowCount = model->rowCount(currentIndex);
+        bool found = false;
+        for (int row = 0; row < rowCount; ++row) {
+            QModelIndex childIndex = model->index(row, 0, currentIndex);
+            if (!childIndex.isValid())
+                continue;
+
+            cObject *childObj = model->getCObjectPointer(childIndex);
+            if (childObj == targetModule) {
+                currentIndex = childIndex;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // Path is broken, can't find this module in the tree
+            return;
+        }
+    }
+
+    // Found the target! Now expand parents and select it
+    if (currentIndex.isValid()) {
+        // Expand all parent nodes
+        QModelIndex parent = currentIndex.parent();
+        while (parent.isValid()) {
+            view->expand(parent);
+            parent = parent.parent();
+        }
+
+        // Select the item and scroll to it
+        view->setCurrentIndex(currentIndex);
+        view->scrollTo(currentIndex, QAbstractItemView::EnsureVisible);
+    }
+}
+
 }  // namespace qtenv
 }  // namespace omnetpp
 
