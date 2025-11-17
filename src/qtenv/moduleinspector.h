@@ -78,6 +78,8 @@ private Q_SLOTS:
     void switchToOsgView();
     void switchToCanvasView();
 
+    void gotoModule();
+
     void onFontChanged();
 
 protected:
@@ -105,6 +107,7 @@ protected:
     QAction *submoduleNameFormatAction;
     QAction *increaseIconSizeAction;
     QAction *decreaseIconSizeAction;
+    QAction *gotoModuleAction;
 
     QStackedLayout *stackedLayout;
     QToolBar *toolbar;

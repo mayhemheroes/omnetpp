@@ -612,10 +612,10 @@ Total number of messages created since start of the simulation</string>
     <string>&amp;Eventlog Recording</string>
    </property>
    <property name="toolTip">
-    <string>Eventlog recording on/off (Ctrl+G)</string>
+    <string>Eventlog recording on/off (Ctrl+E)</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="actionFindInspectObjects">

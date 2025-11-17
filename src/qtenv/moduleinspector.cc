@@ -52,6 +52,7 @@
 #include "inspectorutil.h"
 #include "layersdialog.h"
 #include "messageanimator.h"
+#include "gotomoduledialog.h"
 
 using namespace omnetpp::common;
 
@@ -124,6 +125,11 @@ ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFact
     decreaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_O);
     connect(decreaseIconSizeAction, SIGNAL(triggered(bool)), this, SLOT(decreaseIconSize()));
     addAction(decreaseIconSizeAction);
+
+    gotoModuleAction = new QAction("Go to Module...", this);
+    gotoModuleAction->setShortcut((int)Qt::CTRL | Qt::Key_G);
+    connect(gotoModuleAction, SIGNAL(triggered()), this, SLOT(gotoModule()));
+    addAction(gotoModuleAction);
 
     auto *layouter = getQtenv()->getModuleLayouter();
     connect(layouter, &ModuleLayouter::layoutVisualisationStarts, this, &ModuleInspector::onLayoutVisualizationStarts);
@@ -852,6 +858,41 @@ void ModuleInspector::switchToCanvasView()
     }
 
     update();
+}
+
+void ModuleInspector::gotoModule()
+{
+    if (!object)
+        return;
+
+    cModule *currentModule = dynamic_cast<cModule *>(object);
+
+    // Show the dialog
+    GotoModuleDialog dialog(currentModule, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        QString modulePath = dialog.getSelectedModulePath().trimmed();
+
+        if (modulePath.isEmpty())
+            return;
+
+        // Try to find the module by path
+        try {
+            cModule *targetModule = getSimulation()->getModuleByPath(modulePath.toStdString().c_str());
+
+            if (targetModule) {
+                // Navigate to the target module
+                setObject(targetModule);
+            }
+            else {
+                QMessageBox::warning(this, "Module Not Found",
+                    QString("Module '%1' not found in the network.").arg(modulePath));
+            }
+        }
+        catch (std::exception& e) {
+            QMessageBox::critical(this, "Error",
+                QString("Error finding module: %1").arg(e.what()));
+        }
+    }
 }
 
 }  // namespace qtenv
