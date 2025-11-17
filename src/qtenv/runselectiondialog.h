@@ -18,9 +18,11 @@
 #define __OMNETPP_QTENV_RUNSELECTIONDIALOG_H
 
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QCompleter>
 #include <map>
 #include <omnetpp/cconfiguration.h>
 #include "qtenvdefs.h"
+#include "multiwordfilterproxymodel.h"
 
 namespace Ui {
 class RunSelectionDialog;
@@ -47,6 +49,9 @@ class QTENV_API RunSelectionDialog : public QDialog
 
     std::string configNameArg; // the name of the config the user specified with the -c command line argument, or empty if none
     std::string runFilter; // the run filter the user specified with the -r command line argument, or empty if none
+    MultiWordFilterProxyModel *proxyModel = nullptr;
+    QCompleter *completer = nullptr;
+    bool suppressFilterUpdate = false;  // Flag to prevent filter updates during completer navigation
 
     std::vector<std::string> groupAndSortConfigNames();
     void updateRuns(const char *configName);

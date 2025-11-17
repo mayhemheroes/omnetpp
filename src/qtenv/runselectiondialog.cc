@@ -20,6 +20,7 @@
 #include <set>
 #include <QtCore/QDebug>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
 #include "common/stlutil.h"
 #include "runselectiondialog.h"
 #include "ui_runselectiondialog.h"
@@ -161,7 +162,7 @@ void RunSelectionDialog::updateRuns(const char *configName)
 
     // grouping the matching runs to the top
     for (auto i : matchingRunNumbers)
-        ui->runNumber->addItem(QString("%1 (%2)").arg(i).arg(runDescriptions[i].info.c_str()), QVariant(i));
+        ui->runNumber->addItem(QString("#%1 (%2)").arg(i).arg(runDescriptions[i].info.c_str()), QVariant(i));
 
     if (!matchingRunNumbers.empty() && matchingRunNumbers.size() < runDescriptions.size())
         ui->runNumber->insertSeparator(matchingRunNumbers.size());
@@ -169,10 +170,12 @@ void RunSelectionDialog::updateRuns(const char *configName)
     // and then the non-matching ones after a separator
     for (int i = 0; i < (int)runDescriptions.size(); ++i)
         if (!contains(matchingRunNumbers, i))
-            ui->runNumber->addItem(QString("%1 (%2)").arg(i).arg(runDescriptions[i].info.c_str()), QVariant(i));
+            ui->runNumber->addItem(QString("#%1 (%2)").arg(i).arg(runDescriptions[i].info.c_str()), QVariant(i));
 
 
     ui->runNumber->setDisabled(ui->runNumber->count() < 2);
+
+    ui->runNumber->setupFiltering();
 }
 
 bool RunSelectionDialog::configNameDefinite()
