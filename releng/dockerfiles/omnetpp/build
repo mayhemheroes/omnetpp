@@ -1,0 +1,27 @@
+#!/bin/bash
+cd $(dirname "$0")
+
+VERSION=$(cat ../../../Version | sed 's/^omnetpp-//')
+
+echo "Building omnetpp-$VERSION docker image..."
+
+if [[ ! -f omnetpp-$VERSION-core.tgz ]]; then
+    # get a local version if the file is not available in the context
+    echo "omnetpp-$VERSION-core.tgz not found in the context, trying to get it from the dist directory"
+    cp ../../dist/*omnetpp-$VERSION-core.tgz ./omnetpp-$VERSION-core.tgz
+fi
+if [[ ! -f omnetpp-$VERSION-core.tgz ]]; then
+    # get a version from github if the file is not available in the context
+    echo "omnetpp-$VERSION-core.tgz not found in the context, trying to get it from github"
+    curl -# -L https://github.com/omnetpp/omnetpp/releases/download/omnetpp-$VERSION/omnetpp-$VERSION-core.tgz -o omnetpp-$VERSION-core.tgz
+fi
+
+if [[ ! -f omnetpp-$VERSION-core.tgz ]]; then
+    echo "omnetpp-$VERSION-core.tgz not found in the 'dist' directory or on github. Exiting..."
+    exit 1
+fi
+
+# build the docker image
+set -e
+docker build --build-arg VERSION=$VERSION -t ghcr.io/omnetpp/omnetpp:u24.04-$VERSION .
+rm omnetpp-$VERSION-core.tgz
