@@ -78,9 +78,20 @@
   if (!drawer) {
     return;
   }
+  // restore width
+  if (window.localStorage && localStorage.getItem('neddoc-drawer-width')) {
+    var savedWidth = localStorage.getItem('neddoc-drawer-width') + 'px';
+    layout.style.setProperty('--drawer-width', savedWidth);
+    drawer.style.width = savedWidth;
+  }
+
   var update = function() {
     var width = drawer.getBoundingClientRect().width;
     layout.style.setProperty('--drawer-width', width + 'px');
+    // save width
+    if (window.localStorage) {
+      localStorage.setItem('neddoc-drawer-width', width);
+    }
   };
   var observer;
   if (window.ResizeObserver) {
@@ -89,7 +100,6 @@
   } else {
     window.addEventListener('resize', update);
   }
-  update();
 })();
 </script>
 </body>
