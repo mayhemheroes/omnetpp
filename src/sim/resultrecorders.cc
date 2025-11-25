@@ -90,9 +90,16 @@ Register_ResultRecorder2("avg", AverageRecorder,
         NAN_VALUES_IGNORED
 );
 Register_ResultRecorder2("timeavg", TimeAverageRecorder,
-        "Records the time average of the input values, assuming sample-hold interpolation. "
+        "Records the time-weighted average of signal values, where each emitted value "
+        "represents the level maintained until the next emission (forward-sample-hold). "
         SIGNALTYPE_TO_NUMERIC_CONVERSIONS
-        "A NaN value in the input indicates that the interval up to the next value is to be ignored. "
+        "NaN values in the input denote intervals to be ignored. "
+);
+Register_ResultRecorder2("rateavg", RateAverageRecorder,
+        "Records the time-weighted average of signal values, where each emitted value "
+        "represents the rate that was active during the interval preceding its emission (backward-sample-hold). "
+        SIGNALTYPE_TO_NUMERIC_CONVERSIONS
+        "NaN values in the input denote intervals to be ignored. "
 );
 Register_ResultRecorder2("stats", StatsRecorder,
         "Records basic statistics (count, mean, stddev, min, max, etc.) of the input values. "
@@ -395,6 +402,37 @@ std::string TimeAverageRecorder::str() const
 
 //---
 
+void RateAverageRecorder::collect(simtime_t_cref t, double value, cObject *details)
+{
+    if (!std::isnan(value)) {
+        totalTime += t - lastTime;
+        weightedSum += value * SIMTIME_DBL(t - lastTime);
+    }
+    lastTime = t;
+}
+
+double RateAverageRecorder::getRateAverage() const
+{
+    // Note: The current interval (lastTime,now) cannot be taken into account,
+    // because we don't know the value yet (it will be emitted at the end of the interval).
+    return weightedSum / totalTime;
+}
+
+void RateAverageRecorder::finish(cResultFilter *prev)
+{
+    opp_string_map attributes = getStatisticAttributes();
+    getEnvir()->recordScalar(getComponent(), getResultName().c_str(), getRateAverage(), &attributes);
+}
+
+std::string RateAverageRecorder::str() const
+{
+    std::stringstream os;
+    os << getResultName() << " = " << getRateAverage();
+    return os.str();
+}
+
+//---
+
 StatisticsRecorder::~StatisticsRecorder()
 {
     dropAndDelete(statistic);
@@ -510,4 +548,3 @@ void KSplitRecorder::init(Context *ctx)
 }
 
 }  // namespace omnetpp
-

@@ -120,9 +120,16 @@ Register_ResultFilter2("avg", AverageFilter,
         NAN_VALUES_IGNORED
 );
 Register_ResultFilter2("timeavg", TimeAverageFilter,
-        "Produces the time average of the input values, assuming sample-hold interpolation. "
+        "Produces the time-weighted average of signal values, where each emitted value "
+        "represents the level maintained until the next emission (forward-sample-hold). "
         SIGNALTYPE_TO_NUMERIC_CONVERSIONS
-        "A NaN value in the input indicates that the interval up to the next value is to be ignored. "
+        "NaN values in the input denote intervals to be ignored. "
+);
+Register_ResultFilter2("rateavg", RateAverageFilter,
+        "Produces the time-weighted average of signal values, where each emitted value "
+        "represents the rate that was active during the interval preceding its emission (backward-sample-hold). "
+        SIGNALTYPE_TO_NUMERIC_CONVERSIONS
+        "NaN values in the input denote intervals to be ignored. "
 );
 Register_ResultFilter2("removeRepeats", RemoveRepeatsFilter,
         "Removes repeated values from the input. "
@@ -506,6 +513,33 @@ std::string TimeAverageFilter::str() const
 {
     std::stringstream os;
     os << "timeAverage = " << getTimeAverage();
+    return os.str();
+}
+
+//---
+
+bool RateAverageFilter::process(simtime_t& t, double& value, cObject *details)
+{
+    if (!std::isnan(value)) {
+        totalTime += t - lastTime;
+        weightedSum += value * SIMTIME_DBL(t - lastTime);
+    }
+    lastTime = t;
+    value = weightedSum / totalTime;
+    return !std::isnan(value);
+}
+
+double RateAverageFilter::getRateAverage() const
+{
+    // Note: The current interval (lastTime,now) cannot be taken into account,
+    // because we don't know the value yet (it will be emitted at the end of the interval).
+    return weightedSum / totalTime;
+}
+
+std::string RateAverageFilter::str() const
+{
+    std::stringstream os;
+    os << "rateAverage = " << getRateAverage();
     return os.str();
 }
 

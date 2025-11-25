@@ -206,8 +206,15 @@ class SIM_API AverageRecorder : public cNumericResultRecorder
 };
 
 /**
- * @brief Listener for recording the time average of signal values.
- * NaN values in the input denote intervals to be ignored.
+ * @brief Listener for recording the time-weighted average of signal values,
+ * where each emitted value represents the level that will be maintained until
+ * the next emission. NaN values in the input denote intervals to be ignored.
+ *
+ * This recorder uses forward-sample-hold interpolation: when a value V is emitted
+ * at time T, it represents the level that remains constant from T onwards.
+ * Typical use cases include recording average queue length or buffer occupancy.
+ *
+ * @see RateAverageRecorder
  */
 class SIM_API TimeAverageRecorder : public cNumericResultRecorder
 {
@@ -222,6 +229,36 @@ class SIM_API TimeAverageRecorder : public cNumericResultRecorder
     public:
         TimeAverageRecorder() {}
         double getTimeAverage() const;
+        virtual std::string str() const override;
+};
+
+/**
+ * @brief Listener for recording the time-weighted average of signal values,
+ * where each value represents the rate/throughput that was active during the
+ * interval *preceding* its emission time. NaN values in the input denote
+ * intervals to be ignored.
+ *
+ * This recorder uses backward-sample-hold interpolation, meaning when a value V
+ * is emitted at time T, it represents the rate that was constant during the
+ * interval from the previous emission time to T.
+ *
+ * Typical use cases include recording average throughput, bitrate, or packet
+ * rate from measurements taken at the end of transmission intervals.
+ *
+ * @see TimeAverageRecorder
+ */
+class SIM_API RateAverageRecorder : public cNumericResultRecorder
+{
+    protected:
+        simtime_t lastTime = SIMTIME_ZERO;
+        double weightedSum = 0;
+        simtime_t totalTime = SIMTIME_ZERO;
+    protected:
+        virtual void collect(simtime_t_cref t, double value, cObject *details) override;
+        virtual void finish(cResultFilter *prev) override;
+    public:
+        RateAverageRecorder() {}
+        double getRateAverage() const;
         virtual std::string str() const override;
 };
 

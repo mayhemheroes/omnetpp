@@ -332,8 +332,15 @@ class SIM_API AverageFilter : public cNumericResultFilter
 };
 
 /**
- * @brief Result filter that computes the time average of signal values.
- * NaN values in the input denote intervals to be ignored.
+ * @brief Result filter that computes the time-weighted average of signal values,
+ * where each emitted value represents the level that will be maintained until
+ * the next emission. NaN values in the input denote intervals to be ignored.
+ *
+ * This filter uses forward-sample-hold interpolation: when a value V is emitted
+ * at time T, it represents the level that remains constant from T onwards.
+ * Typical use cases include computing average queue length or buffer occupancy.
+ *
+ * @see RateAverageFilter
  */
 class SIM_API TimeAverageFilter : public cNumericResultFilter
 {
@@ -347,6 +354,40 @@ class SIM_API TimeAverageFilter : public cNumericResultFilter
     public:
         TimeAverageFilter() {}
         double getTimeAverage() const;
+        virtual std::string str() const override;
+};
+
+/**
+ * @brief Result filter that computes the time-weighted average of signal
+ * values, where each value represents the rate/throughput that was active
+ * during the interval *preceding* its emission time. NaN values in the input
+ * denote intervals to be ignored.
+ *
+ * This filter uses backward-sample-hold interpolation, meaning when a value V
+ * is emitted at time T, it represents the rate that was constant during the
+ * interval from the previous emission time to T.
+ *
+ * Typical use cases include computing average throughput, bitrate, or packet
+ * rate from measurements taken at the end of transmission intervals.
+ *
+ * The key difference from TimeAverageFilter is that TimeAverageFilter assumes
+ * that each emitted value applies forward in time (from emission time onwards),
+ * while RateAverageFilter assumes each value applies backward in time
+ * (representing the rate during the interval ending at emission time).
+ *
+ * @see TimeAverageFilter
+ */
+class SIM_API RateAverageFilter : public cNumericResultFilter
+{
+    protected:
+        simtime_t lastTime = SIMTIME_ZERO;
+        double weightedSum = 0;
+        simtime_t totalTime = SIMTIME_ZERO;
+    protected:
+        virtual bool process(simtime_t& t, double& value, cObject *details) override;
+    public:
+        RateAverageFilter() {}
+        double getRateAverage() const;
         virtual std::string str() const override;
 };
 
