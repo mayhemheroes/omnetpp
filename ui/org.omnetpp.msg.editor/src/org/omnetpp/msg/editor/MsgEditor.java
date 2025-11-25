@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.omnetpp.msg.editor.actions.CorrectIndentationAction;
+import org.omnetpp.msg.editor.actions.SwitchToGeneratedHeaderAction;
 import org.omnetpp.msg.editor.actions.ToggleCommentAction;
 
 
@@ -45,6 +46,9 @@ public class MsgEditor extends TextEditor {
         setAction(a.getId(), a);
         markAsSelectionDependentAction(a.getId(), true);
 
+        a = new SwitchToGeneratedHeaderAction(this);
+        setAction(a.getId(), a);
+
         // if the file is in the old format, offer upgrading it
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
@@ -59,6 +63,7 @@ public class MsgEditor extends TextEditor {
         super.editorContextMenuAboutToShow(menu);
         addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ToggleCommentAction.ID);
         addAction(menu, ITextEditorActionConstants.GROUP_EDIT, CorrectIndentationAction.ID);
+        addAction(menu, ITextEditorActionConstants.GROUP_EDIT, SwitchToGeneratedHeaderAction.ID);
     }
 
     @Override

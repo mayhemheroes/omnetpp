@@ -17,6 +17,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.omnetpp.msg.editor.actions.CorrectIndentationAction;
 import org.omnetpp.msg.editor.actions.MsgTextEditorAction;
+import org.omnetpp.msg.editor.actions.SwitchToGeneratedHeaderAction;
 import org.omnetpp.msg.editor.actions.ToggleCommentAction;
 
 
@@ -28,6 +29,7 @@ import org.omnetpp.msg.editor.actions.ToggleCommentAction;
 public class MsgEditorActionContributor extends TextEditorActionContributor {
     private RetargetTextEditorAction fToggleCommentAction;
     private RetargetTextEditorAction fCorrectIndentationAction;
+    private RetargetTextEditorAction fSwitchToGeneratedHeaderAction;
 
     /**
      * Default constructor.
@@ -36,6 +38,7 @@ public class MsgEditorActionContributor extends TextEditorActionContributor {
         super();
         fToggleCommentAction = createRetargetAction(ToggleCommentAction.ID);
         fCorrectIndentationAction = createRetargetAction(CorrectIndentationAction.ID);
+        fSwitchToGeneratedHeaderAction = createRetargetAction(SwitchToGeneratedHeaderAction.ID);
     }
 
     private static RetargetTextEditorAction createRetargetAction(String id) {
@@ -58,6 +61,7 @@ public class MsgEditorActionContributor extends TextEditorActionContributor {
         // retarget the actions to the current editor
         fToggleCommentAction.setAction(getAction(editor, ToggleCommentAction.ID));
         fCorrectIndentationAction.setAction(getAction(editor, CorrectIndentationAction.ID));
+        fSwitchToGeneratedHeaderAction.setAction(getAction(editor, SwitchToGeneratedHeaderAction.ID));
     }
 
     @Override

@@ -34,6 +34,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+I">
       </key>
+      <key
+            commandId="org.omnetpp.msg.editor.SwitchToGeneratedHeader"
+            contextId="org.omnetpp.context.msgEditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+TAB">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -48,6 +54,12 @@
             description="Reindent selected lines of the MSG source"
             id="org.omnetpp.msg.editor.CorrectIndentation"
             name="Correct Indentation">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Switch to the generated _m.h header file"
+            id="org.omnetpp.msg.editor.SwitchToGeneratedHeader"
+            name="Switch to Generated Header">
       </command>
    </extension>
    <extension
