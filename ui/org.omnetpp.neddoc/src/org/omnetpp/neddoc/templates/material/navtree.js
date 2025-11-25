@@ -92,13 +92,9 @@ function getScript(scriptName,func,show)
 
 function createIndent(o,domNode,node,level)
 {
-  var level=-1;
-  var n = node;
-  while (n.parentNode) { level++; n=n.parentNode; }
   if (node.childrenData) {
     var imgNode = document.createElement("i");
     imgNode.className = 'material-icons';
-    imgNode.style.paddingLeft=(12*level).toString()+'px';
     imgNode.innerHTML=arrowRight;
     node.plus_img = imgNode;
     node.expandToggle = document.createElement("a");
@@ -117,7 +113,6 @@ function createIndent(o,domNode,node,level)
   } else {
     var span = document.createElement("span");
     span.className = 'arrow';
-    span.style.width   = (24+12*level)+'px';
     span.innerHTML = '&#160;';
     domNode.appendChild(span);
   }
