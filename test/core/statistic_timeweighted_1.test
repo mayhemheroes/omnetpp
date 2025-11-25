@@ -1,6 +1,20 @@
 %description:
 Basic test for time-weighted statistics.
 
+Contains:
+- NaN (timeavg, rateavg must skip those intervals)
+- multiple values per timestamp
+- interval from last timestamp to end of simulation
+
+0s -> 1, then 2
+10s -> NaN
+20s -> 5, then 6
+30s -> end of simulation
+
+timeavg: 2 on (0s..10s), then 6 on (20s..30s) --> 4
+rateavg: 5 on (10s..20s) --> 5
+
+
 %file: test.ned
 
 simple Node
@@ -8,7 +22,7 @@ simple Node
     @signal[foo](type="double");
     // note: "mean+100" is there because we want to test MeanFilter as well (plain "record=mean" uses MeanRecorder)
     @statistic[unweighted](source=foo;record=mean,mean+100,avg,stats);
-    @statistic[timeweighted](source=foo;record=mean,mean+100,timeavg,stats;timeWeighted=1);
+    @statistic[timeweighted](source=foo;record=mean,mean+100,timeavg,rateavg,stats;timeWeighted=1);
 }
 
 network Test
@@ -88,6 +102,10 @@ attr source foo
 attr timeWeighted 1
 scalar Test.node timeweighted:timeavg 4
 attr recordingmode timeavg
+attr source foo
+attr timeWeighted 1
+scalar Test.node timeweighted:rateavg 5
+attr recordingmode rateavg
 attr source foo
 attr timeWeighted 1
 statistic Test.node timeweighted:stats
