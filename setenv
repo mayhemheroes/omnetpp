@@ -145,7 +145,7 @@ if [ -n "$MSYSTEM" -a "$MS_ABI" = "yes" ] ; then
 fi
 
 export PATH="$dir/bin:$PATH"
-export PYTHONPATH="$dir/python:$PYTHONPATH"
+export PYTHONPATH="$dir/python"
 export OMNETPP_IMAGE_PATH="$dir/images:$OMNETPP_IMAGE_PATH"
 export HOSTNAME
 export HOST
