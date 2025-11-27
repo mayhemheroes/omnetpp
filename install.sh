@@ -17,6 +17,7 @@ RESET='\033[0m'
 assume_yes=false
 no_3d=false
 no_gui=false
+no_build=false
 PYTHON3=python3
 
 # print the usage and supported options
@@ -29,6 +30,7 @@ print_usage() {
     echo "  -y            Assume 'yes' answer for all interactive prompts"
     echo "  --no-gui      Do not install GUI related dependencies for Qtenv and the IDE (implies --no-3d)"
     echo "  --no-3d       Do not install 3D-related dependencies for Qtenv OpenSceneGraph support"
+    echo "  --no-build    Do not configure and build OMNeT++ after installing dependencies"
 }
 
 # prompt user for yes/no response
@@ -284,6 +286,10 @@ while [[ $# -gt 0 ]]; do
             no_3d=true
             shift
             ;;
+        --no-build)
+            no_build=true
+            shift
+            ;;
         *)
             echo "Invalid option: $1" >&2
             print_usage
@@ -331,13 +337,18 @@ echo
 # disable some config options based on the provided command-line flags
 if $no_gui; then CONFIGOPTS="$CONFIGOPTS WITH_QTENV=no"; fi
 if $no_3d; then CONFIGOPTS="$CONFIGOPTS WITH_OSG=no"; fi
-echo_run ./configure $CONFIGOPTS
 
-# build
-echo
-echo -e "${GREEN}*** Compiling ***${RESET}"
-echo
-echo_run make -j16
+if ! $no_build; then
+    echo_run ./configure $CONFIGOPTS
+
+    # build
+    echo
+    echo -e "${GREEN}*** Compiling ***${RESET}"
+    echo
+    echo_run make -j16
+else
+    echo -e "${YELLOW}Skipping configuration and build as requested.${RESET}"
+fi
 echo
 echo -e "${GREEN}*** Installation completed ***${RESET}"
 echo
