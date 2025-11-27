@@ -1,0 +1,5 @@
+#!/bin/bash
+cd $(dirname "$0")
+
+./dockerfiles/omnetpp/build
+./dockerfiles/omnetpp-gui/build
