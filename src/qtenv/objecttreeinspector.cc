@@ -74,6 +74,7 @@ ObjectTreeInspector::ObjectTreeInspector(QWidget *parent, bool isTopLevel, Inspe
     connect(view, SIGNAL(clicked(QModelIndex)), this, SLOT(onClick(QModelIndex)));
     connect(view, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClick(QModelIndex)));
 
+    connectSelectionSignals();
 
     // getting the data into any items newly brought into view
     connect(view, SIGNAL(expanded(QModelIndex)), this, SLOT(gatherVisibleDataIfSafe()));
@@ -108,6 +109,7 @@ void ObjectTreeInspector::refresh()
         delete model;
         model = new GenericObjectTreeModel(roots, GenericObjectTreeModel::Mode::CHILDREN, {}, this);
         view->setModel(model);
+        connectSelectionSignals();
     }
 
     model->refreshTreeStructure();
@@ -198,6 +200,21 @@ void ObjectTreeInspector::onDoubleClick(QModelIndex index)
         Q_EMIT objectDoubleClicked(model->getCObjectPointerToInspect(index));
 }
 
+void ObjectTreeInspector::onCurrentChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    Q_UNUSED(previous);
+    if (current.isValid())
+        Q_EMIT selectionChanged(model->getCObjectPointer(current));
+}
+
+void ObjectTreeInspector::connectSelectionSignals()
+{
+    if (view->selectionModel()) {
+        connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
+                this, SLOT(onCurrentChanged(const QModelIndex&, const QModelIndex&)));
+    }
+}
+
 void ObjectTreeInspector::highlightModule(cModule *module)
 {
     if (!module || !model)
@@ -261,4 +278,3 @@ void ObjectTreeInspector::highlightModule(cModule *module)
 
 }  // namespace qtenv
 }  // namespace omnetpp
-

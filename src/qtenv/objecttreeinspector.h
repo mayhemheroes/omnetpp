@@ -35,10 +35,12 @@ private:
     QTreeView *view = nullptr;
 
     void resizeEvent(QResizeEvent *event) override;
+    void connectSelectionSignals();
 
 private Q_SLOTS:
     void onClick(QModelIndex index);
     void onDoubleClick(QModelIndex index);
+    void onCurrentChanged(const QModelIndex &current, const QModelIndex &previous);
 
     bool gatherVisibleData();
     bool gatherVisibleDataIfSafe();
