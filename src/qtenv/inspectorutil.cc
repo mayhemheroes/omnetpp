@@ -30,6 +30,7 @@
 #include "inspectorutil.h"
 #include "preferencesdialog.h"
 #include "genericobjectinspector.h"
+#include "moduleinspector.h"
 #include "mainwindow.h"
 
 namespace omnetpp {
@@ -80,8 +81,15 @@ void InspectorUtil::fillInspectorContextMenu(QMenu *menu, cObject *object, Inspe
         }
 
         if (insp != getQtenv()->getMainObjectInspector())
-            menu->addAction("View '" + name + "' in Object Inspector", getQtenv()->getMainObjectInspector(), SLOT(goUpInto()))
+            menu->addAction("Show '" + name + "' in Object Inspector", getQtenv()->getMainObjectInspector(), SLOT(goUpInto()))
                 ->setData(QVariant::fromValue(object));
+
+        if (dynamic_cast<cModule*>(object) && insp != getQtenv()->getMainModuleInspector()) {
+            QAction *showInGraphics = menu->addAction("Show '" + name + "' in Graphical View");
+            QObject::connect(showInGraphics, &QAction::triggered, [object]() {
+                getQtenv()->getMainModuleInspector()->setObject(object);
+            });
+        }
     }
 
     // the GenericObjectInspector relies on this always being here, so it's unconditional

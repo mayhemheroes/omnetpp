@@ -150,7 +150,7 @@ void Inspector::createInspectDropdownMenu()
 
     inspectDropdownMenu->clear();
 
-    inspectDropdownMenu->addAction("View in Embedded Object Inspector",
+    inspectDropdownMenu->addAction("Show in Embedded Object Inspector",
                                    getQtenv()->getMainObjectInspector(), SLOT(goUpInto()))
         ->setData(QVariant::fromValue(object));
     inspectDropdownMenu->addSeparator();
