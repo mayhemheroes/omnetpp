@@ -724,6 +724,9 @@ void Qtenv::doRun()
             mainObjectTree->highlightModule(module);
     });
 
+    // Connect object tree Enter key navigation to main graphics area
+    connect(mainObjectTree, SIGNAL(showInGraphicsRequested(cObject *)), mainNetworkView, SLOT(setObject(cObject *)));
+
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationStarts, mainWindow, &MainWindow::enterLayoutingMode);
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationEnds, mainWindow, &MainWindow::exitLayoutingMode);
     connect(mainWindow, &MainWindow::closed, &moduleLayouter, &ModuleLayouter::stop);
@@ -3115,4 +3118,3 @@ void _dummy_func()
 
 }  // namespace qtenv
 }  // namespace omnetpp
-

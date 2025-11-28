@@ -35,6 +35,7 @@ private:
     QTreeView *view = nullptr;
 
     void resizeEvent(QResizeEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void connectSelectionSignals();
 
 private Q_SLOTS:
@@ -48,6 +49,9 @@ private Q_SLOTS:
 public Q_SLOTS:
     void createContextMenu(QPoint pos);
     void highlightModule(cModule *module);
+
+Q_SIGNALS:
+    void showInGraphicsRequested(cObject *object);
 
 public:
     ObjectTreeInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f);

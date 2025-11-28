@@ -27,6 +27,7 @@
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QScrollBar>
+#include <QtGui/QKeyEvent>
 
 #include <QtCore/QDebug>
 
@@ -197,7 +198,8 @@ void ObjectTreeInspector::onClick(QModelIndex index)
 void ObjectTreeInspector::onDoubleClick(QModelIndex index)
 {
     if (index.isValid())
-        Q_EMIT objectDoubleClicked(model->getCObjectPointerToInspect(index));
+        if (cModule *module = dynamic_cast<cModule*>(model->getCObjectPointer(index)))
+            Q_EMIT showInGraphicsRequested(module);
 }
 
 void ObjectTreeInspector::onCurrentChanged(const QModelIndex &current, const QModelIndex &previous)
@@ -213,6 +215,36 @@ void ObjectTreeInspector::connectSelectionSignals()
         connect(view->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
                 this, SLOT(onCurrentChanged(const QModelIndex&, const QModelIndex&)));
     }
+}
+
+void ObjectTreeInspector::keyPressEvent(QKeyEvent *event)
+{
+    QModelIndex current = view->currentIndex();
+    if (!current.isValid()) {
+        Inspector::keyPressEvent(event);
+        return;
+    }
+
+    switch (event->key()) {
+        case Qt::Key_Return:
+        case Qt::Key_Enter: {
+            cObject *obj = model->getCObjectPointer(current);
+            if (obj) {
+                // Check if it's a module - only modules can be shown in graphics
+                cModule *module = dynamic_cast<cModule*>(obj);
+                if (module) {
+                    Q_EMIT showInGraphicsRequested(obj);
+                    event->accept();
+                    return;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    Inspector::keyPressEvent(event);
 }
 
 void ObjectTreeInspector::highlightModule(cModule *module)
