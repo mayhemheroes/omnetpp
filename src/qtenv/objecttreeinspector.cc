@@ -305,6 +305,11 @@ void ObjectTreeInspector::highlightModule(cModule *module)
         // Select the item and scroll to it
         view->setCurrentIndex(currentIndex);
         view->scrollTo(currentIndex, QAbstractItemView::EnsureVisible);
+
+        // We could expand the target node itself to show its children. However,
+        // without auto-collapsing expanded nodes and/or a Collapse All functionality,
+        // that is more annoying than useful.
+        //view->expand(currentIndex);
     }
 }
 

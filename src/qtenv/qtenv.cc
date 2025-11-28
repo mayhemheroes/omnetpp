@@ -727,6 +727,12 @@ void Qtenv::doRun()
     // Connect object tree Enter key navigation to main graphics area
     connect(mainObjectTree, SIGNAL(showInGraphicsRequested(cObject *)), mainNetworkView, SLOT(setObject(cObject *)));
 
+    // Connect graphics clicks to tree highlighting
+    connect(mainNetworkView, &Inspector::selectionChanged, this, [this](cObject *obj) {
+        if (cModule *module = dynamic_cast<cModule *>(obj))
+            mainObjectTree->highlightModule(module);
+    });
+
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationStarts, mainWindow, &MainWindow::enterLayoutingMode);
     connect(&moduleLayouter, &ModuleLayouter::layoutVisualisationEnds, mainWindow, &MainWindow::exitLayoutingMode);
     connect(mainWindow, &MainWindow::closed, &moduleLayouter, &ModuleLayouter::stop);
