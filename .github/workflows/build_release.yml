@@ -33,7 +33,7 @@ jobs:
 
       - name: Build IDE
         working-directory: releng
-        run: ./build-omnetpp-in-docker
+        run: ./build-omnetpp-dist
 
       # These have to be separate steps in order for the builds to be in their own artifacts
       - name: Upload Linux build

@@ -1,4 +1,4 @@
-# Do not execute this file directly. It must be sourced from build-omnetpp-in-docker
+# Do not execute this file directly. It must be sourced from build-omnetpp-dist
 
 cd $(dirname $0)/..
 OMNETPP_ROOT=$(pwd)
