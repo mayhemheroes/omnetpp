@@ -95,6 +95,10 @@ private:
     std::map<cModule*, SubmoduleItem*> submoduleGraphicsItems;
     std::map<cGate*, ConnectionItem*> connectionGraphicsItems;
 
+    // For offsetting overlapping connections: maps each gate to its index and total count
+    // within its module-pair group
+    std::map<cGate*, std::pair<int, int>> connectionGrouping;
+
     // Change flags to remember components with "dirty" DisplayStrings.
     // Used for, and cleared after, selective refresh of network graphics.
     // Beware that the queue sizes should still be updated on every refresh
@@ -122,6 +126,7 @@ private:
     void redrawFigures();
     void refreshFigures();
     void redrawModules();
+    void buildConnectionGrouping();
 
     void redrawEnclosingModule();
     void drawSubmodule(cModule *submod);

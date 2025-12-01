@@ -556,6 +556,10 @@ void ModuleCanvasViewer::redrawModules()
     // draw the inside of the inspected module
     redrawEnclosingModule();
 
+    // Build connection grouping if the feature is enabled
+    if (getQtenv()->opt->arrangeVectorConnections)
+        buildConnectionGrouping();
+
     // loop through all submodules and enclosing module & draw their connections
     bool atParent = false;
     for (cModule::SubmoduleIterator it(parentModule); !atParent; ++it) {
@@ -565,6 +569,108 @@ void ModuleCanvasViewer::redrawModules()
             cGate *gate = *git;
             if (gate->getType() == (atParent ? cGate::INPUT : cGate::OUTPUT) && gate->getNextGate() != nullptr) {
                 drawConnection(gate);
+            }
+        }
+    }
+}
+
+using ConnBundleKey = std::tuple<cModule *, cModule*, char> ;
+
+ConnBundleKey makeConnBundleKey(cGate *gate)
+{
+    cModule *srcMod = gate->getOwnerModule();
+    cModule *destMod = gate->getNextGate()->getOwnerModule();
+
+    char dir = 'a';
+    if (cChannel *chan = gate->getChannel()) {
+        // TODO: need to use DisplayStringAccess ?
+        if (chan->hasDisplayString()) {
+            const char *v = chan->getDisplayString().getTagArg("m", 0);
+            if (v[0])
+                dir = v[0];
+        }
+    }
+
+    // Create a canonical ordering for the module pair (smaller ID first)
+    if (srcMod->getId() < destMod->getId())
+        return { srcMod, destMod, dir };
+    else
+        return { destMod, srcMod, dir };
+}
+
+void ModuleCanvasViewer::buildConnectionGrouping()
+{
+    connectionGrouping.clear();
+
+    if (!object)
+        return;
+
+    // Map from (srcModule, destModule) pairs to list of gates
+    // Using canonical ordering: smaller module ID first
+    std::map<ConnBundleKey, std::vector<cGate*>> modulePairConnections;
+
+    // Collect all connections grouped by module pairs
+    cModule *parentModule = object;
+    bool atParent = false;
+    for (cModule::SubmoduleIterator it(parentModule); !atParent; ++it) {
+        cModule *mod = !it.end() ? *it : (atParent = true, parentModule);
+
+        for (cModule::GateIterator git(mod); !git.end(); ++git) {
+            cGate *gate = *git;
+
+            if (gate->getType() == (atParent ? cGate::INPUT : cGate::OUTPUT) && gate->getNextGate() != nullptr) {
+                cModule *srcMod = gate->getOwnerModule();
+                cModule *destMod = gate->getNextGate()->getOwnerModule();
+
+                // NOTE: what if two way conn of a module with itself...?
+
+                if (isTwoWayConnection(gate) && srcMod->getId() > destMod->getId()) {
+                    // To avoid double-counting bidirectional connections,
+                    // only consider one direction (the one with smaller src module ID)
+                    continue;
+                }
+
+                auto key = makeConnBundleKey(gate);
+
+                modulePairConnections[key].push_back(gate);
+            }
+        }
+    }
+
+    // Assign indices to connections within each module pair
+    for (auto& pair : modulePairConnections) {
+        auto& gates = pair.second;
+
+        int index = 0;
+        // Assign indices - one per visual line
+        for (cGate* gate : gates) {
+
+            // Check if this is a bidirectional connection (between inout gates)
+            if (isTwoWayConnection(gate)) {
+                // This gate and its reverse connection form a single visual line
+                cGate *reverseGate = getGateOtherHalf(gate->getNextGate());
+
+                // Assign the same index to both directions
+                connectionGrouping[gate] = std::make_pair(index, 0);
+                connectionGrouping[reverseGate] = std::make_pair(index, 0);
+            }
+            else {
+                // Unidirectional connection - gets its own visual line
+                connectionGrouping[gate] = std::make_pair(index, 0);
+            }
+
+            index++;
+        }
+
+        // Update all gates with the correct total count (number of visual lines)
+        for (auto& entry : connectionGrouping) {
+            cGate *gate = entry.first;
+
+            // Check if this gate belongs to the current module pair
+            auto key = makeConnBundleKey(gate);
+
+            if (key == pair.first) {
+                entry.second.second = index;
             }
         }
     }
@@ -745,13 +851,26 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     int src_i = 0, src_n = 1, dest_i = 0, dest_n = 1;
 
     if (getQtenv()->opt->arrangeVectorConnections) {
-        if (gate->isVector()) {
-            src_i = gate->getIndex();
-            src_n = gate->getVectorSize();
+        // Check if we have grouping information for this connection
+        auto it = connectionGrouping.find(gate);
+        if (it != connectionGrouping.end()) {
+            // Use the module-pair-based grouping
+            src_i = it->second.first;  // index within group
+            src_n = it->second.second; // total count in group
+            // Use the same values for dest to offset both ends symmetrically
+            dest_i = it->second.first;
+            dest_n = it->second.second;
         }
-        if (nextGate->isVector()) {
-            dest_i = nextGate->getIndex();
-            dest_n = nextGate->getVectorSize();
+        else {
+            // Fall back to original vector gate behavior
+            if (gate->isVector()) {
+                src_i = gate->getIndex();
+                src_n = gate->getVectorSize();
+            }
+            if (nextGate->isVector()) {
+                dest_i = nextGate->getIndex();
+                dest_n = nextGate->getVectorSize();
+            }
         }
     }
 
