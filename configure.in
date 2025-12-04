@@ -212,6 +212,7 @@ PREFER_CLANG=${PREFER_CLANG:-yes}
 PREFER_LLD=${PREFER_LLD:-yes}
 USE_MS_ABI=${USE_MS_ABI:-no}
 WITH_PYTHON=${WITH_PYTHON:-yes}
+WITH_SCAVE_PYTHON_BINDINGS=${WITH_SCAVE_PYTHON_BINDINGS:-yes}
 WITH_QTENV=${WITH_QTENV:-yes}
 WITH_PARSIM=${WITH_PARSIM:-no}
 MSGC=${MSGC:-opp_msgc}
@@ -900,6 +901,7 @@ fi
 #   import seaborn
 
 SYS_LIBS=""
+
 #---------------------------------
 # Check for python cflags and libs
 #---------------------------------
@@ -918,21 +920,40 @@ if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
   # building a module, and not trying to embed the interpreter here.
   PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags)
 
+  # - On Windows, the native module has to be linked with the Python DLL, because
+  #   unresolved symbols are not allowed. python-config takes care of this there.
+  # - On Linux, the module doesn't have to be linked with the Python library,
+  #   because the unresolved symbols will be resolved at runtime.
+  # - On macOS, the module doesn't need to be linked with the Python dylib, but
+  #   undefined symbols have to be allowed explicitly. We have to create a 'bundle'
+  #   instead of a normal dynamic lib. Bundles are meant to be resolved at runtime
+  #   instead of compile time (like dynamic libs). They are different Mach-O header filetypes.
+  if test "$PLATFORM" = "macos"; then
+    PYTHON_LDFLAGS="$PYTHON_LDFLAGS -Xlinker -bundle -undefined dynamic_lookup"
+  fi
+
   OPP_CHECK_LIB_NOLINK(python3-dev, Python.h, PY_MAJOR_VERSION, $PYTHON_CFLAGS, python3_found)
 
   if test $python3_found != yes; then
     AC_MSG_ERROR([Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found.])
   fi
+fi
+
+if test "$WITH_PYTHON" = "yes"; then
+  PYTHON_CONFIG="python/python3-config"
+
+  # the full --cflags output is full of compiler flags we don't want nor need
+  PYTHON_EMBED_CFLAGS=$($PYTHON3 $PYTHON_CONFIG --includes --embed)
 
   PYTHON_EMBED_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
 
-  OPP_CHECK_LIB(python3-embed, Python.h, Py_Initialize(), $PYTHON_CFLAGS, $PYTHON_EMBED_LDFLAGS, python3_found)
+  OPP_CHECK_LIB(python3-embed, Python.h, Py_Initialize(), $PYTHON_EMBED_CFLAGS, $PYTHON_EMBED_LDFLAGS, python3_found)
 
   if test $python3_found != yes; then
-    AC_MSG_ERROR([Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found.])
+    AC_MSG_ERROR([Python support was configured (WITH_PYTHON=yes), but the Python 3 development package was not found.])
   fi
 
-  CFLAGS="$CFLAGS $PYTHON_CFLAGS"
+  CFLAGS="$CFLAGS $PYTHON_EMBED_CFLAGS"
   SYS_LIBS="$SYS_LIBS $PYTHON_EMBED_LDFLAGS"
 fi
 
@@ -1322,6 +1343,7 @@ if test "$WITH_PYTHON" = "yes"; then
   AC_DEFINE([WITH_PYTHON], [], [])
 fi
 
+# $WITH_SCAVE_PYTHON_BINDINGS should not be relevant as a C++ macro
 
 if test "$HAVE_DLOPEN" = "1"; then
   AC_DEFINE([HAVE_DLOPEN], [1], [])
@@ -1406,6 +1428,8 @@ AC_SUBST(HAVE_DLOPEN)
 AC_SUBST(HAVE_SWAPCONTEXT)
 AC_SUBST(PYTHON_CFLAGS)
 AC_SUBST(PYTHON_LDFLAGS)
+AC_SUBST(PYTHON_EMBED_CFLAGS)
+AC_SUBST(PYTHON_EMBED_LDFLAGS)
 AC_SUBST(QT_CFLAGS)
 AC_SUBST(QT_LIBS)
 AC_SUBST(QTENV_LDFLAGS)

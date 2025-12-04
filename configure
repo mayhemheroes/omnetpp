@@ -642,6 +642,8 @@ BACKWARD_LDFLAGS
 QTENV_LDFLAGS
 QT_LIBS
 QT_CFLAGS
+PYTHON_EMBED_LDFLAGS
+PYTHON_EMBED_CFLAGS
 PYTHON_LDFLAGS
 PYTHON_CFLAGS
 HAVE_SWAPCONTEXT
@@ -2897,6 +2899,7 @@ PREFER_CLANG=${PREFER_CLANG:-yes}
 PREFER_LLD=${PREFER_LLD:-yes}
 USE_MS_ABI=${USE_MS_ABI:-no}
 WITH_PYTHON=${WITH_PYTHON:-yes}
+WITH_SCAVE_PYTHON_BINDINGS=${WITH_SCAVE_PYTHON_BINDINGS:-yes}
 WITH_QTENV=${WITH_QTENV:-yes}
 WITH_PARSIM=${WITH_PARSIM:-no}
 MSGC=${MSGC:-opp_msgc}
@@ -5719,6 +5722,7 @@ fi
 #   import seaborn
 
 SYS_LIBS=""
+
 #---------------------------------
 # Check for python cflags and libs
 #---------------------------------
@@ -5736,6 +5740,18 @@ if test "$WITH_SCAVE_PYTHON_BINDINGS" = "yes"; then
   # actually link to libpython (by adding --embed), because we're
   # building a module, and not trying to embed the interpreter here.
   PYTHON_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags)
+
+  # - On Windows, the native module has to be linked with the Python DLL, because
+  #   unresolved symbols are not allowed. python-config takes care of this there.
+  # - On Linux, the module doesn't have to be linked with the Python library,
+  #   because the unresolved symbols will be resolved at runtime.
+  # - On macOS, the module doesn't need to be linked with the Python dylib, but
+  #   undefined symbols have to be allowed explicitly. We have to create a 'bundle'
+  #   instead of a normal dynamic lib. Bundles are meant to be resolved at runtime
+  #   instead of compile time (like dynamic libs). They are different Mach-O header filetypes.
+  if test "$PLATFORM" = "macos"; then
+    PYTHON_LDFLAGS="$PYTHON_LDFLAGS -Xlinker -bundle -undefined dynamic_lookup"
+  fi
 
 
    save_CXXFLAGS=$CXXFLAGS
@@ -5772,6 +5788,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
   if test $python3_found != yes; then
     as_fn_error $? "Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found." "$LINENO" 5
   fi
+fi
+
+if test "$WITH_PYTHON" = "yes"; then
+  PYTHON_CONFIG="python/python3-config"
+
+  # the full --cflags output is full of compiler flags we don't want nor need
+  PYTHON_EMBED_CFLAGS=$($PYTHON3 $PYTHON_CONFIG --includes --embed)
 
   PYTHON_EMBED_LDFLAGS=$($PYTHON3 $PYTHON_CONFIG --ldflags --embed)
 
@@ -5779,11 +5802,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
 
-   CXXFLAGS="$PYTHON_CFLAGS"
+   CXXFLAGS="$PYTHON_EMBED_CFLAGS"
    LIBS="$PYTHON_EMBED_LDFLAGS"
 
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for python3-embed with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"" >&5
-printf %s "checking for python3-embed with CFLAGS=\"$PYTHON_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"... " >&6; }
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for python3-embed with CFLAGS=\"$PYTHON_EMBED_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"" >&5
+printf %s "checking for python3-embed with CFLAGS=\"$PYTHON_EMBED_CFLAGS\" LIBS=\"$PYTHON_EMBED_LDFLAGS\"... " >&6; }
 
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -5813,10 +5836,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
 
   if test $python3_found != yes; then
-    as_fn_error $? "Python support was configured (WITH_SCAVE_PYTHON_BINDINGS=yes), but the Python 3 development package was not found." "$LINENO" 5
+    as_fn_error $? "Python support was configured (WITH_PYTHON=yes), but the Python 3 development package was not found." "$LINENO" 5
   fi
 
-  CFLAGS="$CFLAGS $PYTHON_CFLAGS"
+  CFLAGS="$CFLAGS $PYTHON_EMBED_CFLAGS"
   SYS_LIBS="$SYS_LIBS $PYTHON_EMBED_LDFLAGS"
 fi
 
@@ -7612,6 +7635,7 @@ if test "$WITH_PYTHON" = "yes"; then
 
 fi
 
+# $WITH_SCAVE_PYTHON_BINDINGS should not be relevant as a C++ macro
 
 if test "$HAVE_DLOPEN" = "1"; then
   printf "%s\n" "#define HAVE_DLOPEN 1" >>confdefs.h
@@ -7636,6 +7660,8 @@ ac_config_headers="$ac_config_headers include/omnetpp/platdep/config.h"
 #----------------------
 # Substitutions.
 #----------------------
+
+
 
 
 

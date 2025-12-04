@@ -84,6 +84,11 @@ ifeq ($(WITH_PARSIM),yes)
   IMPLIBS += $(MPI_LIBS)
 endif
 
+ifeq ($(WITH_PYTHON),yes)
+  COPTS += $(PYTHON_EMBED_CFLAGS)
+  LDFLAGS+= $(PYTHON_EMBED_LDFLAGS)
+endif
+
 # macro is used in $(EXPORT_DEFINES) with clang-msabi when building a shared lib
 EXPORT_MACRO = -DSIM_EXPORT
 
