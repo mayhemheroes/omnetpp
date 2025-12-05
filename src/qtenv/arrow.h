@@ -27,22 +27,16 @@
 namespace omnetpp {
 namespace qtenv {
 
-// just a bit more convenient wrapper for the other function
+// Calculates the coordinates of an arrow (connection line) between two rectangles.
+// The rectangles represent the bounding boxes of the source and destination modules.
+// The srcAnch and destAnch parameters are used in 'm' mode to specify the anchor points
+// within the rectangles as percentages (0-100) of width and height.
 QTENV_API QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                   int src_i = 0, int src_n = 1, // src vector gate index and size
                   int dest_i = 0, int dest_n = 1, // src vector gate index and size
                   char mode = 'a', // must be one of "amnews"
                   QPointF srcAnch = QPointF(50, 50),
                   QPointF destAnch = QPointF(50, 50));
-
-QTENV_API QLineF arrowcoords(double src_x1, double src_y1, double src_x2, double src_y2, // src rect
-                  double dest_x1, double dest_y1, double dest_x2, double dest_y2, // dest rect
-                  int src_i = 0, int src_n = 1, // src vector gate index and size
-                  int dest_i = 0, int dest_n = 1, // src vector gate index and size
-                  char mode = 'a', // must be one of "amnews"
-                  double src_anch_dx = 50, double src_anch_dy = 50, // src anchor percentages
-                  double dest_anch_dx = 50, double dest_anch_dy = 50); // dest anchor percentages
-
 
 }  // namespace qtenv
 }  // namespace omnetpp

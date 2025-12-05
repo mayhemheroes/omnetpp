@@ -24,68 +24,65 @@
 #include <cstdlib>
 #include <cmath>
 #include <algorithm>
+#include "qtutil.h"
 
 #include "omnetpp/cexception.h" // for ASSERT2
 
 namespace omnetpp {
 namespace qtenv {
 
-static void clip_line_to_rect(double& x1, double& y1, double x2, double y2,
-        double rx1, double ry1, double rx2, double ry2)
+// Adjust p1 toward p2 so that it fits on the rectangle boundary.
+// If p2 is inside the rectangle, do nothing.
+static void clip_line_to_rect(QPointF& p1, const QPointF& p2,
+        const QRectF& rect)
 {
-    // line: (x1,y1) to (x2,y2)
-    // rectangle: rx1,ry1,rx2,ry2
-    //
-    // adjust (x1,y1) end of the line so that it fits on the rectangle boundary
-    // if (x2,y2) is inside the rectangle, do nothing
-
-    int p1_inside = (x1 >= rx1 && x1 <= rx2 && y1 >= ry1 && y1 <= ry2);
-    int p2_inside = (x2 >= rx1 && x2 <= rx2 && y2 >= ry1 && y2 <= ry2);
+    int p1_inside = rect.contains(p1);
+    int p2_inside = rect.contains(p2);
 
     // we'll clip the line to two edges of the rect: y=cy (horiz) and x=cx (vert)
     double cx, cy;
 
     if (p1_inside && p2_inside) {
-        cx = x1 < x2 ? rx1 : rx2;
-        cy = y1 < y2 ? ry1 : ry2;
+        cx = p1.x() < p2.x() ? rect.left() : rect.right();
+        cy = p1.y() < p2.y() ? rect.top() : rect.bottom();
     }
     else if (p1_inside) {
-        cx = x1 < x2 ? rx2 : rx1;
-        cy = y1 < y2 ? ry2 : ry1;
+        cx = p1.x() < p2.x() ? rect.right() : rect.left();
+        cy = p1.y() < p2.y() ? rect.bottom() : rect.top();
     }
     else if (p2_inside) {
-        cx = x1 < x2 ? rx1 : rx2;
-        cy = y1 < y2 ? ry1 : ry2;
+        cx = p1.x() < p2.x() ? rect.left() : rect.right();
+        cy = p1.y() < p2.y() ? rect.top() : rect.bottom();
     }
     else {
-        cx = x1 < x2 ? rx2 : rx1;
-        cy = y1 < y2 ? ry2 : ry1;
+        cx = p1.x() < p2.x() ? rect.right() : rect.left();
+        cy = p1.y() < p2.y() ? rect.bottom() : rect.top();
     }
 
     // first, deal with the special cases: line is vert or horiz
-    if (x1 == x2) {
-        if (x1 < rx1)
-            x1 = rx1;
-        if (x1 > rx2)
-            x1 = rx2;
-        if (x1 != rx1 && x1 != rx2)
-            y1 = cy;
+    if (p1.x() == p2.x()) {
+        if (p1.x() < rect.left())
+            p1.setX(rect.left());
+        if (p1.x() > rect.right())
+            p1.setX(rect.right());
+        if (p1.x() != rect.left() && p1.x() != rect.right())
+            p1.setY(cy);
         return;
     }
 
-    if (y1 == y2) {
-        if (y1 < ry1)
-            y1 = ry1;
-        if (y1 > ry2)
-            y1 = ry2;
-        if (y1 != ry1 && y1 != ry2)
-            x1 = cx;
+    if (p1.y() == p2.y()) {
+        if (p1.y() < rect.top())
+            p1.setY(rect.top());
+        if (p1.y() > rect.bottom())
+            p1.setY(rect.bottom());
+        if (p1.y() != rect.top() && p1.y() != rect.bottom())
+            p1.setX(cx);
         return;
     }
 
     // write the line into y=ax+b form
-    double a = (y2-y1)/(x2-x1);
-    double b = y1 - a*x1;
+    double a = (p2.y()-p1.y())/(p2.x()-p1.x());
+    double b = p1.y() - a*p1.x();
 
     double xx, yy;
 
@@ -95,280 +92,321 @@ static void clip_line_to_rect(double& x1, double& y1, double x2, double y2,
     // clip to the x=cx vertical edge of the rect
     yy = a*cx+b;  // ==> (cx,yy)
 
-    if (xx >= rx1 && xx <= rx2) {
-        x1 = xx;
-        y1 = cy;
+    if (xx >= rect.left() && xx <= rect.right()) {
+        p1.setX(xx);
+        p1.setY(cy);
     }
-    else if (yy >= ry1 && yy <= ry2) {
-        x1 = cx;
-        y1 = yy;
+    else if (yy >= rect.top() && yy <= rect.bottom()) {
+        p1.setX(cx);
+        p1.setY(yy);
     }
     else {
-        x1 = cx;
-        y1 = cy;
+        p1.setX(cx);
+        p1.setY(cy);
     }
     // default: rect and line don't have any common point :-(
     // leave line unchanged
+}
+
+// A special case of "arrowcoords" where one rectangle is
+// fully contained within the other.
+// NOTE: The result will always point from inner to outer.
+static QLineF arrowcoords_contained(
+    const QRectF& innerRect,
+    const QRectF& outerRect,
+    int inner_i, int inner_n, // inner vector gate index and size
+    char mode) // "anews"
+{
+    double src_x, src_y, dest_x, dest_y;
+
+    // a - N,E,S,W (to nearest border,calculated from side)
+    if (mode == 'a') {
+        double top = innerRect.top() - outerRect.top(),
+                bottom = outerRect.bottom() - innerRect.bottom(),
+                left = innerRect.left() - outerRect.left(),
+                right = outerRect.right() - innerRect.right();
+        if (top <= bottom && top <= left && top <= right)
+            mode = 'n';
+        else if (right <= bottom && right <= left && right <= top)
+            mode = 'e';
+        else if (left <= bottom && left <= right && left <= top)
+            mode = 'w';
+        else if (bottom <= left && bottom <= right && bottom <= top)
+            mode = 's';
+    }
+
+    //  E,W - connection points E or W. Vert shift by gate indices
+    //  N,S - connection points N or S. Horiz shift by gate indices
+    switch (mode) {
+        case 'n':
+            src_x = dest_x = innerRect.left() + (inner_i+1) * innerRect.width() / (inner_n+1);
+            src_y = innerRect.top();
+            dest_y = outerRect.top();
+            break;
+
+        case 's':
+            src_x = dest_x = innerRect.left() + (inner_i+1) * innerRect.width() / (inner_n+1);
+            src_y = innerRect.bottom();
+            dest_y = outerRect.bottom();
+            break;
+
+        case 'e':
+            src_x = innerRect.right();
+            dest_x = outerRect.right();
+            src_y = dest_y = innerRect.top() + (inner_i+1) * innerRect.height() / (inner_n+1);
+            break;
+
+        case 'w':
+            src_x = innerRect.left();
+            dest_x = outerRect.left();
+            src_y = dest_y = innerRect.top() + (inner_i+1) * innerRect.height() / (inner_n+1);
+            break;
+    }
+
+    return QLineF(src_x, src_y, dest_x, dest_y);
+}
+
+// Adjusts two intervals ([smaller_1, smaller_2] and [larger_1, larger_2]),
+// so that they are the same size (at least half of smaller), and overlap
+// as much as possible, while not expanding either in any direction.
+// Think of it as a "specialized intersection with a lower bound on size".
+static void junctionrect(double &smaller_1, double &smaller_2, double &larger_1, double &larger_2)
+{
+    double smaller_s = smaller_2 - smaller_1;
+    double intersection_1 = std::max(smaller_1, larger_1);
+    double intersection_2 = std::min(smaller_2, larger_2);
+    double intersection_s = intersection_2 - intersection_1;
+    if (intersection_s >= smaller_s / 2) {
+        smaller_1 = intersection_1;
+        smaller_2 = intersection_2;
+        larger_1 = intersection_1;
+        larger_2 = intersection_2;
+    }
+    else {
+        double final_s = std::max(smaller_s / 2, intersection_s);
+        if (smaller_1 < larger_1) {
+            smaller_1 = smaller_2 - final_s;
+            larger_2 = larger_1 + final_s;
+        }
+        else {
+            smaller_2 = smaller_1 + final_s;
+            larger_1 = larger_2 - final_s;
+        }
+    }
+}
+
+static double line_point_distance(const QLineF& line, const QPointF& point)
+{
+    if (line.isNull())
+        return QLineF(line.p1(), point).length();
+    // distance from point to line
+    double a = line.dy();
+    double b = -line.dx();
+    double c = line.x2()*line.y1() - line.x1()*line.y2();
+    return (a*point.x() + b*point.y() + c) / line.length();
+    // explanation: https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
 }
 
 QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                   int src_i, int src_n, // src vector gate index and size
                   int dest_i, int dest_n, // src vector gate index and size
                   char mode, // amnews
-                  QPointF srcAnch,
-                  QPointF destAnch)
+                  QPointF srcAnch, // src anchor percentages
+                  QPointF destAnch) // dest anchor percentages
 {
-    return arrowcoords(srcRect.left(), srcRect.top(), srcRect.right(), srcRect.bottom(),
-                       destRect.left(), destRect.top(), destRect.right(), destRect.bottom(),
-                       src_i, src_n, dest_i, dest_n, mode,
-                       srcAnch.x(), srcAnch.y(),
-                       destAnch.x(), destAnch.y());
-
-}
-
-
-QLineF arrowcoords(double src_x1, double src_y1, double src_x2, double src_y2, // src rect
-                  double dest_x1, double dest_y1, double dest_x2, double dest_y2, // dest rect
-                  int src_i, int src_n, // src vector gate index and size
-                  int dest_i, int dest_n, // src vector gate index and size
-                  char mode, // amnews
-                  double src_anch_dx, double src_anch_dy, // src anchor percentages
-                  double dest_anch_dx, double dest_anch_dy) // dest anchor percentages
-{
-
-    double src_x, src_y, dest_x, dest_y;
+    QPointF src, dest;
 
     // error checks
     ASSERT2(strchr("amnews", mode), "mode must be one of (a,m,n,e,w,s)");
 
     // see if the two rects are the same, one is in the other etc.
-    int same_rect = 0;
-    int src_within_dest = 0;
-    int dest_within_src = 0;
-    int overlapping_rects = 0;
+    enum class Relation {
+        SAME_RECT,
+        SRC_WITHIN_DEST,
+        DEST_WITHIN_SRC,
+        OVERLAPPING,
+        DISJOINT
+    };
 
-    if (src_x1 == dest_x1 && src_x2 == dest_x2 && src_y1 == dest_y1 && src_y2 == dest_y2)
-        same_rect = 1;
-    else if (src_x1 <= dest_x1 && src_x2 >= dest_x2 && src_y1 <= dest_y1 && src_y2 >= dest_y2)
-        dest_within_src = 1;
-    else if (src_x1 >= dest_x1 && src_x2 <= dest_x2 && src_y1 >= dest_y1 && src_y2 <= dest_y2)
-        src_within_dest = 1;
-    else if (std::max(src_x1, dest_x1) < std::min(src_x2, dest_x2) && std::max(src_y1, dest_y1) < std::min(src_y2, dest_y2))
-        overlapping_rects = 1;
-
-    // some useful values...
-    double src_width = src_x2-src_x1,
-           src_height = src_y2-src_y1,
-           dest_width = dest_x2-dest_x1,
-           dest_height = dest_y2-dest_y1;
+    Relation rel =
+        (srcRect == destRect) ? Relation::SAME_RECT :
+        srcRect.contains(destRect) ? Relation::DEST_WITHIN_SRC :
+        destRect.contains(srcRect) ? Relation::SRC_WITHIN_DEST :
+        srcRect.intersected(destRect).isValid() ? Relation::OVERLAPPING :
+        Relation::DISJOINT;
 
     // prepare for mode 'm'
     if (mode != 'm')
-        src_anch_dx = src_anch_dy = dest_anch_dx = dest_anch_dy = 50;
-    src_x = src_x1 + src_anch_dx*src_width/100;
-    src_y = src_y1 + src_anch_dy*src_height/100;
-    dest_x = dest_x1 + dest_anch_dx*dest_width/100;
-    dest_y = dest_y1 + dest_anch_dy*dest_height/100;
+        srcAnch = destAnch = QPointF(50, 50);
+    src.setX(srcRect.left() + srcAnch.x()*srcRect.width()/100);
+    src.setY(srcRect.top() + srcAnch.y()*srcRect.height()/100);
+    dest.setX(destRect.left() + destAnch.x()*destRect.width()/100);
+    dest.setY(destRect.top() + destAnch.y()*destRect.height()/100);
+    // handle 'm' mode first
+    if (mode == 'm') {
+        if (rel != Relation::OVERLAPPING) {
+            clip_line_to_rect(src, dest, srcRect);
+            clip_line_to_rect(dest, src, destRect);
+        }
 
-    double factor = 1;  // factor to set where the anchor point can run. 0: runs on the border, 1:runs on the middle line
-
-    double src_delta = factor * std::min(src_width, src_height) / 2.0;
-    double dest_delta = factor * std::min(dest_width, dest_height) / 2.0;
-
-    double src_wire_x1 = src_x1 + src_delta;
-    double src_wire_y1 = src_y1 + src_delta;
-    double src_wire_x2 = src_x2 - src_delta;
-    double src_wire_y2 = src_y2 - src_delta;
-    double dest_wire_x1 = dest_x1 + dest_delta;
-    double dest_wire_y1 = dest_y1 + dest_delta;
-    double dest_wire_x2 = dest_x2 - dest_delta;
-    double dest_wire_y2 = dest_y2 - dest_delta;
+        return QLineF(src, dest);
+    }
 
     // do all rectangle relations one-by-one
-    if (same_rect) {
-        // a - height>width: E or W
-        //     otherwise:    N or S
-        if (mode == 'a')
-            mode = (src_height > src_width) ? 'e' : 'n';
+    switch (rel) {
+        case Relation::SAME_RECT: {
+            // a - height>width: E or W
+            //     otherwise:    N or S
+            if (mode == 'a')
+                mode = (srcRect.height() > srcRect.width()) ? 'e' : 'n';
 
-        //  E,W - connection points E or W. Vert shift by gate indices
-        //  N,S - connection points N or S. Horiz shift by gate indices
-        switch (mode) {
-            case 'n':
-                src_x = dest_x = src_x1 + (src_i+1) * src_width / (src_n+1);
-                src_y = src_y2;
-                dest_y = src_y1;
-                break;
+            //  E,W - connection points E or W. Vert shift by gate indices
+            //  N,S - connection points N or S. Horiz shift by gate indices
+            switch (mode) {
+                case 'n':
+                    src.rx() = dest.rx() = srcRect.left() + (src_i+1) * srcRect.width() / (src_n+1);
+                    src.ry() = srcRect.bottom();
+                    dest.ry() = srcRect.top();
+                    break;
 
-            case 's':
-                src_x = dest_x = src_x1 + (src_i+1) * src_width / (src_n+1);
-                src_y = src_y1;
-                dest_y = src_y2;
-                break;
+                case 's':
+                    src.rx() = dest.rx() = srcRect.left() + (src_i+1) * srcRect.width() / (src_n+1);
+                    src.ry() = srcRect.top();
+                    dest.ry() = srcRect.bottom();
+                    break;
 
-            case 'e':
-                src_x = src_x1;
-                dest_x = src_x2;
-                src_y = dest_y = src_y1 + (src_i+1) * src_height / (src_n+1);
-                break;
+                case 'e':
+                    src.rx() = srcRect.left();
+                    dest.rx() = srcRect.right();
+                    src.ry() = dest.ry() = srcRect.top() + (src_i+1) * srcRect.height() / (src_n+1);
+                    break;
 
-            case 'w':
-                src_x = src_x2;
-                dest_x = src_x1;
-                src_y = dest_y = src_y1 + (src_i+1) * src_height / (src_n+1);
-                break;
-
-            case 'm':
-                clip_line_to_rect(src_x, src_y, dest_x, dest_y, src_x1, src_y1, src_x2, src_y2);
-                clip_line_to_rect(dest_x, dest_y, src_x, src_y, dest_x1, dest_y1, dest_x2, dest_y2);
-                break;
+                case 'w':
+                    src.rx() = srcRect.right();
+                    dest.rx() = srcRect.left();
+                    src.ry() = dest.ry() = srcRect.top() + (src_i+1) * srcRect.height() / (src_n+1);
+                    break;
+            }
         }
-    }
-    else if (src_within_dest) {
-        // a - N,E,S,W (to nearest border,calculated from side)
-        if (mode == 'a') {
-            double top = src_y1 - dest_y1,
-                   bottom = dest_y2 - src_y2,
-                   left = src_x1 - dest_x1,
-                   right = dest_x2 - src_x2;
-            if (top <= bottom && top <= left && top <= right)
-                mode = 'n';
-            else if (right <= bottom && right <= left && right <= top)
-                mode = 'e';
-            else if (left <= bottom && left <= right && left <= top)
-                mode = 'w';
-            else if (bottom <= left && bottom <= right && bottom <= top)
-                mode = 's';
+        break;
+        case Relation::SRC_WITHIN_DEST:
+            return arrowcoords_contained(srcRect,
+                                     destRect,
+                                     src_i, src_n,
+                                     mode);
+        case Relation::DEST_WITHIN_SRC: {
+            QLineF l = arrowcoords_contained(destRect,
+                                            srcRect,
+                                            dest_i, dest_n,
+                                            mode);
+            // flip the line so it points inward
+            return QLineF(l.p2(), l.p1());
         }
-
-        //  E,W - connection points E or W. Vert shift by gate indices
-        //  N,S - connection points N or S. Horiz shift by gate indices
-        switch (mode) {
-            case 'n':
-                src_x = dest_x = src_x1 + (src_i+1) * src_width / (src_n+1);
-                src_y = src_y1;
-                dest_y = dest_y1;
-                break;
-
-            case 's':
-                src_x = dest_x = src_x1 + (src_i+1) * src_width / (src_n+1);
-                src_y = src_y2;
-                dest_y = dest_y2;
-                break;
-
-            case 'e':
-                src_x = src_x2;
-                dest_x = dest_x2;
-                src_y = dest_y = src_y1 + (src_i+1) * src_height / (src_n+1);
-                break;
-
-            case 'w':
-                src_x = src_x1;
-                dest_x = dest_x1;
-                src_y = dest_y = src_y1 + (src_i+1) * src_height / (src_n+1);
-                break;
-
-            case 'm':
-                clip_line_to_rect(src_x, src_y, dest_x, dest_y, src_x1, src_y1, src_x2, src_y2);
-                clip_line_to_rect(dest_x, dest_y, src_x, src_y, dest_x1, dest_y1, dest_x2, dest_y2);
-                break;
-        }
-    }
-    else if (dest_within_src) {
-        // a - N,E,S,W (to nearest border,calculated from side)
-        if (mode == 'a') {
-            double top = dest_y1 - src_y1,
-                   bottom = src_y2 - dest_y2,
-                   left = dest_x1 - src_x1,
-                   right = src_x2 - dest_x2;
-            if (top <= bottom && top <= left && top <= right)
-                mode = 'n';
-            else if (right <= bottom && right <= left && right <= top)
-                mode = 'e';
-            else if (left <= bottom && left <= right && left <= top)
-                mode = 'w';
-            else if (bottom <= left && bottom <= right && bottom <= top)
-                mode = 's';
-        }
-
-        //  E,W - connection points E or W. Vert shift by gate indices
-        //  N,S - connection points N or S. Horiz shift by gate indices
-        switch (mode) {
-            case 'n':
-                src_x = dest_x = dest_x1 + (dest_i+1) * dest_width / (dest_n+1);
-                src_y = src_y1;
-                dest_y = dest_y1;
-                break;
-
-            case 's':
-                src_x = dest_x = dest_x1 + (dest_i+1) * dest_width / (dest_n+1);
-                src_y = src_y2;
-                dest_y = dest_y2;
-                break;
-
-            case 'e':
-                src_x = src_x2;
-                dest_x = dest_x2;
-                src_y = dest_y = dest_y1 + (dest_i+1) * dest_height / (dest_n+1);
-                break;
-
-            case 'w':
-                src_x = src_x1;
-                dest_x = dest_x1;
-                src_y = dest_y = dest_y1 + (dest_i+1) * dest_height / (dest_n+1);
-                break;
-
-            case 'm':
-                clip_line_to_rect(src_x, src_y, dest_x, dest_y, src_x1, src_y1, src_x2, src_y2);
-                clip_line_to_rect(dest_x, dest_y, src_x, src_y, dest_x1, dest_y1, dest_x2, dest_y2);
-                break;
-        }
-    }
-    else {  // disjoint (or partially overlapping) rectangles
+        case Relation::OVERLAPPING:
+        case Relation::DISJOINT: {
+            // disjoint (or partially overlapping) rectangles
             //  a - E,W if one module's y range is within y range of other module
             //      N,S if one module's x range is within x range of other module
             //      otherwise M mode with (50%,50%) (50%,50%)
 
-        if (mode != 'm') {
-            // horizontal coordinates
-            if (src_wire_x2 <= dest_wire_x1) {
-                src_x = src_wire_x2;
-                dest_x = dest_wire_x1;
-            }
-            if (dest_wire_x2 <= src_wire_x1) {
-                src_x = src_wire_x1;
-                dest_x = dest_wire_x2;
-            }
-            double overlap_x1 = std::max(src_wire_x1, dest_wire_x1);
-            double overlap_x2 = std::min(src_wire_x2, dest_wire_x2);
-            if (overlap_x1 <= overlap_x2)
-                src_x = dest_x = overlap_x1 + (src_i+1)*(overlap_x2 - overlap_x1)/(src_n+1);
+            // The algorithm finds smaller "junction rectangles" (of equal size),
+            // one within both srcRect and destRect, as close to each other as
+            // possible - using junctionrect(). The endpoints of the connection
+            // lines will be first placed within these rectangles, and then
+            // clipped to the edge of the original rectangles.
 
-            // vertical coordinates
-            if (src_wire_y2 <= dest_wire_y1) {
-                src_y = src_wire_y2;
-                dest_y = dest_wire_y1;
-            }
-            if (dest_wire_y2 <= src_wire_y1) {
-                src_y = src_wire_y1;
-                dest_y = dest_wire_y2;
-            }
-            double overlap_y1 = std::max(src_wire_y1, dest_wire_y1);
-            double overlap_y2 = std::min(src_wire_y2, dest_wire_y2);
-            if (overlap_y1 <= overlap_y2)
-                src_y = dest_y = overlap_y1 + (src_i+1)*(overlap_y2 - overlap_y1)/(src_n+1);
-        }
+            QRectF src_wireRect = srcRect;
+            QRectF dest_wireRect = destRect;
 
-        // clip the line to the bounding rectangles if they are not overlapping
-        if (!overlapping_rects) {
-            double src_x_tmp = src_x;
-            double src_y_tmp = src_y;
-            clip_line_to_rect(src_x, src_y, dest_x, dest_y, src_x1, src_y1, src_x2, src_y2);
-            clip_line_to_rect(dest_x, dest_y, src_x_tmp, src_y_tmp, dest_x1, dest_y1, dest_x2, dest_y2);
+            if (srcRect.width() < destRect.width()) {
+                double smaller_1 = srcRect.left();
+                double smaller_2 = srcRect.right();
+                double larger_1 = destRect.left();
+                double larger_2 = destRect.right();
+                junctionrect(smaller_1, smaller_2, larger_1, larger_2);
+                src_wireRect.setLeft(smaller_1);
+                src_wireRect.setRight(smaller_2);
+                dest_wireRect.setLeft(larger_1);
+                dest_wireRect.setRight(larger_2);
+            }
+
+            if (destRect.width() < srcRect.width()) {
+                double smaller_1 = destRect.left();
+                double smaller_2 = destRect.right();
+                double larger_1 = srcRect.left();
+                double larger_2 = srcRect.right();
+                junctionrect(smaller_1, smaller_2, larger_1, larger_2);
+                dest_wireRect.setLeft(smaller_1);
+                dest_wireRect.setRight(smaller_2);
+                src_wireRect.setLeft(larger_1);
+                src_wireRect.setRight(larger_2);
+            }
+
+            if (srcRect.height() < destRect.height()) {
+                double smaller_1 = srcRect.top();
+                double smaller_2 = srcRect.bottom();
+                double larger_1 = destRect.top();
+                double larger_2 = destRect.bottom();
+                junctionrect(smaller_1, smaller_2, larger_1, larger_2);
+                src_wireRect.setTop(smaller_1);
+                src_wireRect.setBottom(smaller_2);
+                dest_wireRect.setTop(larger_1);
+                dest_wireRect.setBottom(larger_2);
+            }
+
+            if (destRect.height() < srcRect.height()) {
+                double smaller_1 = destRect.top();
+                double smaller_2 = destRect.bottom();
+                double larger_1 = srcRect.top();
+                double larger_2 = srcRect.bottom();
+                junctionrect(smaller_1, smaller_2, larger_1, larger_2);
+                dest_wireRect.setTop(smaller_1);
+                dest_wireRect.setBottom(smaller_2);
+                src_wireRect.setTop(larger_1);
+                src_wireRect.setBottom(larger_2);
+            }
+
+            src = src_wireRect.center();
+            dest = dest_wireRect.center();
+
+            double halfSpreadSrcNeg = 0;
+            double halfSpreadSrcPos = 0;
+            for (QPointF p : {src_wireRect.topLeft(), src_wireRect.topRight(), src_wireRect.bottomLeft(), src_wireRect.bottomRight()}) {
+                double d = line_point_distance(QLineF(src, dest), p);
+                if (d < halfSpreadSrcNeg)
+                    halfSpreadSrcNeg = d;
+                if (d > halfSpreadSrcPos)
+                    halfSpreadSrcPos = d;
+            }
+            double halfSpreadDestNeg = 0;
+            double halfSpreadDestPos = 0;
+            for (QPointF p : {dest_wireRect.topLeft(), dest_wireRect.topRight(), dest_wireRect.bottomLeft(), dest_wireRect.bottomRight()}) {
+                double d = line_point_distance(QLineF(src, dest), p);
+                if (d < halfSpreadDestNeg)
+                    halfSpreadDestNeg = d;
+                if (d > halfSpreadDestPos)
+                    halfSpreadDestPos = d;
+            }
+            double halfSpread = std::min({-halfSpreadSrcNeg, halfSpreadSrcPos, -halfSpreadDestNeg, halfSpreadDestPos})*2.0;
+
+            QLineF centerLine(src, dest);
+            QLineF norm = centerLine.normalVector().unitVector();
+            QPointF normDir = norm.p2() - norm.p1();
+            if (normDir.x() + normDir.y() < 0) // make direction consistent
+                normDir = -normDir;
+
+            src += normDir * halfSpread * (-0.5 + (src_i + 1.0) / (src_n + 1.0));
+            dest += normDir * halfSpread * (-0.5 + (src_i + 1.0) / (src_n + 1.0));
+
+            // clip the line to the bounding rectangles if they are not overlapping
+            if (rel == Relation::DISJOINT) {
+                clip_line_to_rect(src, dest, srcRect);
+                clip_line_to_rect(dest, src, destRect);
+            }
         }
     }
 
-    return QLineF(src_x, src_y, dest_x, dest_y);
+    return QLineF(src, dest);
 }
 
 }  // namespace qtenv
