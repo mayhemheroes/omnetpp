@@ -1,10 +1,6 @@
-ipython
-sphinx_bootstrap_theme
-sphinx_rtd_theme
-sphinx_materialdesign_theme
-recommonmark
 sphinx-autobuild
 sphinx-prompt
+sphinx-autoapi
 sphinxcontrib-actdiag
 sphinxcontrib-blockdiag
 sphinxcontrib-nwdiag
@@ -14,5 +10,11 @@ sphinxcontrib-httpdomain
 sphinxcontrib-images
 sphinxcontrib-doxylink
 sphinxcontrib-googlechart
+sphinxcontrib-jquery
+sphinx_bootstrap_theme
+sphinx_rtd_theme
+sphinx_materialdesign_theme
 sphinx_immaterial
 doxysphinx
+recommonmark
+ipython
