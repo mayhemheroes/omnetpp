@@ -98,7 +98,8 @@ void ConnectionItem::updateLineItem()
     else if (arrowItem->isVisible()) {
         // making the end not stick out of the arrowhead
         // the line itself has to be shorter
-        dest -= dir / length * lineWidth;
+        if (length > 0) // avoid division by zero
+            dest -= dir / length * lineWidth;
     }
 
     lineItem->setLine(QLineF(src, dest));
