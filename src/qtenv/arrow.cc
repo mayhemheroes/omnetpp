@@ -114,7 +114,7 @@ static void clip_line_to_rect(QPointF& p1, const QPointF& p2,
 static QLineF arrowcoords_contained(
     const QRectF& innerRect,
     const QRectF& outerRect,
-    int inner_i, int inner_n, // inner vector gate index and size
+    int bundle_i, int bundle_n, // bundle index and size
     char mode) // "anews"
 {
     double src_x, src_y, dest_x, dest_y;
@@ -139,13 +139,13 @@ static QLineF arrowcoords_contained(
     //  N,S - connection points N or S. Horiz shift by gate indices
     switch (mode) {
         case 'n':
-            src_x = dest_x = innerRect.left() + (inner_i+1) * innerRect.width() / (inner_n+1);
+            src_x = dest_x = innerRect.left() + (bundle_i+1) * innerRect.width() / (bundle_n+1);
             src_y = innerRect.top();
             dest_y = outerRect.top();
             break;
 
         case 's':
-            src_x = dest_x = innerRect.left() + (inner_i+1) * innerRect.width() / (inner_n+1);
+            src_x = dest_x = innerRect.left() + (bundle_i+1) * innerRect.width() / (bundle_n+1);
             src_y = innerRect.bottom();
             dest_y = outerRect.bottom();
             break;
@@ -153,13 +153,13 @@ static QLineF arrowcoords_contained(
         case 'e':
             src_x = innerRect.right();
             dest_x = outerRect.right();
-            src_y = dest_y = innerRect.top() + (inner_i+1) * innerRect.height() / (inner_n+1);
+            src_y = dest_y = innerRect.top() + (bundle_i+1) * innerRect.height() / (bundle_n+1);
             break;
 
         case 'w':
             src_x = innerRect.left();
             dest_x = outerRect.left();
-            src_y = dest_y = innerRect.top() + (inner_i+1) * innerRect.height() / (inner_n+1);
+            src_y = dest_y = innerRect.top() + (bundle_i+1) * innerRect.height() / (bundle_n+1);
             break;
     }
 
@@ -195,21 +195,17 @@ static void junctionrect(double &smaller_1, double &smaller_2, double &larger_1,
     }
 }
 
-static double line_point_distance(const QLineF& line, const QPointF& point)
+// Returns the distance between the (infinite) line across the origin,
+// in the direction of `dir`. `dir` must be unit length!
+// Basically, the magnitude of the cross product.
+static double perpendicularDistance(const QPointF& dir, const QPointF& point)
 {
-    if (line.isNull())
-        return QLineF(line.p1(), point).length();
-    // distance from point to line
-    double a = line.dy();
-    double b = -line.dx();
-    double c = line.x2()*line.y1() - line.x1()*line.y2();
-    return (a*point.x() + b*point.y() + c) / line.length();
-    // explanation: https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    return std::abs(dir.y()*point.x() - dir.x()*point.y());
 }
 
 QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                   int bundle_i, int bundle_n, // bundle index and size
-                  char mode, // amnews
+                  char mode, // "amnews"
                   QPointF srcAnch, // src anchor percentages
                   QPointF destAnch) // dest anchor percentages
 {
@@ -251,6 +247,9 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
         return QLineF(src, dest);
     }
 
+    // where this connection should be shifted within the available range
+    double bundle_coeff = (bundle_i + 1.0) / (bundle_n + 1.0);
+
     // do all rectangle relations one-by-one
     switch (rel) {
         case Relation::SAME_RECT: {
@@ -263,13 +262,13 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
             //  N,S - connection points N or S. Horiz shift by gate indices
             switch (mode) {
                 case 'n':
-                    src.rx() = dest.rx() = srcRect.left() + (bundle_i+1) * srcRect.width() / (bundle_n+1);
+                    src.rx() = dest.rx() = srcRect.left() + bundle_coeff * srcRect.width();
                     src.ry() = srcRect.bottom();
                     dest.ry() = srcRect.top();
                     break;
 
                 case 's':
-                    src.rx() = dest.rx() = srcRect.left() + (bundle_i+1) * srcRect.width() / (bundle_n+1);
+                    src.rx() = dest.rx() = srcRect.left() + bundle_coeff * srcRect.width();
                     src.ry() = srcRect.top();
                     dest.ry() = srcRect.bottom();
                     break;
@@ -277,13 +276,13 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                 case 'e':
                     src.rx() = srcRect.left();
                     dest.rx() = srcRect.right();
-                    src.ry() = dest.ry() = srcRect.top() + (bundle_i+1) * srcRect.height() / (bundle_n+1);
+                    src.ry() = dest.ry() = srcRect.top() + bundle_coeff * srcRect.height();
                     break;
 
                 case 'w':
                     src.rx() = srcRect.right();
                     dest.rx() = srcRect.left();
-                    src.ry() = dest.ry() = srcRect.top() + (bundle_i+1) * srcRect.height() / (bundle_n+1);
+                    src.ry() = dest.ry() = srcRect.top() + bundle_coeff * srcRect.height();
                     break;
             }
         }
@@ -327,9 +326,7 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                 src_wireRect.setRight(smaller_2);
                 dest_wireRect.setLeft(larger_1);
                 dest_wireRect.setRight(larger_2);
-            }
-
-            if (destRect.width() < srcRect.width()) {
+            } else {
                 double smaller_1 = destRect.left();
                 double smaller_2 = destRect.right();
                 double larger_1 = srcRect.left();
@@ -351,9 +348,7 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                 src_wireRect.setBottom(smaller_2);
                 dest_wireRect.setTop(larger_1);
                 dest_wireRect.setBottom(larger_2);
-            }
-
-            if (destRect.height() < srcRect.height()) {
+            } else {
                 double smaller_1 = destRect.top();
                 double smaller_2 = destRect.bottom();
                 double larger_1 = srcRect.top();
@@ -365,37 +360,47 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                 src_wireRect.setBottom(larger_2);
             }
 
+            // they must be the same size
+            ASSERT(qFuzzyCompare(src_wireRect.width(), dest_wireRect.width()));
+            ASSERT(qFuzzyCompare(src_wireRect.height(), dest_wireRect.height()));
+
             src = src_wireRect.center();
             dest = dest_wireRect.center();
 
-            double halfSpreadSrcNeg = 0;
-            double halfSpreadSrcPos = 0;
-            for (QPointF p : {src_wireRect.topLeft(), src_wireRect.topRight(), src_wireRect.bottomLeft(), src_wireRect.bottomRight()}) {
-                double d = line_point_distance(QLineF(src, dest), p);
-                if (d < halfSpreadSrcNeg)
-                    halfSpreadSrcNeg = d;
-                if (d > halfSpreadSrcPos)
-                    halfSpreadSrcPos = d;
+            if (src == dest) {
+                // Rectangles overlap too much (ie. the "junction" rectangles in them
+                // are the same), pick centers of the original rectangles instead.
+                src = srcRect.center();
+                dest = destRect.center();
             }
-            double halfSpreadDestNeg = 0;
-            double halfSpreadDestPos = 0;
-            for (QPointF p : {dest_wireRect.topLeft(), dest_wireRect.topRight(), dest_wireRect.bottomLeft(), dest_wireRect.bottomRight()}) {
-                double d = line_point_distance(QLineF(src, dest), p);
-                if (d < halfSpreadDestNeg)
-                    halfSpreadDestNeg = d;
-                if (d > halfSpreadDestPos)
-                    halfSpreadDestPos = d;
+
+            if (src == dest) {
+                // Last resort: just nudge them apart a bit...
+                // This can only happen if the rectangles have the same
+                // center but one is wider and the other is taller.
+                dest.rx() += 1;
             }
-            double halfSpread = std::min({-halfSpreadSrcNeg, halfSpreadSrcPos, -halfSpreadDestNeg, halfSpreadDestPos})*2.0;
 
             QLineF centerLine(src, dest);
-            QLineF norm = centerLine.normalVector().unitVector();
-            QPointF normDir = norm.p2() - norm.p1();
-            if (normDir.x() + normDir.y() < 0) // make direction consistent
+
+            QPointF dir = centerLine.unitVector().p2() - src;
+            // Computing the extent of src_wireRect in the direction of dest_wireRect.
+            // (how far we can move lines between their centers perpendicularly without
+            // exiting the rectangles).
+            double spread = std::max(
+                perpendicularDistance(dir, QPointF(src_wireRect.width(), src_wireRect.height())),
+                perpendicularDistance(dir, QPointF(-src_wireRect.width(), src_wireRect.height()))
+            );
+
+            QPointF normDir = QPointF(dir.y(), -dir.x()); // perpendicular
+            // make direction consistent (left/right and top/bottom)
+            if (dir.x() < dir.y() || (dir.x() == dir.y() && normDir.x() < normDir.y()))
                 normDir = -normDir;
 
-            src += normDir * halfSpread * (-0.5 + (bundle_i + 1.0) / (bundle_n + 1.0));
-            dest += normDir * halfSpread * (-0.5 + (bundle_i + 1.0) / (bundle_n + 1.0));
+            QPointF offs = normDir * spread * (bundle_coeff - 0.5);
+
+            src += offs;
+            dest += offs;
 
             // clip the line to the bounding rectangles if they are not overlapping
             if (rel == Relation::DISJOINT) {
