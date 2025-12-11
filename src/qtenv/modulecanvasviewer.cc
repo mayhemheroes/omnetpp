@@ -848,29 +848,15 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
             destAnch.setY(y);
     }
 
-    int src_i = 0, src_n = 1, dest_i = 0, dest_n = 1;
+    int bundle_i = 0, bundle_n = 1;
 
     if (getQtenv()->opt->arrangeVectorConnections) {
         // Check if we have grouping information for this connection
         auto it = connectionGrouping.find(gate);
         if (it != connectionGrouping.end()) {
             // Use the module-pair-based grouping
-            src_i = it->second.first;  // index within group
-            src_n = it->second.second; // total count in group
-            // Use the same values for dest to offset both ends symmetrically
-            dest_i = it->second.first;
-            dest_n = it->second.second;
-        }
-        else {
-            // Fall back to original vector gate behavior
-            if (gate->isVector()) {
-                src_i = gate->getIndex();
-                src_n = gate->getVectorSize();
-            }
-            if (nextGate->isVector()) {
-                dest_i = nextGate->getIndex();
-                dest_n = nextGate->getVectorSize();
-            }
+            bundle_i = it->second.first;  // index within group
+            bundle_n = it->second.second; // total count in group
         }
     }
 
@@ -880,7 +866,7 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     QRectF ownerRect = getSubmodRect(owner);
     QRectF nextRect = getSubmodRect(nextOwner);
 
-    QLineF line = arrowcoords(ownerRect, nextRect, src_i, src_n, dest_i, dest_n, mode, srcAnch, destAnch);
+    QLineF line = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, mode, srcAnch, destAnch);
 
     // Handling degenerate connections (those crossing compound module boundaries without a gate).
     cModule *parent = owner->getParentModule();

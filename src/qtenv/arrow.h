@@ -32,8 +32,7 @@ namespace qtenv {
 // The srcAnch and destAnch parameters are used in 'm' mode to specify the anchor points
 // within the rectangles as percentages (0-100) of width and height.
 QTENV_API QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
-                  int src_i = 0, int src_n = 1, // src vector gate index and size
-                  int dest_i = 0, int dest_n = 1, // src vector gate index and size
+                  int bundle_i = 0, int bundle_n = 1, // bundle index and size
                   char mode = 'a', // must be one of "amnews"
                   QPointF srcAnch = QPointF(50, 50),
                   QPointF destAnch = QPointF(50, 50));

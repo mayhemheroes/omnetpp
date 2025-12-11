@@ -208,8 +208,7 @@ static double line_point_distance(const QLineF& line, const QPointF& point)
 }
 
 QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
-                  int src_i, int src_n, // src vector gate index and size
-                  int dest_i, int dest_n, // src vector gate index and size
+                  int bundle_i, int bundle_n, // bundle index and size
                   char mode, // amnews
                   QPointF srcAnch, // src anchor percentages
                   QPointF destAnch) // dest anchor percentages
@@ -264,13 +263,13 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
             //  N,S - connection points N or S. Horiz shift by gate indices
             switch (mode) {
                 case 'n':
-                    src.rx() = dest.rx() = srcRect.left() + (src_i+1) * srcRect.width() / (src_n+1);
+                    src.rx() = dest.rx() = srcRect.left() + (bundle_i+1) * srcRect.width() / (bundle_n+1);
                     src.ry() = srcRect.bottom();
                     dest.ry() = srcRect.top();
                     break;
 
                 case 's':
-                    src.rx() = dest.rx() = srcRect.left() + (src_i+1) * srcRect.width() / (src_n+1);
+                    src.rx() = dest.rx() = srcRect.left() + (bundle_i+1) * srcRect.width() / (bundle_n+1);
                     src.ry() = srcRect.top();
                     dest.ry() = srcRect.bottom();
                     break;
@@ -278,13 +277,13 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                 case 'e':
                     src.rx() = srcRect.left();
                     dest.rx() = srcRect.right();
-                    src.ry() = dest.ry() = srcRect.top() + (src_i+1) * srcRect.height() / (src_n+1);
+                    src.ry() = dest.ry() = srcRect.top() + (bundle_i+1) * srcRect.height() / (bundle_n+1);
                     break;
 
                 case 'w':
                     src.rx() = srcRect.right();
                     dest.rx() = srcRect.left();
-                    src.ry() = dest.ry() = srcRect.top() + (src_i+1) * srcRect.height() / (src_n+1);
+                    src.ry() = dest.ry() = srcRect.top() + (bundle_i+1) * srcRect.height() / (bundle_n+1);
                     break;
             }
         }
@@ -292,12 +291,12 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
         case Relation::SRC_WITHIN_DEST:
             return arrowcoords_contained(srcRect,
                                      destRect,
-                                     src_i, src_n,
+                                     bundle_i, bundle_n,
                                      mode);
         case Relation::DEST_WITHIN_SRC: {
             QLineF l = arrowcoords_contained(destRect,
                                             srcRect,
-                                            dest_i, dest_n,
+                                            bundle_i, bundle_n,
                                             mode);
             // flip the line so it points inward
             return QLineF(l.p2(), l.p1());
@@ -395,8 +394,8 @@ QLineF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
             if (normDir.x() + normDir.y() < 0) // make direction consistent
                 normDir = -normDir;
 
-            src += normDir * halfSpread * (-0.5 + (src_i + 1.0) / (src_n + 1.0));
-            dest += normDir * halfSpread * (-0.5 + (src_i + 1.0) / (src_n + 1.0));
+            src += normDir * halfSpread * (-0.5 + (bundle_i + 1.0) / (bundle_n + 1.0));
+            dest += normDir * halfSpread * (-0.5 + (bundle_i + 1.0) / (bundle_n + 1.0));
 
             // clip the line to the bounding rectangles if they are not overlapping
             if (rel == Relation::DISJOINT) {
