@@ -108,12 +108,14 @@ ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFact
     showModuleNamesAction = new QAction("Show Module Names", this);
     connect(showModuleNamesAction, SIGNAL(triggered(bool)), this, SLOT(showLabels(bool)));
     showModuleNamesAction->setShortcut((int)Qt::CTRL | Qt::Key_L);
+    showModuleNamesAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     showModuleNamesAction->setCheckable(true);
     addAction(showModuleNamesAction);
 
     showArrowheadsAction = new QAction("Show Arrowheads", this);
     connect(showArrowheadsAction, SIGNAL(triggered(bool)), this, SLOT(showArrowheads(bool)));
     showArrowheadsAction->setShortcut((int)Qt::CTRL | Qt::Key_A);
+    showArrowheadsAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     showArrowheadsAction->setCheckable(true);
     addAction(showArrowheadsAction);
 
@@ -125,18 +127,20 @@ ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFact
     addAction(distributeArrowsAction);
 
     increaseIconSizeAction = new QAction("Increase Icon Size", this);
-    increaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_I);
     connect(increaseIconSizeAction, SIGNAL(triggered(bool)), this, SLOT(increaseIconSize()));
+    increaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_I);
+    increaseIconSizeAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(increaseIconSizeAction);
 
     decreaseIconSizeAction = new QAction("Decrease Icon Size", this);
-    decreaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_O);
     connect(decreaseIconSizeAction, SIGNAL(triggered(bool)), this, SLOT(decreaseIconSize()));
+    decreaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_O);
+    decreaseIconSizeAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(decreaseIconSizeAction);
 
     gotoModuleAction = new QAction("Go to Module...", this);
-    gotoModuleAction->setShortcut((int)Qt::CTRL | Qt::Key_G);
     connect(gotoModuleAction, SIGNAL(triggered()), this, SLOT(gotoModule()));
+    gotoModuleAction->setShortcut((int)Qt::CTRL | Qt::Key_G);
     addAction(gotoModuleAction);
 
     auto *layouter = getQtenv()->getModuleLayouter();
