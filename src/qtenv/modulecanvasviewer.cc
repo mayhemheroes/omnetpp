@@ -210,7 +210,7 @@ QStringList ModuleCanvasViewer::gatherTooltips(const QList<QGraphicsItem*>& item
             cObject *itemObject = i->data(ITEMDATA_COBJECT).value<cObject *>();
 
             if (itemObject && itemObject != object)
-                itemTip = makeObjectTooltip(itemObject, singleObjectTooltip);
+                itemTip = makeObjectTooltip(itemObject, singleObjectTooltip, object);
         }
 
         // skipping empties, deduplication

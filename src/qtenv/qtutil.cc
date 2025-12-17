@@ -442,8 +442,26 @@ bool isAPL()
 
 //----------------------------------------------------------------------
 
+// Helper constants
+const QString ARROW_NORMAL = "&nbsp;->&nbsp;";
+const QString ARROW_CHANNEL = "&nbsp;-c->&nbsp;";
+const QString ELLIPSIS_ARROW = "...&nbsp;->&nbsp;";
 
-QString makeObjectTooltip(cObject *obj, bool verboseTooltip)
+// Helper function to get arrow string based on channel presence
+QString getArrowString(cGate *gate)
+{
+    return gate->getChannel() ? ARROW_CHANNEL : ARROW_NORMAL;
+}
+
+// Helper function to get relative path of an object with respect to another
+QString relativePath(cObject *obj, cObject *relativeTo)
+{
+    // the "." is appended to the prefix so it's not left at the start, plus,
+    // this way the result won't be empty if the two parameters point to the same object
+    return QString::fromStdString(opp_removestart(obj->getFullPath(), relativeTo->getFullPath() + "."));
+}
+
+QString makeObjectTooltip(cObject *obj, bool verboseTooltip, cObject *context)
 {
     // figures are handled specially
     if (auto fig = dynamic_cast<cFigure *>(obj)) {
@@ -455,12 +473,84 @@ QString makeObjectTooltip(cObject *obj, bool verboseTooltip)
         // If two figures are associated to each other,
         // we have to avoid the infinite recursion.
         if (assocObj && !dynamic_cast<cFigure*>(assocObj))
-            return makeObjectTooltip(assocObj, verboseTooltip);
+            return makeObjectTooltip(assocObj, verboseTooltip, context);
 
         // figures inherit the tooltip if they themselves don't have one
         cFigure *parent = fig->getParentFigure();
-        return parent ? makeObjectTooltip(parent, verboseTooltip) : "";
+        return parent ? makeObjectTooltip(parent, verboseTooltip, context) : "";
         // no other defaults for figures
+    }
+
+    // connections are also handled specially
+    if (auto gate = dynamic_cast<cGate *>(obj)) {
+        cGate *pathStart = gate->getPathStartGate();
+        cGate *pathEnd = gate->getPathEndGate();
+        cGate *nextGate = gate->getNextGate();
+
+        // Null safety check
+        if (!nextGate)
+            return relativePath(gate, context);
+
+        bool pathEndpointIncluded = (pathStart != gate) || (pathEnd != nextGate);
+
+        QString tooltip;
+        // Add path start if different from current gate
+        if (pathStart != gate) {
+            tooltip += relativePath(pathStart, context);
+            tooltip += getArrowString(pathStart);
+
+            if (pathStart->getNextGate() != gate)
+                tooltip += ELLIPSIS_ARROW;
+        }
+
+        // Add current gate connection (highlighted if it's an intermediate hop)
+        if (pathEndpointIncluded)
+            tooltip += "<b>";
+
+        tooltip += relativePath(gate, context);
+        tooltip += getArrowString(gate);
+        tooltip += relativePath(nextGate, context);
+
+        if (pathEndpointIncluded)
+            tooltip += "</b>";
+
+        // Add path end if different from next gate
+        if (pathEnd != nextGate) {
+            tooltip += getArrowString(nextGate);
+
+            cGate *nextNextGate = nextGate->getNextGate();
+            if (nextNextGate && pathEnd != nextNextGate)
+                tooltip += ELLIPSIS_ARROW;
+
+            tooltip += relativePath(pathEnd, context);
+        }
+
+        // Add verbose connection path details
+        if (verboseTooltip) {
+            tooltip += "\n\nConnection path:";
+
+            cGate *endGate = pathEnd->getNextGate();
+            for (cGate *hop = pathStart; hop && hop != endGate; hop = hop->getNextGate()) {
+                tooltip += "\n";
+                if (hop != pathStart)
+                    tooltip += ARROW_NORMAL;
+                else
+                    tooltip += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                tooltip += relativePath(gate, context);
+
+                if (cChannel *chan = hop->getChannel()) {
+                    tooltip += ARROW_NORMAL;
+                    tooltip += getObjectShortTypeName(chan);
+                    tooltip += "&nbsp;{&nbsp;";
+                    tooltip += QString::fromStdString(
+                        opp_replacesubstring(opp_trim(chan->str()), " ", "&nbsp;", true)
+                    );
+                    tooltip += "&nbsp;}";
+                }
+            }
+        }
+
+        return tooltip;
     }
 
     // for components, use the "tt" DisplayString key
