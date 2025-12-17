@@ -84,25 +84,28 @@ void ConnectionItem::updateLineItem()
 {
     if (!lineEnabled || (dest == src)) {  // not drawing the line if the conn would be 0 long
         lineItem->setPen(Qt::NoPen);
+        shape_.clear();
         return;
     }
 
-    // shadowing with a local, so we can adjust for half length
-    QPointF dest = this->dest;
+    // copying, so we can adjust for half length if needed
+    QPointF paintingDest = dest;
+    QPointF pickingDest = dest;
 
     QPointF dir = dest - src;
     double length = std::sqrt(dir.x() * dir.x() + dir.y() * dir.y());
 
-    if (halfLength)
-        dest = src + dir / 2;
+    if (halfLength) {
+        paintingDest = src + dir * 0.5;
+        pickingDest = src + dir * 0.75;
+    }
     else if (arrowItem->isVisible()) {
         // making the end not stick out of the arrowhead
         // the line itself has to be shorter
         if (length > 0) // avoid division by zero
-            dest -= dir / length * lineWidth;
+            paintingDest -= dir / length * lineWidth;
     }
 
-    lineItem->setLine(QLineF(src, dest));
     QPen pen(lineColor, lineWidth);
     pen.setCapStyle(Qt::FlatCap);
 
@@ -115,6 +118,12 @@ void ConnectionItem::updateLineItem()
     pen.setDashOffset(dashOffset);
 
     lineItem->setPen(pen);
+
+    lineItem->setLine(QLineF(src, pickingDest));
+    // this needs to be computed with the final pen width, but also at a different length
+    shape_ = lineItem->shape().simplified();
+
+    lineItem->setLine(QLineF(src, paintingDest));
 }
 
 void ConnectionItem::updateTextItem()

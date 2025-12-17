@@ -50,6 +50,9 @@ protected:
     QColor textColor = colors::DARKGREEN;
     bool lineEnabled = true;
     bool halfLength = false;
+    // Returned by shape(), computed in updateLineItem(), used for mouse picking,
+    // is 3/4 of the length of the full "connection line".
+    QPainterPath shape_;
 
     QGraphicsLineItem *lineItem;
     MultiLineOutlinedTextItem *textItem; // This is a managed sibling!
@@ -87,7 +90,7 @@ public:
 
     QRectF boundingRect() const override { return QRectF(src, dest).normalized(); }
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override { /* empty */ }
-    QPainterPath shape() const override { return lineItem->shape(); }
+    QPainterPath shape() const override { return shape_; }
 };
 
 }  // namespace qtenv
