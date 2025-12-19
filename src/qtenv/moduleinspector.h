@@ -72,6 +72,7 @@ private Q_SLOTS:
     void showMethodCalls(bool show);
     void showLabels(bool show);
     void showArrowheads(bool show);
+    void distributeArrows(bool distribute);
     void setSubmoduleNameFormat(SubmoduleNameFormat format);
     void zoomIconsBy(double mult);
 
@@ -91,6 +92,7 @@ protected:
     static const QString PREF_SHOWMETHODCALLS;
     static const QString PREF_SHOWLABELS;
     static const QString PREF_SHOWARROWHEADS;
+    static const QString PREF_DISTRIBUTEARROWS;
     static const QString PREF_SUBMODULENAMEFORMAT;
 
     QAction *switchToOsgViewAction;
@@ -104,6 +106,7 @@ protected:
     QAction *showMethodCallsAction;
     QAction *showModuleNamesAction;
     QAction *showArrowheadsAction;
+    QAction *distributeArrowsAction;
     QAction *submoduleNameFormatAction;
     QAction *increaseIconSizeAction;
     QAction *decreaseIconSizeAction;

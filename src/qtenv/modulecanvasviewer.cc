@@ -557,7 +557,7 @@ void ModuleCanvasViewer::redrawModules()
     redrawEnclosingModule();
 
     // Build connection grouping if the feature is enabled
-    if (getQtenv()->opt->arrangeVectorConnections)
+    if (distributeConnectionArrows)
         buildConnectionGrouping();
 
     // loop through all submodules and enclosing module & draw their connections
@@ -850,7 +850,7 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
 
     int bundle_i = 0, bundle_n = 1;
 
-    if (getQtenv()->opt->arrangeVectorConnections) {
+    if (distributeConnectionArrows) {
         // Check if we have grouping information for this connection
         auto it = connectionGrouping.find(gate);
         if (it != connectionGrouping.end()) {
@@ -1205,6 +1205,14 @@ void ModuleCanvasViewer::setSubmoduleNameFormat(SubmoduleNameFormat format)
         submoduleNameFormat = format;
         for (auto i : submoduleGraphicsItems)
             i.second->setNameFormat(format);
+    }
+}
+
+void ModuleCanvasViewer::setDistributeConnectionArrows(bool distribute)
+{
+    if (distributeConnectionArrows != distribute) {
+        distributeConnectionArrows = distribute;
+        redrawModules();
     }
 }
 

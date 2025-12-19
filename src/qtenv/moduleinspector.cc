@@ -86,6 +86,7 @@ const QString ModuleInspector::PREF_ICONSCALE = "iconscale";
 const QString ModuleInspector::PREF_SHOWMETHODCALLS = "showmethodcalls";
 const QString ModuleInspector::PREF_SHOWLABELS = "showlabels";
 const QString ModuleInspector::PREF_SHOWARROWHEADS = "showarrowheads";
+const QString ModuleInspector::PREF_DISTRIBUTEARROWS = "distributearrows";
 const QString ModuleInspector::PREF_SUBMODULENAMEFORMAT = "submodulenameformat";
 
 ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f) : Inspector(parent, isTopLevel, f)
@@ -115,6 +116,13 @@ ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFact
     showArrowheadsAction->setShortcut((int)Qt::CTRL | Qt::Key_A);
     showArrowheadsAction->setCheckable(true);
     addAction(showArrowheadsAction);
+
+    distributeArrowsAction = new QAction("Distribute Connection Arrows", this);
+    connect(distributeArrowsAction, SIGNAL(triggered(bool)), this, SLOT(distributeArrows(bool)));
+    distributeArrowsAction->setShortcut((int)Qt::CTRL | Qt::Key_B);
+    distributeArrowsAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    distributeArrowsAction->setCheckable(true);
+    addAction(distributeArrowsAction);
 
     increaseIconSizeAction = new QAction("Increase Icon Size", this);
     increaseIconSizeAction->setShortcut((int)Qt::CTRL | Qt::Key_I);
@@ -256,6 +264,7 @@ void ModuleInspector::doSetObject(cObject *obj)
             showMethodCalls(getPref(PREF_SHOWMETHODCALLS, true).toBool());
             showLabels(getPref(PREF_SHOWLABELS, true).toBool());
             showArrowheads(getPref(PREF_SHOWARROWHEADS, true).toBool());
+            distributeArrows(getPref(PREF_DISTRIBUTEARROWS, false).toBool());
             setSubmoduleNameFormat((SubmoduleNameFormat)getPref(PREF_SUBMODULENAMEFORMAT, (int)SubmoduleNameFormat::FMT_FULLNAME_AND_QDISPLAYNAME).toInt());
         }
         catch (std::exception& e) {
@@ -674,6 +683,7 @@ void ModuleInspector::createContextMenu(const std::vector<cObject *>& objects, c
     showMethodCallsAction->setEnabled(getQtenv()->opt->animateMethodCalls);
     menu->addAction(showModuleNamesAction);
     menu->addAction(showArrowheadsAction);
+    menu->addAction(distributeArrowsAction);
 
     QMenu *subMenu = menu->addMenu(QString("Submodule Name Format"));
     QActionGroup *actionGroup = new QActionGroup(menu);
@@ -772,6 +782,17 @@ void ModuleInspector::showArrowheads(bool show)
     setPref(PREF_SHOWARROWHEADS, show);
     showArrowheadsAction->setChecked(show);
     canvasViewer->setShowArrowheads(show);
+    update();
+}
+
+void ModuleInspector::distributeArrows(bool distribute)
+{
+    if (!object)
+        return;
+
+    setPref(PREF_DISTRIBUTEARROWS, distribute);
+    distributeArrowsAction->setChecked(distribute);
+    canvasViewer->setDistributeConnectionArrows(distribute);
     update();
 }
 

@@ -95,6 +95,7 @@ private:
     std::map<cModule*, SubmoduleItem*> submoduleGraphicsItems;
     std::map<cGate*, ConnectionItem*> connectionGraphicsItems;
 
+    bool distributeConnectionArrows = false;
     // For offsetting overlapping connections: maps each gate to its index and total count
     // within its module-pair group
     std::map<cGate*, std::pair<int, int>> connectionGrouping;
@@ -202,6 +203,7 @@ public:
     void setShowArrowheads(bool show);
     void setSubmoduleNameFormat(SubmoduleNameFormat format);
     SubmoduleNameFormat getSubmoduleNameFormat() const {return submoduleNameFormat;}
+    void setDistributeConnectionArrows(bool distribute);
 
     void bubble(cComponent *subcomponent, const char *text);
 
