@@ -98,8 +98,6 @@ void PreferencesDialog::init()
         case LAYOUTER_AUTO:     ui->adaptiveRadio->setChecked(true); break;
     }
     ui->showLayouting->setChecked(getQtenv()->opt->showLayouting);
-    variant = getQtenv()->getPref("layout-may-change-zoom");
-    ui->allowZoom->setChecked(variant.isValid() ? variant.value<bool>() : false);
 
     // Animation tab
     ui->animMsg->setChecked(getQtenv()->opt->animationEnabled);
@@ -235,7 +233,6 @@ void PreferencesDialog::accept()
     if (themeChanged || resetPaletteChanged)
         getQtenv()->confirm(Qtenv::INFO, "Style change will take effect after restarting the application.");
 
-    getQtenv()->setPref("layout-may-change-zoom", ui->allowZoom->isChecked());
     getQtenv()->setPref("timeline-wantselfmsgs", ui->selfMsg->isChecked());
     getQtenv()->setPref("timeline-wantnonselfmsgs", ui->nonSelfMsg->isChecked());
     getQtenv()->setPref("timeline-wantsilentmsgs", ui->silentMsg->isChecked());

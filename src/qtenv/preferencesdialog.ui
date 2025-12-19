@@ -485,28 +485,6 @@ Padding with spaces:
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="display">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Display</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_12">
-          <item>
-           <widget class="QCheckBox" name="allowZoom">
-            <property name="text">
-             <string>Zoom out if necessary to fit network into window</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <spacer name="layoutingSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
