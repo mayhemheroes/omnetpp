@@ -174,11 +174,13 @@ LogInspector::LogInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f
     setBookmarkAction = new QAction(QIcon(":/tools/bookmark_add"), "Set Boo&kmark");
     connect(setBookmarkAction, SIGNAL(triggered()), this, SLOT(onSetBookmarkAction()));
     setBookmarkAction->setShortcut((int)Qt::CTRL | Qt::Key_M);
+    setBookmarkAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(setBookmarkAction);
 
     goToBookmarkAction = new QAction(QIcon(":/tools/bookmark"), "Go to &Bookmark");
     connect(goToBookmarkAction, SIGNAL(triggered()), this, SLOT(onGoToBookmarkAction()));
     goToBookmarkAction->setShortcut((int)Qt::CTRL | Qt::Key_B);
+    goToBookmarkAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(goToBookmarkAction);
 
     QToolBar *toolBar = createToolbar(isTopLevel);
