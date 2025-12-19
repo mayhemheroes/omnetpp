@@ -497,13 +497,6 @@ Padding with spaces:
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>
-           <widget class="QCheckBox" name="arrange">
-            <property name="text">
-             <string>Arrange connections on vector gates parallel to each other</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="allowZoom">
             <property name="text">
              <string>Zoom out if necessary to fit network into window</string>

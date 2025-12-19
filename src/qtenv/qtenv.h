@@ -92,7 +92,6 @@ struct QtenvOptions : public EnvirOptions
     bool penguinMode = false;              // msg animation: message appearance
     bool showLayouting = false;            // show layouting process in graphical module inspectors
     LayouterChoice layouterChoice = LAYOUTER_AUTO; // which new layouting algorithm to use
-    bool arrangeVectorConnections = false; // arrange connections on vector gates parallel to each other
     bool showBubbles = true;               // show result of bubble() calls
     long updateFreqExpress = 1000;         // Express Run updates display every N milliseconds
     bool autoupdateInExpress = true;       // update inspectors at every display refresh in EXPRESS mode or not

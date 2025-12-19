@@ -233,7 +233,6 @@ void Qtenv::storeOptsInPrefs()
     }
     setPref("layouterchoice", layouterChoiceString);
 
-    setPref("arrangevectorconnections", opt->arrangeVectorConnections);
     setPref("bubbles", opt->showBubbles);
     setPref("expressmode_autoupdate", opt->autoupdateInExpress);
 
@@ -347,10 +346,6 @@ void Qtenv::restoreOptsFromPrefs()
             opt->layouterChoice = LAYOUTER_AUTO;
         }
     }
-
-    pref = getPref("arrangevectorconnections");
-    if (pref.isValid())
-        opt->arrangeVectorConnections = pref.toBool();
 
     pref = getPref("bubbles");
     if (pref.isValid())

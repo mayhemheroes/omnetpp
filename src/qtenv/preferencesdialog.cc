@@ -98,7 +98,6 @@ void PreferencesDialog::init()
         case LAYOUTER_AUTO:     ui->adaptiveRadio->setChecked(true); break;
     }
     ui->showLayouting->setChecked(getQtenv()->opt->showLayouting);
-    ui->arrange->setChecked(getQtenv()->opt->arrangeVectorConnections);
     variant = getQtenv()->getPref("layout-may-change-zoom");
     ui->allowZoom->setChecked(variant.isValid() ? variant.value<bool>() : false);
 
@@ -213,7 +212,6 @@ void PreferencesDialog::accept()
         ui->advancedRadio->isChecked() ? LAYOUTER_ADVANCED :
         LAYOUTER_AUTO;
 
-    getQtenv()->opt->arrangeVectorConnections = ui->arrange->isChecked();
     getQtenv()->opt->showBubbles = ui->showBubbles->isChecked();
     getQtenv()->setPref("move-menu-to-toolbar", ui->moveMenuToToolbar->isChecked());
     getQtenv()->setPref("confirm-exit", ui->confirmExit->isChecked());
