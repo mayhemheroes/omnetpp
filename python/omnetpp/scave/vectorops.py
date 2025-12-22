@@ -497,7 +497,7 @@ def expression(r, expression, as_time=False):
     from numpy import sin,cos,tan,arcsin,arccos,arctan,hypot,arctan2,degrees,radians,unwrap,deg2rad,\
         rad2deg,sinh,cosh,tanh,arcsinh,arccosh,arctanh,around,round,rint,fix,floor,ceil,\
         trunc,prod,sum,nanprod,nansum,cumprod,cumsum,nancumprod,nancumsum,diff,ediff1d,\
-        gradient,cross,trapz,exp,expm1,exp2,log,log10,log2,log1p,logaddexp,logaddexp2,i0,\
+        gradient,cross,trapezoid,exp,expm1,exp2,log,log10,log2,log1p,logaddexp,logaddexp2,i0,\
         sinc,signbit,copysign,frexp,ldexp,nextafter,spacing,lcm,gcd,add,reciprocal,\
         positive,negative,multiply,divide,power,subtract,true_divide,floor_divide,\
         float_power,fmod,mod,modf,remainder,divmod,angle,real,imag,conj,conjugate,\
