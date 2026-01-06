@@ -35,13 +35,6 @@ print_usage() {
     echo "  --no-build    Do not configure and build OMNeT++ after installing dependencies"
 }
 
-# quiet echo function - only output if not in quiet mode
-echo_q() {
-    if ! $quiet; then
-        echo "$@"
-    fi
-}
-
 # prompt user for yes/no response
 ask_user() {
     if $assume_yes; then
@@ -53,9 +46,16 @@ ask_user() {
             case "$yn" in
                 [Yy]* ) return 0;;
                 [Nn]* ) return 1;;
-                * ) echo_q "Please answer yes or no.";;
+                * ) echo -e "Please answer yes or no.";;
             esac
         done
+    fi
+}
+
+# quiet echo function - only output if not in quiet mode
+echo_q() {
+    if ! $quiet; then
+        echo "$@"
     fi
 }
 
@@ -194,6 +194,10 @@ install_deps() {
 
             echo_root_run "pacman -Sy --needed --noconfirm $packages ; pacman -Scc --noconfirm"
 
+        elif [[ "$ID" == "nixos" ]]; then
+            echo_q -e "${RED}NixOS detected, dependencies must be installed using 'nix run .opp_shell'.${RESET}"
+            echo_q -e "${YELLOW}Please run 'nix run .opp_shell' and then restart this script.${RESET}"
+            exit 1
         else
             echo_q -e "${RED}Package manager (apt, dnf, zypper, pacman) not detected.\nSee 'doc/InstallGuide.pdf' and install the required packages manually.${RESET}"
             exit 1
@@ -322,7 +326,7 @@ and then configure and build OMNeT++.
 
 Supported operating systems [and package managers]:
 - Linux: Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL [dnf],
-         OpenSuse-tumbleweed [zypper], ArchLinux [pacman]
+-        OpenSuse-tumbleweed [zypper], ArchLinux [pacman], NixOS [nix]
 - macOS 15 [homebrew]
 - Windows 11/Msys2 [pacman]
 
@@ -336,10 +340,29 @@ if ! ask_user "Continue installing OMNeT++?" ; then
     exit 0
 fi
 
-echo_q
-echo_q -e "${GREEN}*** Installing dependencies ***${RESET}"
-echo_q
-install_deps
+# on nix os? we have to copy the flake files into the project root directory
+# and then run 'nix run .opp_shell' and invoke this script again in that environment
+if [ -f /etc/NIXOS ]; then
+    rm -rf .venv 
+    
+    echo_q
+    echo_q -e "${YELLOW}Running 'nix run .opp_shell' to install dependencies.${RESET}"
+    nix run --extra-experimental-features nix-command --extra-experimental-features flakes .opp_shell -- ./install.sh -q -y $@
+    echo_q -e "${GREEN}Use 'nix run .opp_shell' to start the OMNeT++ environment.${RESET}"
+    exit 0
+fi
+
+# on nixos, if we are in the correct environment, we do not need dependency installation, just a config/build cycle
+if [[ "$name" == "opp_shell" || "$name" == "opp_shell_native" ]]; then
+    echo_q
+    echo_q -e "${GREEN}NixOS shell '${YELLOW}$name${GREEN}' detected. Skipping dependency installation.${RESET}"
+    echo_q
+else
+    echo_q
+    echo_q -e "${GREEN}*** Installing dependencies ***${RESET}"
+    echo_q
+    install_deps
+fi
 
 # activate the OMNeT++ environment (including the python virtualenv)
 echo_q
