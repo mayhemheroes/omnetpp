@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Detects the platform and architecture, and starts the IDE with the right launcher
 #
