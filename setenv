@@ -125,9 +125,15 @@ if [ $(uname) = "Darwin" ]; then
   fi
 fi
 
+
+if [ -n "$MSYSTEM" ]; then
+  # on Windows MinGW, we need to unset PYTHONPATH to prevent it from being polluted by external python installations
+  # especially the ones that use windows style path separators (e.g. C:\Python312\Lib\site-packages)
+  export PYTHONPATH=
+fi
+
 # Windows/MinGW specific settings for MS ABI compatible build
 if [ -n "$MSYSTEM" -a "$MS_ABI" = "yes" ] ; then
-  export PYTHONPATH=
   if [ -n "$VCToolsInstallDir" ] ; then
     # add the MS toolchain directories at the beginning of the PATH to hide the default clang compiler
     export PATH=$(cygpath "$VCToolsInstallDir/bin/HostX64/x64"):$(cygpath "$VCINSTALLDIR/Tools/Llvm/x64/bin"):$(cygpath "$VCPKG_ROOT"):$PATH
