@@ -61,14 +61,13 @@ std::string cChannel::str() const
     std::stringstream out;
     for (int i = 0; i < getNumParams(); i++) {
         cPar& p = const_cast<cChannel *>(this)->par(i);
-        const char* name = p.getName();
+        std::string name = p.getName();
 
-        // Skip certain parameters if they have default values,
-        // see `NedParser::getBuiltInDeclarations`.
-        if (strcmp(name, "disabled") == 0 && !p.boolValue()) continue;
-        if ((strcmp(name, "datarate") == 0 || strcmp(name, "delay") == 0 ||
-             strcmp(name, "per") == 0 || strcmp(name, "ber") == 0)
-            && p.doubleValue() == 0.0) continue;
+        // Omit built-in parameters if they have the default values
+        if (name == "disabled" && p.boolValue() == false)
+            continue;
+        if ((name == "datarate" || name == "delay" || name == "per" || name == "ber") && p.doubleValue() == 0.0)
+            continue;
 
         out << p.getFullName() << "=" << p.str() << " ";
     }
