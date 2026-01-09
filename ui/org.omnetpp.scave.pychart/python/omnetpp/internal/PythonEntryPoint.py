@@ -53,7 +53,7 @@ def _extract_stacktrace(exception):
     startOfFirstRelevantFrame = "  File \"<string>\", line "
 
     pattern = "(?s)" + re.escape(expectedFirstLine) + "\\n.*?\\n" + re.escape(startOfFirstRelevantFrame)
-    return re.sub(pattern, replacementFirstLine + "\n" + startOfFirstRelevantFrame, msg, 1)
+    return re.sub(pattern, replacementFirstLine + "\n" + startOfFirstRelevantFrame, msg, count=1)
 
 def _extract_message(exception):
     # extract line number (from the last 'File "<string", line' in the stack trace)

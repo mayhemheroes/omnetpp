@@ -949,7 +949,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
     "Print a std::any or std::experimental::any"
 
     def __init__ (self, typename, val):
-        self.typename = re.sub('^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, 1)
+        self.typename = re.sub('^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, count=1)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -993,7 +993,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
-        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
+        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, count=1)
         self.val = val
         contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
         visualizer = gdb.default_visualizer (val['_M_payload'])

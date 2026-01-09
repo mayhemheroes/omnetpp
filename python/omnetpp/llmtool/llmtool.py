@@ -281,7 +281,7 @@ def split_by_regex(text, regex_pattern, max_chars, at_match_start_positions=True
 def extract(reply_text, original_content):
     content = reply_text
     if content.count("```") >= 2:
-        content = re.sub(r"^.*```.*?\n(.*\n)```.*$", r"\1", content, 1, re.DOTALL)
+        content = re.sub(r"^.*```.*?\n(.*\n)```.*$", r"\1", content, count=1, flags=re.DOTALL)
 
     trailing_whitespace_len = len(original_content) - len(original_content.rstrip())
     original_trailing_whitespace = original_content[-trailing_whitespace_len:]
