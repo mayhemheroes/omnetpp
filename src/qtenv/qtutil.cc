@@ -32,6 +32,7 @@
 
 #include "common/stringutil.h"
 #include "common/colorutil.h"
+#include "common/unitconversion.h"
 #include "common/opp_ctype.h"
 #include "common/patternmatcher.h"
 #include "common/ver.h"
@@ -42,6 +43,8 @@
 #include "omnetpp/csimplemodule.h"
 #include "omnetpp/cpacket.h"
 #include "omnetpp/cchannel.h"
+#include "omnetpp/cdelaychannel.h"
+#include "omnetpp/cdataratechannel.h"
 #include "omnetpp/cgate.h"
 #include "omnetpp/cpar.h"
 #include "omnetpp/cresultlistener.h"
@@ -442,23 +445,167 @@ bool isAPL()
 
 //----------------------------------------------------------------------
 
-// Helper constants
-const QString ARROW_NORMAL = "&nbsp;->&nbsp;";
-const QString ARROW_CHANNEL = "&nbsp;-c->&nbsp;";
-const QString ELLIPSIS_ARROW = "...&nbsp;->&nbsp;";
-
-// Helper function to get arrow string based on channel presence
-QString getArrowString(cGate *gate)
-{
-    return gate->getChannel() ? ARROW_CHANNEL : ARROW_NORMAL;
-}
-
 // Helper function to get relative path of an object with respect to another
-QString relativePath(cObject *obj, cObject *relativeTo)
+std::string relativePath(cObject *obj, cObject *relativeTo)
 {
     // the "." is appended to the prefix so it's not left at the start, plus,
     // this way the result won't be empty if the two parameters point to the same object
-    return QString::fromStdString(opp_removestart(obj->getFullPath(), relativeTo->getFullPath() + "."));
+    std::string path = opp_removestart(obj->getFullPath(), relativeTo->getFullPath() + ".");
+    path = opp_removestart(path, getSimulation()->getSystemModule()->getFullPath() + ".");
+    return path;
+}
+
+std::string blueFont(const std::string& str)
+{
+    std::string linkColor = QToolTip::palette().link().color().name().toStdString();
+    return "<font color='" + linkColor + "'>" + str + "</font>";
+}
+
+std::string blueFontIf(const std::string& str, bool blue)
+{
+    return blue ? blueFont(str) : str;
+}
+
+std::string formatInBestUnit(double value, const char* unit)
+{
+    const char* bestUnit = UnitConversion::getBestUnit(value, unit);
+    double convertedValue = UnitConversion::convertUnit(value, unit, bestUnit);
+    return UnitConversion::formatQuantity(convertedValue, bestUnit);
+}
+
+std::string channelBriefInfo(cChannel *chan)
+{
+    if (chan->isDisabled())
+        return "disabled";
+
+    std::string result;
+
+    const char* typeName = chan->getComponentType()->getFullName();
+    bool isBuiltinType = opp_stringbeginswith(typeName, "ned.");
+    if (!isBuiltinType) {
+        result = std::string(chan->getChannelType()->getName()) + " (";
+    }
+
+    if (auto datarateChannel = dynamic_cast<cDatarateChannel*>(chan)) {
+        bool empty = true;
+        double datarate = datarateChannel->getDatarate();
+        if (datarate > 0) {
+            result += formatInBestUnit(datarate, "bps");
+            empty = false;
+        }
+
+        simtime_t delay = datarateChannel->getDelay();
+        if (delay > 0) {
+            if (!empty) result += " ";
+            result += formatInBestUnit(delay.dbl(), "s");
+            empty = false;
+        }
+
+        double ber = datarateChannel->getBitErrorRate();
+        if (ber > 0) {
+            if (!empty) result += " ";
+            result += "ber=" + std::to_string(ber);
+            empty = false;
+        }
+
+        double per = datarateChannel->getPacketErrorRate();
+        if (per > 0) {
+            if (!empty) result += " ";
+            result += "per=" + std::to_string(per);
+        }
+    }
+    else if (auto delayChannel = dynamic_cast<cDelayChannel*>(chan)) {
+        simtime_t delay = delayChannel->getDelay();
+        if (delay > 0) {
+            result += formatInBestUnit(delay.dbl(), "s");
+        }
+    }
+    else if (dynamic_cast<cIdealChannel*>(chan)) {
+        // no-op
+    }
+    else {
+        result += "...";
+    }
+
+    if (!isBuiltinType) {
+        result += ")";
+    }
+
+    return result;
+}
+
+std::string makeConnectionTooltip(cGate *gate, bool verboseTooltip, cObject *context)
+{
+    cGate *pathStart = gate->getPathStartGate();
+    cGate *pathEnd = gate->getPathEndGate();
+    cGate *nextGate = gate->getNextGate();
+
+    if (!nextGate)
+        return relativePath(gate, context);
+
+    // when hovering over an inout gate's conn, both dirs are shown as one-liners;
+    // swap one of them to increase readability
+    bool reverse = !verboseTooltip && gate->getOwnerModule()->getId() > nextGate->getOwnerModule()->getId();
+
+    const std::string arrow = reverse ? " ⟵ " : " ⟶ ";
+    cGate *firstGate = reverse ? pathEnd : pathStart;
+    cGate *lastGate = reverse ? pathStart : pathEnd;
+
+    std::string tooltip;
+    bool lastWasEllipsis = false;
+    for (cGate *hop = firstGate; hop && hop != lastGate; hop = reverse ? hop->getPreviousGate() : hop->getNextGate()) {
+        bool isIntermediate = hop != pathStart && hop != pathEnd && hop != gate && hop != nextGate;
+
+        cGate *channelOwnerGate = reverse ? hop->getPreviousGate() : hop;
+        cChannel *chan = channelOwnerGate == nullptr ? nullptr : channelOwnerGate->getChannel();
+        bool hasChannel = chan && dynamic_cast<cIdealChannel *>(chan) == nullptr;
+
+        if (isIntermediate) {
+            // Only add "..." if we haven't just added one
+            if (!lastWasEllipsis) {
+                tooltip += blueFont("..." + arrow);
+                lastWasEllipsis = true;
+            }
+        } else {
+            tooltip += blueFontIf(opp_htmlquote(relativePath(hop, context)), hop != gate && hop != nextGate);
+            tooltip += blueFontIf(arrow, channelOwnerGate != gate);
+            lastWasEllipsis = false;
+        }
+
+        if (hasChannel) {
+            tooltip += blueFontIf(opp_htmlquote(channelBriefInfo(chan) + arrow), channelOwnerGate != gate);
+            lastWasEllipsis = false;  // Reset since we added channel info
+        }
+    }
+    tooltip += blueFontIf(relativePath(lastGate, context), lastGate != gate && lastGate != nextGate);
+
+    // Add verbose connection path details
+    if (verboseTooltip) {
+        tooltip += "\n\nConnection path:";
+
+        tooltip += "<ol>";
+        for (cGate *hop = pathStart; hop != nullptr; hop = hop->getNextGate()) {
+            cModule *ownerModule = hop->getOwnerModule();
+            std::string modulePath = ownerModule->getFullPath();
+            std::string moduleNedType = ownerModule->getModuleType()->getName();
+            std::string gateName = hop->getName();
+            std::string gateType = cGate::getTypeName(hop->getType());
+            tooltip += "<li>" + opp_htmlquote(modulePath + " (" + moduleNedType + "), " + gateName + " (" + gateType + ")");
+            if (cChannel *chan = hop->getChannel()) {
+                std::string channelName = chan->getFullName();
+                std::string channelNedType = chan->getChannelType()->getName();
+                tooltip += "<li>" + blueFont(opp_htmlquote(channelName + " (" + channelNedType + ") " + chan->str()));
+            }
+            else if (hop->getNextGate() != nullptr)
+                tooltip += "<li>" + blueFont("no channel");
+        }
+        tooltip += "</ol>";
+    }
+
+    tooltip = opp_replacesubstring(tooltip, " ", "&nbsp;", true);
+    tooltip = opp_replacesubstring(tooltip, "<font&nbsp;color", "<font color", true);
+
+    return tooltip;
 }
 
 QString makeObjectTooltip(cObject *obj, bool verboseTooltip, cObject *context)
@@ -483,74 +630,7 @@ QString makeObjectTooltip(cObject *obj, bool verboseTooltip, cObject *context)
 
     // connections are also handled specially
     if (auto gate = dynamic_cast<cGate *>(obj)) {
-        cGate *pathStart = gate->getPathStartGate();
-        cGate *pathEnd = gate->getPathEndGate();
-        cGate *nextGate = gate->getNextGate();
-
-        // Null safety check
-        if (!nextGate)
-            return relativePath(gate, context);
-
-        bool pathEndpointIncluded = (pathStart != gate) || (pathEnd != nextGate);
-
-        QString tooltip;
-        // Add path start if different from current gate
-        if (pathStart != gate) {
-            tooltip += relativePath(pathStart, context);
-            tooltip += getArrowString(pathStart);
-
-            if (pathStart->getNextGate() != gate)
-                tooltip += ELLIPSIS_ARROW;
-        }
-
-        // Add current gate connection (highlighted if it's an intermediate hop)
-        if (pathEndpointIncluded)
-            tooltip += "<b>";
-
-        tooltip += relativePath(gate, context);
-        tooltip += getArrowString(gate);
-        tooltip += relativePath(nextGate, context);
-
-        if (pathEndpointIncluded)
-            tooltip += "</b>";
-
-        // Add path end if different from next gate
-        if (pathEnd != nextGate) {
-            tooltip += getArrowString(nextGate);
-
-            cGate *nextNextGate = nextGate->getNextGate();
-            if (nextNextGate && pathEnd != nextNextGate)
-                tooltip += ELLIPSIS_ARROW;
-
-            tooltip += relativePath(pathEnd, context);
-        }
-
-        // Add verbose connection path details
-        if (verboseTooltip) {
-            tooltip += "\n\nConnection path:";
-
-            cGate *endGate = pathEnd->getNextGate();
-            for (cGate *hop = pathStart; hop && hop != endGate; hop = hop->getNextGate()) {
-                tooltip += "\n";
-                if (hop != pathStart)
-                    tooltip += ARROW_NORMAL;
-                else
-                    tooltip += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                tooltip += relativePath(gate, context);
-
-                if (cChannel *chan = hop->getChannel()) {
-                    tooltip += ARROW_NORMAL;
-                    tooltip += getObjectShortTypeName(chan);
-                    tooltip += "&nbsp;{&nbsp;";
-                    tooltip += QString::fromStdString(
-                        opp_replacesubstring(opp_trim(chan->str()), " ", "&nbsp;", true)
-                    );
-                    tooltip += "&nbsp;}";
-                }
-            }
-        }
-
-        return tooltip;
+        return makeConnectionTooltip(gate, verboseTooltip, context).c_str();
     }
 
     // for components, use the "tt" DisplayString key
@@ -562,24 +642,22 @@ QString makeObjectTooltip(cObject *obj, bool verboseTooltip, cObject *context)
     }
 
     // if none of the above applies, showing some generic info
-    QString tooltip = obj->getFullName() + QString(" (") + getObjectShortTypeName(obj) + ")";
+    std::string tooltip = std::string(obj->getFullName()) + " (" + getObjectShortTypeName(obj).toStdString() + ")";
     std::string objStr = obj->str();
-    if (!objStr.empty()) {
-        QString linkColor = QToolTip::palette().link().color().name();
-        tooltip += QString(", ") + "<font color='" + linkColor + "'>" + objStr.c_str() + "</font>";
-    }
+    if (!objStr.empty())
+        tooltip += ", " + blueFont(objStr);
 
     // for components, add NED docs, if enabled
     bool showNedDoc = getQtenv()->getPref("ned-doc-tooltips", true).toBool();
     if (verboseTooltip && showNedDoc) {
         if (cComponent *component = dynamic_cast<cComponent *>(obj)) {
-            QString nedComment = getComponentDocumentationForTooltip(component).c_str();
-            if (!nedComment.isEmpty())
-                tooltip += QString("\n\n") + component->getComponentType()->getName() + ": " + nedComment;
+            std::string nedComment = getComponentDocumentationForTooltip(component);
+            if (!nedComment.empty())
+                tooltip += "\n\n" + std::string(component->getComponentType()->getName()) + ": " + nedComment;
         }
     }
 
-    return tooltip;
+    return tooltip.c_str();
 }
 
 std::string getComponentDocumentationForTooltip(cComponent *comp)
@@ -852,4 +930,3 @@ SearchResult findSubstring(const char *haystack, const char *needle, int startIn
 
 }  // namespace qtenv
 }  // namespace omnetpp
-
