@@ -18,7 +18,10 @@
 #include "omnetpp/cstringtokenizer.h"
 #include "omnetpp/cdynamicexpression.h"
 #include "omnetpp/ccomponent.h"
+#include "common/stringutil.h"
 #include "ctemporaryowner.h"
+
+using namespace omnetpp::common;
 
 namespace omnetpp {
 namespace internal {
@@ -194,16 +197,15 @@ std::string cXMLParImpl::str() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
-    else
-        return obj ? obj->str() : "nullptr";
+    return obj ? obj->str() : "nullptr";
 }
 
 std::string cXMLParImpl::unparse() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
-    else
-        return obj ? obj->str() : "nullptr";
+
+    return obj ? "xml(" + opp_quotestr(obj->getXML(), '\'') + ")" : "nullptr";
 }
 
 void cXMLParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)

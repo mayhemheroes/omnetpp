@@ -202,7 +202,7 @@ std::string cStringParImpl::str() const
     if (flags & FL_ISEXPR)
         return expr->str();
 
-    return opp_quotestr(val);
+    return opp_abbreviate(opp_quotestr(val), 300);
 }
 
 std::string cStringParImpl::unparse() const
