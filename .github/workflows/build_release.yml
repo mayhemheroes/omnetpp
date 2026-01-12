@@ -24,6 +24,17 @@ jobs:
       omnetpp_version: ${{ steps.cat_version.outputs.omnetpp_version }}
 
     steps:
+      - name: Free up disk space
+        uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: true
+          remove_dotnet: true
+          remove_haskell: true
+          remove_tool_cache: true
+          remove_swap: true
+          remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox *llvm*"
+          rm_cmd: "rmz"  # Faster cleanup
+
       - uses: actions/checkout@v4
 
       - id: cat_version
