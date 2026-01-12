@@ -136,9 +136,17 @@ class SIM_API cPar : public cObject
     virtual const char *getName() const override;
 
     /**
-     * Returns the value in text form.
+     * Returns the value in text form. The value may be abbreviated,
+     * expressed in a different measurement unit, or otherwise made
+     * more suitable for displaying in a GUI.
      */
     virtual std::string str() const override;
+
+    /**
+     * Returns the value in text form. As opposed to str(), unparse() returns
+     * a complete representation accepted by parse().
+     */
+    virtual std::string unparse() const;
 
     /**
      * Returns the component (module/channel) this parameter belongs to.

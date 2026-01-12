@@ -179,6 +179,22 @@ std::string cDoubleParImpl::str() const
     }
 }
 
+std::string cDoubleParImpl::unparse() const
+{
+    if (flags & FL_ISEXPR)
+        return expr->str();
+    else {
+        char buf[32];
+        opp_dtoa(buf, "%g", val);
+        if (!std::isfinite(val))
+            strcat(buf, " ");
+        const char *unit = getUnit();
+        if (!opp_isempty(unit))
+            strcat(buf, unit);
+        return buf;
+    }
+}
+
 void cDoubleParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression

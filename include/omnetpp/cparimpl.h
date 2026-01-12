@@ -347,6 +347,12 @@ class SIM_API cParImpl : public cNamedObject
     virtual void convertToConst(cComponent *context, const cPar *targetPar) = 0;
 
     /**
+     * Returns the value in text form. As opposed to str(), unparse() returns
+     * a complete representation accepted by parse().
+     */
+    virtual std::string unparse() const = 0;
+
+    /**
      * Convert the value from string, and store the result.
      * If the text cannot be parsed, an exception is thrown, which
      * can be caught as std::runtime_error& if necessary.

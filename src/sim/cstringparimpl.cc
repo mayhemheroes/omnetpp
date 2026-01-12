@@ -205,6 +205,14 @@ std::string cStringParImpl::str() const
     return opp_quotestr(val);
 }
 
+std::string cStringParImpl::unparse() const
+{
+    if (flags & FL_ISEXPR)
+        return expr->str();
+
+    return opp_quotestr(val);
+}
+
 void cStringParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression

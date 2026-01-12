@@ -189,6 +189,11 @@ class SIM_API cDoubleParImpl : public cParImpl
     virtual std::string str() const override;
 
     /**
+     * Returns the value in text form.
+     */
+    virtual std::string unparse() const override;
+
+    /**
      * Converts from text.
      */
     virtual void parse(const char *text, FileLine loc, const cPar *targetPar) override;

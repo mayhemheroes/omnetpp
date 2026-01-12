@@ -168,6 +168,13 @@ std::string cBoolParImpl::str() const
     return val ? "true" : "false";
 }
 
+std::string cBoolParImpl::unparse() const
+{
+    if (flags & FL_ISEXPR)
+        return expr->str();
+    return val ? "true" : "false";
+}
+
 void cBoolParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // shortcut: recognize "true" and "false"

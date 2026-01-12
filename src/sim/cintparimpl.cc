@@ -176,6 +176,21 @@ std::string cIntParImpl::str() const
     }
 }
 
+std::string cIntParImpl::unparse() const
+{
+    if (flags & FL_ISEXPR)
+        return expr->str();
+    else {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "%" PRId64, (int64_t)val);
+        const char *unit = getUnit();
+        if (!unit)
+            return buf;
+        else
+            return std::string(buf) + unit;
+    }
+}
+
 void cIntParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
@@ -212,4 +227,3 @@ int cIntParImpl::compare(const cParImpl *other) const
 
 }  // namespace internal
 }  // namespace omnetpp
-

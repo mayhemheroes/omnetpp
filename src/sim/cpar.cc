@@ -76,6 +76,11 @@ std::string cPar::str() const
     return p->str();
 }
 
+std::string cPar::unparse() const
+{
+    return p->unparse();
+}
+
 internal::cParImpl *cPar::copyIfShared()
 {
     if (p->isShared()) {

@@ -198,6 +198,14 @@ std::string cXMLParImpl::str() const
         return obj ? obj->str() : "nullptr";
 }
 
+std::string cXMLParImpl::unparse() const
+{
+    if (flags & FL_ISEXPR)
+        return expr->str();
+    else
+        return obj ? obj->str() : "nullptr";
+}
+
 void cXMLParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
 {
     // try parsing it as an expression
