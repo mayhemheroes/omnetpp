@@ -575,6 +575,11 @@ COMMON_API std::string opp_markup2latex(const std::string& str);
 COMMON_API std::string opp_xmlquote(const std::string& str);
 
 /**
+ + * HTML-quote the string.
+ */
+inline std::string opp_htmlquote(const std::string& str) { return opp_xmlquote(str); }
+
+/**
  * Produces a hex dump of the given memory buffer.
  */
 COMMON_API std::string opp_hexdump(const void *ptr, size_t count, bool linebreaks=true);

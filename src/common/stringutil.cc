@@ -1205,7 +1205,7 @@ std::string opp_markup2latex(const std::string& str)
 
 std::string opp_xmlquote(const std::string& str)
 {
-    if (!strchr(str.c_str(), '<') && !strchr(str.c_str(), '>') && !strchr(str.c_str(), '&') && !strchr(str.c_str(), '"'))
+    if (!strchr(str.c_str(), '<') && !strchr(str.c_str(), '>') && !strchr(str.c_str(), '&') && !strchr(str.c_str(), '"') && !strchr(str.c_str(), '\''))
         return str;
 
     std::stringstream out;
@@ -1216,6 +1216,7 @@ std::string opp_xmlquote(const std::string& str)
             case '>': out << "&gt;"; break;
             case '&': out << "&amp;"; break;
             case '"': out << "&quot;"; break;
+            case '\'': out << "&#39;"; break;
             default: out << c;
         }
     }
