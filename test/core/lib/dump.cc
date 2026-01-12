@@ -75,7 +75,7 @@ void Dump::dump(cModule *mod, std::ostream& out, std::string indent)
             parametersHeadingPrinted = true;
         }
         cPar& par = mod->par(i);
-        std::string valueString = par.str();
+        std::string valueString = par.unparse();
         if (par.isVolatile()) {
             try {
                 valueString += " <volatile value>: " + par.getValue().str();

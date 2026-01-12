@@ -617,7 +617,7 @@ void Cmdenv::askParameter(cPar *par, bool unassigned)
 
         // ask the user. note: gets() will signal "cancel" by throwing an exception
         if (!prompt.empty())
-            reply = this->gets(prompt.c_str(), par->str().c_str());
+            reply = this->gets(prompt.c_str(), par->unparse().c_str());
         else
             // DO NOT change the "Enter parameter" string. The IDE launcher plugin matches
             // against this string for detecting user input

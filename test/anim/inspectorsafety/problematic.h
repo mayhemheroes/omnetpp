@@ -10,7 +10,7 @@ static void setDispStr(omnetpp::cModule *mod) {
     bool testComplete = true;
     for (int i = 0; i < mod->getNumParams(); ++i) {
         omnetpp::cPar &par = mod->par(i);
-        ds += std::string("\n") + par.getName() + "\t" + par.str();
+        ds += std::string("\n") + par.getName() + "\t" + par.unparse();
 
         if (!par.boolValue())
             testComplete = false;

@@ -202,7 +202,7 @@ bool OmnetppOutputScalarManager::recordParameter(cPar *par)
     if (!enabled)
         return false;
 
-    writer.recordParameter(componentFullPath, name, par->str(), ResultFileUtils::convertProperties(par->getProperties()));
+    writer.recordParameter(componentFullPath, name, par->unparse(), ResultFileUtils::convertProperties(par->getProperties()));
     return true;
 }
 

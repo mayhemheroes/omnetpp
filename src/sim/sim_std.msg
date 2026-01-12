@@ -826,7 +826,7 @@ class cPar extends cObject
     @descriptor(readonly);
     @icon(param);
     @fromString(parse);
-    string value @getter(str) @setter(parse) @editable;
+    string value @getter(unparse) @setter(parse) @editable;
     char type @enum(cPar::Type) @hint("Parameter type");
     string unit @hint("For long and double types only");
     bool isNumeric @getter(isNumeric) @group(flags) @hint("Whether parameter type is numeric, i.e. double or long");

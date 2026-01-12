@@ -1432,7 +1432,7 @@ QString Qtenv::computeSimulationHash()
             for (int i = 0; i < numParams; ++i) {
                 cPar& par = component->par(i);
                 hasher.add(par.getName());
-                hasher.add(par.str().c_str());
+                hasher.add(par.unparse().c_str());
             }
 
             cModule *module = dynamic_cast<cModule *>(component);
@@ -2049,7 +2049,7 @@ void Qtenv::askParameter(cPar *par, bool unassigned)
 
         std::string reply;
         std::string title = unassigned ? "Unassigned Parameter" : "Requested to Ask Parameter";
-        std::string defaultValue = par->str();
+        std::string defaultValue = par->unparse();
         bool ok = inputDialog(title.c_str(), prompt.c_str(),
                     "Use this value for all similar parameters",
                     defaultValue.c_str(), reply, useForAll);
