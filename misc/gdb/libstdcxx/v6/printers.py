@@ -949,7 +949,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
     "Print a std::any or std::experimental::any"
 
     def __init__ (self, typename, val):
-        self.typename = re.sub('^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, count=1)
+        self.typename = re.sub(r'^std::experimental::fundamentals_v\d::', 'std::experimental::', typename, count=1)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -965,7 +965,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
                 raise ValueError("Unknown manager function in %s" % self.typename)
 
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
-            mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
+            mgrname = re.sub(r"std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
             mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None
@@ -993,7 +993,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
 
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
-        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, count=1)
+        self.typename = re.sub(r'^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, count=1)
         self.val = val
         contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
         visualizer = gdb.default_visualizer (val['_M_payload'])
