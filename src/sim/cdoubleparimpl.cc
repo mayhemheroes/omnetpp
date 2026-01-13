@@ -19,6 +19,7 @@
 #include "omnetpp/cdynamicexpression.h"
 #include "omnetpp/ccomponent.h"
 #include "common/stringutil.h"
+#include "common/unitconversion.h"
 #include "ctemporaryowner.h"
 
 using namespace omnetpp::common;
@@ -167,32 +168,14 @@ std::string cDoubleParImpl::str() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
-    else {
-        char buf[32];
-        opp_dtoa(buf, "%g", val);
-        if (!std::isfinite(val))
-            strcat(buf, " ");
-        const char *unit = getUnit();
-        if (!opp_isempty(unit))
-            strcat(buf, unit);
-        return buf;
-    }
+    return UnitConversion::formatInBestUnit(val, getUnit());
 }
 
 std::string cDoubleParImpl::unparse() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
-    else {
-        char buf[32];
-        opp_dtoa(buf, "%g", val);
-        if (!std::isfinite(val))
-            strcat(buf, " ");
-        const char *unit = getUnit();
-        if (!opp_isempty(unit))
-            strcat(buf, unit);
-        return buf;
-    }
+    return UnitConversion::formatQuantity(val, getUnit());
 }
 
 void cDoubleParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)

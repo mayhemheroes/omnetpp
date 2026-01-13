@@ -19,7 +19,10 @@
 #include "omnetpp/cstringtokenizer.h"
 #include "omnetpp/cdynamicexpression.h"
 #include "omnetpp/ccomponent.h"
+#include "common/unitconversion.h"
 #include "ctemporaryowner.h"
+
+using namespace omnetpp::common;
 
 namespace omnetpp {
 namespace internal {
@@ -165,14 +168,14 @@ std::string cIntParImpl::str() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
+
+    const char *unit = getUnit();
+    if (unit)
+        return UnitConversion::formatInBestUnit(static_cast<double>(val), getUnit());
     else {
         char buf[32];
         snprintf(buf, sizeof(buf), "%" PRId64, (int64_t)val);
-        const char *unit = getUnit();
-        if (!unit)
-            return buf;
-        else
-            return std::string(buf) + unit;
+        return buf;
     }
 }
 
