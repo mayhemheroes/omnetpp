@@ -648,7 +648,7 @@ void ModuleCanvasViewer::buildConnectionGrouping()
             // Check if this is a bidirectional connection (between inout gates)
             if (isTwoWayConnection(gate)) {
                 // This gate and its reverse connection form a single visual line
-                cGate *reverseGate = getGateOtherHalf(gate->getNextGate());
+                cGate *reverseGate = gate->getNextGate()->getOtherHalf();
 
                 // Assign the same index to both directions
                 connectionGrouping[gate] = std::make_pair(index, 0);
@@ -1139,7 +1139,7 @@ void ModuleCanvasViewer::refresh()
                 if (isTwoWayConnection(g)) {
                     // if it is two way connection, refresh the "other half" of it as well,
                     // so in case the connection line itself has changed, it isn't split in two
-                    cGate *otherDirection = getGateOtherHalf(g->getNextGate());
+                    cGate *otherDirection = g->getNextGate()->getOtherHalf();
                     if (!contains(changedConnections, otherDirection)) // don't do it twice
                         refreshConnection(otherDirection);
                 }

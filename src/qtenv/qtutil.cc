@@ -628,13 +628,6 @@ QDebug& operator<<(QDebug& d, const SimTime& t)
     return d << t.format(SimTime::getScaleExp(), ".", "'", true);
 }
 
-cGate *getGateOtherHalf(cGate *gate)
-{
-    cGate::Type otherType = gate->getType() == cGate::INPUT ? cGate::OUTPUT : cGate::INPUT;
-    int index = gate->isVector() ? gate->getIndex() : -1; // -1 will tell gateHalf that it's not a vector
-    return gate->getOwnerModule()->gateHalf(gate->getBaseName(), otherType, index);
-}
-
 bool isTwoWayConnection(cGate *gate)
 {
     if (!gate)
@@ -649,10 +642,10 @@ bool isTwoWayConnection(cGate *gate)
     // gate      o-------------------->o dest_gate
     // gate_pair o<--------------------o dest_gate_pair
     if (gate->getNameSuffix()[0]) {
-        const cGate *gatePair = getGateOtherHalf(gate);
+        const cGate *gatePair = gate->getOtherHalf();
 
         if (destGate->getNameSuffix()[0]) {
-            const cGate *destGatePair = getGateOtherHalf(destGate);
+            const cGate *destGatePair = destGate->getOtherHalf();
             return destGatePair == gatePair->getPreviousGate();
         }
     }
