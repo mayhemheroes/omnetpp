@@ -30,6 +30,7 @@
 #include "inspectorutil.h"
 #include "preferencesdialog.h"
 #include "genericobjectinspector.h"
+#include "objecttreeinspector.h"
 #include "moduleinspector.h"
 #include "mainwindow.h"
 
@@ -136,6 +137,29 @@ void InspectorUtil::fillInspectorContextMenu(QMenu *menu, cObject *object, Inspe
         menu->addSeparator();
         action = menu->addAction(QString("Exclude Messages Like '") + name + "' From Animation", getQtenv(), SLOT(excludeMessage()));
         action->setData(QVariant::fromValue(object));
+    }
+
+    // add gate-specific menu items
+    if (cGate *gate = dynamic_cast<cGate *>(object)) {
+        cGate *pathStartGate = gate->getPathStartGate();
+        if (pathStartGate && pathStartGate != gate) {
+            cModule *pathStartModule = pathStartGate->getOwnerModule();
+            QAction *goToStart = menu->addAction(QString("Go to Connection Path Start '%1'").arg(pathStartGate->getFullPath().c_str()));
+            QObject::connect(goToStart, &QAction::triggered, [pathStartModule,pathStartGate]() {
+                getQtenv()->getMainModuleInspector()->setObject(pathStartModule);
+                getQtenv()->getMainObjectTreeInspector()->highlightGate(pathStartGate);
+            });
+        }
+
+        cGate *pathEndGate = gate->getPathEndGate();
+        if (pathEndGate && pathEndGate != gate) {
+            cModule *pathEndModule = pathEndGate->getOwnerModule();
+            QAction *goToEnd = menu->addAction(QString("Go to Connection Path End '%1'").arg(pathEndGate->getFullPath().c_str()));
+            QObject::connect(goToEnd, &QAction::triggered, [pathEndModule,pathEndGate]() {
+                getQtenv()->getMainModuleInspector()->setObject(pathEndModule);
+                getQtenv()->getMainObjectTreeInspector()->highlightGate(pathEndGate);
+            });
+        }
     }
 
     if (comp) {
@@ -337,4 +361,3 @@ QString InspectorUtil::formatDouble(double num)
 
 }  // namespace qtenv
 }  // namespace omnetpp
-

@@ -284,6 +284,7 @@ class QTENV_API Qtenv : public QObject, public EnvirBase
       DisplayUpdateController *getDisplayUpdateController() { return displayUpdateController; }
       ModuleLayouter *getModuleLayouter() { return &moduleLayouter; }
 
+      ObjectTreeInspector *getMainObjectTreeInspector() { return mainObjectTree; }
       GenericObjectInspector *getMainObjectInspector() { return mainInspector; }
       ModuleInspector *getMainModuleInspector() { return mainNetworkView; }
       LogInspector *getMainLogInspector() { return mainLogView; }

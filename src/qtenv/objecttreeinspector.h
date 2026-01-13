@@ -49,6 +49,7 @@ private Q_SLOTS:
 public Q_SLOTS:
     void createContextMenu(QPoint pos);
     void highlightModule(cModule *module);
+    void highlightGate(cGate *gate);
 
 Q_SIGNALS:
     void showInGraphicsRequested(cObject *object);

@@ -28,6 +28,8 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QScrollBar>
 #include <QtGui/QKeyEvent>
+#include <functional>
+#include <algorithm>
 
 #include <QtCore/QDebug>
 
@@ -310,6 +312,47 @@ void ObjectTreeInspector::highlightModule(cModule *module)
         // without auto-collapsing expanded nodes and/or a Collapse All functionality,
         // that is more annoying than useful.
         //view->expand(currentIndex);
+    }
+}
+
+void ObjectTreeInspector::highlightGate(cGate *gate)
+{
+    if (!gate || !model)
+        return;
+
+    // First, find and select the owner module
+    cModule *ownerModule = gate->getOwnerModule();
+    if (!ownerModule)
+        return;
+
+    highlightModule(ownerModule);
+
+    // Now find the gate within the module's children
+    QModelIndex moduleIndex = view->currentIndex();
+    if (!moduleIndex.isValid())
+        return;
+
+    // Ensure the module node is expanded to show its children (including gates)
+    view->expand(moduleIndex);
+
+    // Ensure children are loaded
+    if (model->canFetchMore(moduleIndex))
+        model->fetchMore(moduleIndex);
+
+    // Search for the gate among the module's children
+    int rowCount = model->rowCount(moduleIndex);
+    for (int row = 0; row < rowCount; ++row) {
+        QModelIndex childIndex = model->index(row, 0, moduleIndex);
+        if (!childIndex.isValid())
+            continue;
+
+        cObject *childObj = model->getCObjectPointer(childIndex);
+        if (childObj == gate) {
+            // Found the gate! Select it and scroll to it
+            view->setCurrentIndex(childIndex);
+            view->scrollTo(childIndex, QAbstractItemView::EnsureVisible);
+            return;
+        }
     }
 }
 
