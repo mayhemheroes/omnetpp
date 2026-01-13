@@ -176,15 +176,16 @@ QString ModuleCanvasViewer::tooltipAt(const QRect& rect)
     // So we have to store their tooltips as custom user data.
 
     auto items = scene()->items(mapToScene(rect));
-    bool singleObjectTooltip = (items.size() == 1);  // initially
+    auto objects = gatherObjects(items);
+    bool verboseTooltip = (objects.size() == 1);  // initially
 
-    auto tips = gatherTooltips(items, singleObjectTooltip);
+    auto tips = gatherTooltips(objects, verboseTooltip);
     if (tips.empty())
         return "";
 
     // if we got the flag wrong, redo it with the flag flipped
-    if ((tips.size() <= 1) != singleObjectTooltip) {
-        tips = gatherTooltips(items, !singleObjectTooltip);
+    if ((tips.size() <= 1) != verboseTooltip) {
+        tips = gatherTooltips(objects, !verboseTooltip);
     }
 
     // multi-object tooltips should not be wrapped (they're one line per object)
@@ -200,22 +201,28 @@ QString ModuleCanvasViewer::tooltipAt(const QRect& rect)
     return joined;
 }
 
-QStringList ModuleCanvasViewer::gatherTooltips(const QList<QGraphicsItem*>& items, bool singleObjectTooltip)
+std::vector<cObject *> ModuleCanvasViewer::gatherObjects(const QList<QGraphicsItem*>& items)
+{
+    std::vector<cObject *> objects;
+    for (auto i : items) {
+        cObject *itemObject = i->data(ITEMDATA_COBJECT).value<cObject *>();
+
+        if (itemObject && itemObject != object) {
+            // deduplication
+            if (std::find(objects.begin(), objects.end(), itemObject) == objects.end())
+                objects.push_back(itemObject);
+        }
+    }
+    return objects;
+}
+
+QStringList ModuleCanvasViewer::gatherTooltips(const std::vector<cObject*>& objects, bool singleObjectTooltip)
 {
     QStringList tips;
-    for (auto i : items) {
-        QString itemTip = i->data(ITEMDATA_TOOLTIP).toString();
-
-        if (itemTip.isEmpty() && getQtenv()->inspectorsAreFresh()) {
-            cObject *itemObject = i->data(ITEMDATA_COBJECT).value<cObject *>();
-
-            if (itemObject && itemObject != object)
-                itemTip = makeObjectTooltip(itemObject, singleObjectTooltip, object);
-        }
-
-        // skipping empties, deduplication
-        if (!itemTip.isEmpty() && !tips.contains(itemTip))
-            tips += itemTip;
+    for (cObject *obj : objects) {
+        QString tip = makeObjectTooltip(obj, singleObjectTooltip, object);
+        if (!tip.isEmpty() && !tips.contains(tip))
+            tips += tip;
     }
     return tips;
 }

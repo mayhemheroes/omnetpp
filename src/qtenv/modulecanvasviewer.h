@@ -142,7 +142,8 @@ private:
     // similar logic as in getObjectsAt()
     QString tooltipAt(const QPoint& pos, int threshold = 4);
     QString tooltipAt(const QRect& rect);
-    QStringList gatherTooltips(const QList<QGraphicsItem*>& items, bool singleObjectTooltip);
+    std::vector<cObject *> gatherObjects(const QList<QGraphicsItem*>& items);
+    QStringList gatherTooltips(const std::vector<cObject*>& objects, bool singleObjectTooltip);
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
