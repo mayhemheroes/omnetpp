@@ -600,6 +600,11 @@ std::string makeConnectionTooltip(cGate *gate, bool verboseTooltip, cObject *con
                 tooltip += "<li>" + blueFont("no channel");
         }
         tooltip += "</ol>";
+
+        bool isBidirConn = gate->isGateHalf() && gate->getNextGate() && gate->getNextGate()->isGateHalf() &&
+                           gate->getNextGate()->getOtherHalf()->getNextGate() == gate->getOtherHalf();
+        if (isBidirConn)
+            tooltip += "Tip: Hover over different parts of the connection line (start/middle/end) for specific information.";
     }
 
     tooltip = opp_replacesubstring(tooltip, " ", "&nbsp;", true);
