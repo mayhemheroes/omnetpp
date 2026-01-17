@@ -327,10 +327,17 @@ bool UnitConversion::readUnit(const char *& s, std::string& unitName)
     unitName = "";
     while (opp_isspace(*s))
         s++;
-    while (opp_isalpha(*s))
+
+    // First character must be letter or underscore
+    if (opp_isalpha(*s) || *s == '_') {
         unitName.append(1, *s++);
-    while (opp_isspace(*s))
-        s++;
+        // Subsequent characters can be letters, digits, or underscores
+        while (opp_isalnum(*s) || *s == '_')
+            unitName.append(1, *s++);
+        while (opp_isspace(*s))
+            s++;
+    }
+
     return !unitName.empty();
 }
 
