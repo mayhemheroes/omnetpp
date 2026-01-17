@@ -146,6 +146,12 @@ class COMMON_API UnitConversion
     static std::string formatQuantity(double d, const char *unit=nullptr);
 
     /**
+     * Utility function that combines getBestUnit() and formatQuantity() to
+     * format the given quantity in the unit best suited to the value.
+     */
+    static std::string formatInBestUnit(double value, const char* unit);
+
+    /**
      * Returns a descriptive name of the given unit; in the worst case
      * it returns the input string itself in quotes.
      */

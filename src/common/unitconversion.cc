@@ -415,6 +415,13 @@ std::string UnitConversion::formatQuantity(double value, const char *unitName)
     return buf;
 }
 
+std::string UnitConversion::formatInBestUnit(double value, const char* unit)
+{
+    const char* bestUnit = getBestUnit(value, unit);
+    double convertedValue = convertUnit(value, unit, bestUnit);
+    return formatQuantity(convertedValue, bestUnit);
+}
+
 std::string UnitConversion::getUnitDescription(const char *unitName)
 {
     const Unit *unit = lookupUnit(unitName);

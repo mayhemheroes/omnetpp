@@ -466,13 +466,6 @@ std::string blueFontIf(const std::string& str, bool blue)
     return blue ? blueFont(str) : str;
 }
 
-std::string formatInBestUnit(double value, const char* unit)
-{
-    const char* bestUnit = UnitConversion::getBestUnit(value, unit);
-    double convertedValue = UnitConversion::convertUnit(value, unit, bestUnit);
-    return UnitConversion::formatQuantity(convertedValue, bestUnit);
-}
-
 std::string channelBriefInfo(cChannel *chan)
 {
     if (chan->isDisabled())
@@ -490,14 +483,14 @@ std::string channelBriefInfo(cChannel *chan)
         bool empty = true;
         double datarate = datarateChannel->getDatarate();
         if (datarate > 0) {
-            result += formatInBestUnit(datarate, "bps");
+            result += UnitConversion::formatInBestUnit(datarate, "bps");
             empty = false;
         }
 
         simtime_t delay = datarateChannel->getDelay();
         if (delay > 0) {
             if (!empty) result += " ";
-            result += formatInBestUnit(delay.dbl(), "s");
+            result += UnitConversion::formatInBestUnit(delay.dbl(), "s");
             empty = false;
         }
 
@@ -517,7 +510,7 @@ std::string channelBriefInfo(cChannel *chan)
     else if (auto delayChannel = dynamic_cast<cDelayChannel*>(chan)) {
         simtime_t delay = delayChannel->getDelay();
         if (delay > 0) {
-            result += formatInBestUnit(delay.dbl(), "s");
+            result += UnitConversion::formatInBestUnit(delay.dbl(), "s");
         }
     }
     else if (dynamic_cast<cIdealChannel*>(chan)) {
