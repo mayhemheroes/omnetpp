@@ -161,10 +161,10 @@ COMMON_API std::string opp_parsequotedstr(const char *txt, const char *&endp, ch
 COMMON_API std::string opp_parsequotedstr(const char *txt, char quot='"');
 
 /**
- * Surround the given string with "quotes", also escape with backslash
- * where needed.
+ * Surround the given string with the given character (normally a double quote or
+ * apostostophe), while also escaping it (and control characters) with backslash.
  */
-COMMON_API std::string opp_quotestr(const std::string& txt);
+COMMON_API std::string opp_quotestr(const std::string& txt, char quot='"');
 
 /**
  * Returns true if the string contains space, backslash, quote, or anything

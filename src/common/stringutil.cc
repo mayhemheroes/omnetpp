@@ -159,12 +159,12 @@ std::string opp_parsequotedstr(const char *txt, const char *& endp, char quot)
     return ret;
 }
 
-std::string opp_quotestr(const std::string& txt)
+std::string opp_quotestr(const std::string& txt, char quot)
 {
     size_t bufsize = 4 * txt.length() + 3; // a conservative guess
     char *buf = new char[bufsize];
     char *d = buf;
-    *d++ = '"';
+    *d++ = quot;
     const char *s = txt.c_str();
     while (*s) {
         switch (*s) {
@@ -173,13 +173,15 @@ std::string opp_quotestr(const std::string& txt)
             case '\n': *d++ = '\\'; *d++ = 'n'; s++; break;
             case '\r': *d++ = '\\'; *d++ = 'r'; s++; break;
             case '\t': *d++ = '\\'; *d++ = 't'; s++; break;
-            case '"':  *d++ = '\\'; *d++ = '"'; s++; break;
             case '\\': *d++ = '\\'; *d++ = '\\'; s++; break;
-            default: if (opp_iscntrl(*s)) {*d++='\\'; *d++='x'; snprintf(d, buf+bufsize-d, "%2.2X", *s++); d+=2;}
-                     else {*d++ = *s++;}
+            default: {
+                if (*s == quot) { *d++ = '\\'; *d++ = quot; s++; }
+                else if (opp_iscntrl(*s)) {*d++='\\'; *d++='x'; snprintf(d, buf+bufsize-d, "%2.2X", *s++); d+=2;}
+                else {*d++ = *s++;}
+            }
         }
     }
-    *d++ = '"';
+    *d++ = quot;
     *d = '\0';
 
     std::string ret = buf;
