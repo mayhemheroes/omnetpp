@@ -67,9 +67,13 @@ P("nan s");
 P("inf s");
 P("-inf s");
 
-// mixing units
+// units with numbers and underscore
+P("1J_K");  // i.e. J/K
+P("3m2");  // i.e. square meter
+
+// mixing units (note: since omnetpp-6.4, a space is required after units, i.e. 1s200ms is incorrect! it will be interpreted as 1 "s200ms")
 P("1h 0.1s");
-P("-1s200ms");
+P("-1s 200ms");
 P("1h 2min 2s 520ms");
 P("1s 550ms 700us ");
 P(" 1s 550ms 700us ");
@@ -133,8 +137,10 @@ EV << ".\n";
 'nan s' ==> nan s
 'inf s' ==> inf s
 '-inf s' ==> -inf s
+'1J_K' ==> 1 J_K
+'3m2' ==> 3 m2
 '1h 0.1s' ==> 3600.1 s
-'-1s200ms' ==> -1200 ms
+'-1s 200ms' ==> -1200 ms
 '1h 2min 2s 520ms' ==> 3.72252e+06 ms
 '1s 550ms 700us ' ==> 1.5507e+06 us
 ' 1s 550ms 700us ' ==> 1.5507e+06 us

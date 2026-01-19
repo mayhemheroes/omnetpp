@@ -8,8 +8,8 @@ simple Test
     parameters:
         @isNetwork(true);
         double p0 @unit(s) = -3s;
-        double p1 @unit(s) = -1s200ms; // note: minus sign refers to the quantity as a whole, -(1s200ms)
-        double p2 @unit(s) = 1s-200ms; // note: iterpreted as subtraction, not as a single quantity
+        double p1 @unit(s) = -1s 200ms; // note: minus sign refers to the quantity as a whole, -(1s 200ms)
+        double p2 @unit(s) = 1s-200ms; // note: interpreted as subtraction, not as a single quantity
         double p3 @unit(s) = -1s-200ms; // ditto
         double p4 @unit(dBm) = -10dBm; // logarithmic unit
 }
