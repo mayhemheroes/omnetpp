@@ -18,6 +18,7 @@ assume_yes=false
 no_3d=false
 no_gui=false
 no_build=false
+quiet=false
 PYTHON3=python3
 
 # print the usage and supported options
@@ -27,10 +28,18 @@ print_usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
     echo "  -h            Display this help message"
+    echo "  -q            Quiet mode - do not write anything to output"
     echo "  -y            Assume 'yes' answer for all interactive prompts"
     echo "  --no-gui      Do not install GUI related dependencies for Qtenv and the IDE (implies --no-3d)"
     echo "  --no-3d       Do not install 3D-related dependencies for Qtenv OpenSceneGraph support"
     echo "  --no-build    Do not configure and build OMNeT++ after installing dependencies"
+}
+
+# quiet echo function - only output if not in quiet mode
+echo_q() {
+    if ! $quiet; then
+        echo "$@"
+    fi
 }
 
 # prompt user for yes/no response
@@ -44,7 +53,7 @@ ask_user() {
             case "$yn" in
                 [Yy]* ) return 0;;
                 [Nn]* ) return 1;;
-                * ) echo "Please answer yes or no.";;
+                * ) echo_q "Please answer yes or no.";;
             esac
         done
     fi
@@ -53,8 +62,10 @@ ask_user() {
 # echo the command and then run it.
 echo_run() {
     local cmd="$*"
-    echo -e "${YELLOW}\$ $cmd${RESET}"
-    echo
+    if ! $quiet; then
+        echo -e "${YELLOW}\$ $cmd${RESET}"
+        echo
+    fi
     $cmd
 }
 
@@ -73,12 +84,12 @@ echo_root_run() {
     else
         cmd_root="$cmd"
     fi
-    echo -e "${GREEN}We are about to run the following command:${RESET}"
-    echo
-    echo -e "${YELLOW}\$ $cmd_root${RESET}"
-    echo
+        echo_q -e "${GREEN}We are about to run the following command:${RESET}"
+        echo_q
+        echo_q -e "${YELLOW}\$ $cmd_root${RESET}"
+        echo_q
     if ask_user "Do you want to run it (y), skip it (n) or quit, to run the command manually (^C)?" ; then
-        echo
+        echo_q
         eval $cmd_root
     fi
 }
@@ -87,19 +98,19 @@ echo_root_run() {
 install_python_deps() {
     if [[ ! -f .venv/bin/activate ]]; then
         # Create a virtual environment
-        echo
-        echo -e "${GREEN}*** Creating a python virtual environment in '.venv' ***${RESET}"
-        echo
+        echo_q
+        echo_q -e "${GREEN}*** Creating a python virtual environment in '.venv' ***${RESET}"
+        echo_q
         echo_run $PYTHON3 -m venv .venv --upgrade-deps --clear --prompt "$(basename $PWD)/.venv"
     fi
-    echo -e "${GREEN}*** Activating python virtual environment ***${RESET}"
+    echo_q -e "${GREEN}*** Activating python virtual environment ***${RESET}"
     source .venv/bin/activate
 
     # Upgrade and install required Python packages within the virtual environment
     export PIP_DISABLE_PIP_VERSION_CHECK=1
-    echo
-    echo -e "${GREEN}*** Installing required python packages ***${RESET}"
-    echo
+    echo_q
+    echo_q -e "${GREEN}*** Installing required python packages ***${RESET}"
+    echo_q
     echo_run python3 -m pip install -r python/requirements.txt
 }
 
@@ -148,7 +159,7 @@ install_deps() {
             fi
 
             if ! $no_3d; then
-                echo -e "${RED}This Linux distibution does not support OpenSceneGraph. Please disable the 3D support with --no-3d.${RESET}"
+                echo_q -e "${RED}This Linux distibution does not support OpenSceneGraph. Please disable the 3D support with --no-3d.${RESET}"
                 exit 1
             fi
 
@@ -184,7 +195,7 @@ install_deps() {
             echo_root_run "pacman -Sy --needed --noconfirm $packages ; pacman -Scc --noconfirm"
 
         else
-            echo -e "${RED}Package manager (apt, dnf, zypper, pacman) not detected.\nSee 'doc/InstallGuide.pdf' and install the required packages manually.${RESET}"
+            echo_q -e "${RED}Package manager (apt, dnf, zypper, pacman) not detected.\nSee 'doc/InstallGuide.pdf' and install the required packages manually.${RESET}"
             exit 1
         fi
 
@@ -193,7 +204,7 @@ install_deps() {
 
     if [[ "$(uname)" == "Darwin" ]]; then
         if [[ "$(command -v brew)" == "" ]]; then
-            echo -e "${RED}HOMEBREW (https://brew.sh) not detected. This script requires 'brew' to be installed and activated.${RESET}"
+            echo_q -e "${RED}HOMEBREW (https://brew.sh) not detected. This script requires 'brew' to be installed and activated.${RESET}"
             exit 1
         fi
 
@@ -269,6 +280,10 @@ install_deps() {
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        -q)
+            quiet=true
+            shift
+            ;;
         -y)
             assume_yes=true
             shift
@@ -291,7 +306,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            echo "Invalid option: $1" >&2
+            echo_q "Invalid option: $1" >&2
             print_usage
             exit 1
             ;;
@@ -299,7 +314,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # print intro message
-echo -e "\
+echo_q -e "\
 ${GREEN}This script will install the OMNeT++ development environment.
 It will attempt to detect your operating system and package manager,
 install the required dependencies, install a python virtual environment
@@ -317,23 +332,23 @@ an issue at https://github.com/omnetpp/omnetpp/issues and read
 ${RESET}"
 
 if ! ask_user "Continue installing OMNeT++?" ; then
-    echo -e "${GREEN}\nPlease read the installation manual (InstallGuide.pdf) for futher instructions.${RESET}"
+    echo_q -e "${GREEN}\nPlease read the installation manual (InstallGuide.pdf) for futher instructions.${RESET}"
     exit 0
 fi
 
-echo
-echo -e "${GREEN}*** Installing dependencies ***${RESET}"
-echo
+echo_q
+echo_q -e "${GREEN}*** Installing dependencies ***${RESET}"
+echo_q
 install_deps
 
 # activate the OMNeT++ environment (including the python virtualenv)
-echo
+echo_q
 echo_run source setenv
 
 # configure the simulator
-echo
-echo -e "${GREEN}*** Configuring ***${RESET}"
-echo
+echo_q
+echo_q -e "${GREEN}*** Configuring ***${RESET}"
+echo_q
 # disable some config options based on the provided command-line flags
 if $no_gui; then CONFIGOPTS="$CONFIGOPTS WITH_QTENV=no"; fi
 if $no_3d; then CONFIGOPTS="$CONFIGOPTS WITH_OSG=no"; fi
@@ -342,15 +357,15 @@ if ! $no_build; then
     echo_run ./configure $CONFIGOPTS
 
     # build
-    echo
-    echo -e "${GREEN}*** Compiling ***${RESET}"
-    echo
+    echo_q
+    echo_q -e "${GREEN}*** Compiling ***${RESET}"
+    echo_q
     echo_run make -j16
 else
-    echo -e "${YELLOW}Skipping configuration and build as requested.${RESET}"
+    echo_q -e "${YELLOW}Skipping configuration and build as requested.${RESET}"
 fi
-echo
-echo -e "${GREEN}*** Installation completed ***${RESET}"
-echo
-echo -e "Execute '${YELLOW}source setenv${RESET}' to activate the OMNeT++ environment."
-echo
+echo_q
+echo_q -e "${GREEN}*** Installation completed ***${RESET}"
+echo_q
+echo_q -e "Execute '${YELLOW}source setenv${RESET}' to activate the OMNeT++ environment."
+echo_q
