@@ -93,11 +93,11 @@ module Test: Test {
         module Test.g: Node {
             gates:
                 in @loose: not connected
-                out @loose: --> h.in, (ned.DatarateChannel)channel disabled=false delay=0s datarate=1e+09bps ber=0 per=0
+                out @loose: --> h.in, (ned.DatarateChannel)channel datarate=1Gbps
         }
         module Test.h: Node {
             gates:
-                in @loose: <-- g.out, (ned.DatarateChannel)channel disabled=false delay=0s datarate=1e+09bps ber=0 per=0
+                in @loose: <-- g.out, (ned.DatarateChannel)channel datarate=1Gbps
                 out @loose: not connected
         }
         module Test.container: Container {

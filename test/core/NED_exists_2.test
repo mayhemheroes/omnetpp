@@ -70,18 +70,18 @@ module Test: Test {
         }
         module Test.a: Node {
             gates:
-                o[0]: --> b.i[0], (ned.DelayChannel)channel disabled=false delay=1s
-                o[1]: --> b.i[1], (ned.DelayChannel)channel disabled=false delay=2s
-                o[2]: --> b.i[2], (ned.DelayChannel)channel disabled=false delay=10s
-                o[3]: --> b.i[3], (ned.DelayChannel)channel disabled=false delay=20s
-                o[4]: --> b.i[4], (ned.DelayChannel)channel disabled=false delay=30s
+                o[0]: --> b.i[0], (ned.DelayChannel)channel delay=1s
+                o[1]: --> b.i[1], (ned.DelayChannel)channel delay=2s
+                o[2]: --> b.i[2], (ned.DelayChannel)channel delay=10s
+                o[3]: --> b.i[3], (ned.DelayChannel)channel delay=20s
+                o[4]: --> b.i[4], (ned.DelayChannel)channel delay=30s
         }
         module Test.b: Node {
             gates:
-                i[0]: <-- a.o[0], (ned.DelayChannel)channel disabled=false delay=1s
-                i[1]: <-- a.o[1], (ned.DelayChannel)channel disabled=false delay=2s
-                i[2]: <-- a.o[2], (ned.DelayChannel)channel disabled=false delay=10s
-                i[3]: <-- a.o[3], (ned.DelayChannel)channel disabled=false delay=20s
-                i[4]: <-- a.o[4], (ned.DelayChannel)channel disabled=false delay=30s
+                i[0]: <-- a.o[0], (ned.DelayChannel)channel delay=1s
+                i[1]: <-- a.o[1], (ned.DelayChannel)channel delay=2s
+                i[2]: <-- a.o[2], (ned.DelayChannel)channel delay=10s
+                i[3]: <-- a.o[3], (ned.DelayChannel)channel delay=20s
+                i[4]: <-- a.o[4], (ned.DelayChannel)channel delay=30s
         }
 }

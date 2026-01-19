@@ -46,19 +46,19 @@ module Test: Test {
     submodules:
         module Test.default_: foo.Foo {
             parameters:
-                config = <foo/> at .../foo.xml:1
+                config = xml('<foo/>\n')
         }
         module Test.omnetppini: foo.Foo {
             parameters:
-                config = <root/> at .../root.xml:1
+                config = xml('<root/>\n')
         }
         module Test.fooini: foo.Foo {
             parameters:
-                config = <foo/> at .../foo.xml:1
+                config = xml('<foo/>\n')
         }
         module Test.ned: foo.Foo {
             parameters:
-                config = <root/> at .../root.xml:1
+                config = xml('<root/>\n')
         }
 }
 

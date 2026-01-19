@@ -70,8 +70,8 @@ module Test: Test {
                 foobar = 99
                 foobar2 = 99
             gates:
-                out @loose: --> node.in, (Test.X)channel disabled=false delay=0s local=1 bar=2 third=1 foobar=99 foobar2=99
-                in @loose: <-- node.out, (Test.X)channel disabled=false delay=0s local=1 bar=2 third=1 foobar=99 foobar2=99
+                out @loose: --> node.in, (Test.X)channel local=1 bar=2 third=1 foobar=99 foobar2=99
+                in @loose: <-- node.out, (Test.X)channel local=1 bar=2 third=1 foobar=99 foobar2=99
         }
         module Test.boxedNode: Test.BoxedNode {
             parameters:

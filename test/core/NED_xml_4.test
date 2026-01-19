@@ -17,8 +17,8 @@ network Test
 module Test: Test {
     parameters:
         @isNetwork
-        foo = <root>...</root> at content:1
-        bar = <root>...</root> at content:1
+        foo = xml('<root>\n  <child/>\n</root>\n')
+        bar = xml('<root>\n  <child/>\n</root>\n')
     submodules:
 }
 

@@ -92,21 +92,21 @@ After creation:
  per=0
 After setting pars:
  disabled=true
- delay=0.001s
- datarate=10000bps
+ delay=1ms
+ datarate=10kbps
  ber=0.001
  per=0
 Initializing channel Test.node1.out.channel, stage 0
 After connecting:
  disabled=true
- delay=0.001s
- datarate=10000bps
+ delay=1ms
+ datarate=10kbps
  ber=0.001
  per=0
 After changing pars:
  disabled=false
- delay=0.002s
- datarate=20000bps
+ delay=2ms
+ datarate=20kbps
  ber=0.002
  per=0
 .
