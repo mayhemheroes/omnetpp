@@ -195,8 +195,8 @@ install_deps() {
             echo_root_run "pacman -Sy --needed --noconfirm $packages ; pacman -Scc --noconfirm"
 
         elif [[ "$ID" == "nixos" ]]; then
-            echo_q -e "${RED}NixOS detected, dependencies must be installed using 'nix run .opp_shell'.${RESET}"
-            echo_q -e "${YELLOW}Please run 'nix run .opp_shell' and then restart this script.${RESET}"
+            echo_q -e "${RED}NixOS detected, dependencies must be installed using './setenv'.${RESET}"
+            echo_q -e "${YELLOW}Please run './setenv' and then restart this script.${RESET}"
             exit 1
         else
             echo_q -e "${RED}Package manager (apt, dnf, zypper, pacman) not detected.\nSee 'doc/InstallGuide.pdf' and install the required packages manually.${RESET}"
@@ -325,8 +325,8 @@ install the required dependencies, install a python virtual environment
 and then configure and build OMNeT++.
 
 Supported operating systems [and package managers]:
-- Linux: Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL [dnf],
--        OpenSuse-tumbleweed [zypper], ArchLinux [pacman], NixOS [nix]
+- Linux (Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL [dnf],
+        OpenSuse-tumbleweed [zypper], ArchLinux [pacman], NixOS [nix])
 - macOS 15 [homebrew]
 - Windows 11/Msys2 [pacman]
 
@@ -340,15 +340,14 @@ if ! ask_user "Continue installing OMNeT++?" ; then
     exit 0
 fi
 
-# on nix os? we have to copy the flake files into the project root directory
-# and then run 'nix run .opp_shell' and invoke this script again in that environment
+# on nix os? we have to run './setenv' and invoke this script again in that environment
 if [ -f /etc/NIXOS ]; then
     rm -rf .venv 
     
     echo_q
-    echo_q -e "${YELLOW}Running 'nix run .opp_shell' to install dependencies.${RESET}"
-    nix run --extra-experimental-features nix-command --extra-experimental-features flakes .opp_shell -- ./install.sh -q -y $@
-    echo_q -e "${GREEN}Use 'nix run .opp_shell' to start the OMNeT++ environment.${RESET}"
+    echo_q -e "${YELLOW}Running './setenv' to install dependencies.${RESET}"
+    ./setenv ./install.sh -q -y $@
+    echo_q -e "${GREEN}On NixOS, use './setenv' to start the OMNeT++ environment.${RESET}"
     exit 0
 fi
 

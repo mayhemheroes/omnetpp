@@ -107,86 +107,91 @@
         ];
 
         fhsEnv = pkgs.buildFHSEnv {
-            name = "opp_shell";
-            targetPkgs = pkgs: (ideDependencies ++ devTools ++ fhsTools ++ runtimeLibs ++ fhsRuntimeLibs);
+          name = "opp_shell";
+          targetPkgs = pkgs: (ideDependencies ++ devTools ++ fhsTools ++ runtimeLibs ++ fhsRuntimeLibs);
 
-            profile = ''
-              export name="opp_shell" # important because it is used in install.sh to skip dependency installation
-              # primarily link against FHS mapped system libraries to emulate a generic Linux environment
-              export LD_LIBRARY_PATH=/lib:/lib64:/usr/lib:/usr/lib64:$LD_LIBRARY_PATH
+          profile = ''
+            export name="opp_shell" # important because it is used in install.sh to skip dependency installation
+            # primarily link against FHS mapped system libraries to emulate a generic Linux environment
+            export LD_LIBRARY_PATH=/lib:/lib64:/usr/lib:/usr/lib64:$LD_LIBRARY_PATH
 
-              export OMP_NUM_THREADS=$(nproc)
-              export CC=clang
-              export CXX=clang++
-              # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
-              export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
+            export OMP_NUM_THREADS=$(nproc)
+            export CC=clang
+            export CXX=clang++
+            # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
+            export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
 
-              # Initialize venv using uv
-              if [ ! -d ".venv" ]; then
-                echo "Initializing virtual environment with uv..."
-                uv venv .venv
-                source .venv/bin/activate
-                if [ -f "python/requirements.txt" ]; then
-                  echo "Syncing dependencies..."
-                  uv pip install -r python/requirements.txt
-                fi
-              else
-                source .venv/bin/activate
+            if [ -z "$__omnetpp_root" ]; then
+              __omnetpp_root=.
+            fi
+
+            # initialization must be run from the omnetpp root directory
+            cd $__omnetpp_root
+
+            # Initialize venv using uv
+            if [ ! -d ".venv" ]; then
+              echo "Initializing virtual environment with uv..."
+              uv venv .venv
+              source .venv/bin/activate
+              if [ -f "python/requirements.txt" ]; then
+                echo "Syncing dependencies..."
+                uv pip install -r python/requirements.txt
               fi
+            else
+              source .venv/bin/activate
+            fi
 
-              if [ -f ./setenv ]; then
-                source ./setenv
-              fi
-            '';
-          };
+            if [ -f ./setenv ]; then
+              source ./setenv
+            fi
+            
+            # restore the original working directory
+            cd - >/dev/null
+          '';
+        };
 
-          nativeEnv = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
-            name = "opp_shell_native"; # important because it is used in install.sh to skip dependency installation
-            hardeningDisable = [ "fortify" ];
+        nativeEnv = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
+          name = "opp_shell_native"; # important because it is used in install.sh to skip dependency installation
+          hardeningDisable = [ "fortify" ];
 
-            nativeBuildInputs = devTools ++ nativeTools;
-            buildInputs = runtimeLibs ++ nativeRuntimeLibs;
+          nativeBuildInputs = devTools ++ nativeTools;
+          buildInputs = runtimeLibs ++ nativeRuntimeLibs;
 
-            # NIX_LD handles unpatched executables (like the IDE)
-            # this requires programs.nix-ld.enable = true; in the global nixos config
-            # alternatively ideDependencies could be added to the LD_LIBRARY_PATH in the shellHook
-            NIX_LD = pkgs.lib.fileContents "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
-            NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (ideDependencies);
+          # NIX_LD handles unpatched executables (like the IDE)
+          # this requires programs.nix-ld.enable = true; in the global nixos config
+          # alternatively ideDependencies could be added to the LD_LIBRARY_PATH in the shellHook
+          NIX_LD = pkgs.lib.fileContents "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
+          NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (ideDependencies);
 
-            shellHook = ''
-              export name="opp_shell_native" # important because it is used in install.sh to skip dependency installation
+          shellHook = ''
+            export name="opp_shell_native" # important because it is used in install.sh to skip dependency installation
 
-              export OMP_NUM_THREADS=$(nproc)
-              export MKL_DEBUG_CPU_TYPE=5
+            export OMP_NUM_THREADS=$(nproc)
+            export MKL_DEBUG_CPU_TYPE=5
 
-              # Ensure project-built binaries find their runtime dependencies
-              export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath (runtimeLibs ++ nativeRuntimeLibs)}:$LD_LIBRARY_PATH"
+            # Ensure project-built binaries find their runtime dependencies
+            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath (runtimeLibs ++ nativeRuntimeLibs)}:$LD_LIBRARY_PATH"
 
-              # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
-              export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
+            # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
+            export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
 
-              if [ -f ./setenv ]; then
-                source ./setenv
-              fi
-            '';
-          };
+            if [ -z "$__omnetpp_root" ]; then
+              __omnetpp_root=.
+            fi
 
-        opp_ide = pkgs.writeShellScriptBin "opp_ide" ''
-          # Running the IDE in the FHS environment
-          exec ${fhsEnv}/bin/opp_shell -c "opp_ide $@"
-        '';
+            echo "__omnetpp_root: $__omnetpp_root"
+            if [ -f $__omnetpp_root/setenv ]; then
+              source $__omnetpp_root/setenv
+            fi
+          '';
+        };
+
 
       in
       {
         packages = {
           default = fhsEnv;
-          ide = opp_ide;
           native = nativeEnv;
-        };
-
-        apps = {
-          default = { type = "app"; program = "${fhsEnv}/bin/opp_shell"; };
-          ide = { type = "app"; program = "${opp_ide}/bin/opp_ide"; };
         };
 
         devShells = {

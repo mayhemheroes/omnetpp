@@ -1,6 +1,19 @@
-#!/usr/bin/env -S sh -c "echo >&2 \"Error: You are running this script instead of sourcing it. Make sure to use it as 'source setenv' or '. setenv', otherwise its settings won't take effect.\"; exit 1"
-
-# first argument can be (e.g. 'source setenv -q'):
+#!/usr/bin/env bash
+#
+# OMNeT++ environment setter
+#
+# This script sets all the required environment variables so 
+# OMNeT++ tools can be executed. It can be either sourced or executed:
+#
+# Executing:
+# './setenv <command>' starts the command in a properly set up environment
+# (e.g. './setenv opp_ide' or './setenv opp_run' or './setenv bash'
+# to start an interactive shell)
+#
+# Sourcing:
+# 'source setenv' or '. setenv' configures the current shell
+#
+# When sourcing, the first argument can be (e.g. 'source setenv -q'):
 # -q : do not show banner text on configuration success
 # -r : remove an already configured environment
 
@@ -8,23 +21,55 @@
 # On bash, the current script's name is in 'BASH_SOURCE[0]'
 if [ "$BASH_VERSION" != "" ]; then # for BASH
   dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+  if [[ "$BASH_SOURCE" != "$0" ]]; then
+    sourced=yes
+  fi
 elif [ "$ZSH_VERSION" != "" ]; then # on zsh the script name is in '$0'
   dir=$(cd $(dirname $0) && pwd)
+  if [[ "$0" == "zsh" || "$0" == "-zsh" || "$0" == "sh" ]]; then
+    sourced=yes
+  fi
 else # other shells are not supported, because we use variable manipulation constructs that are not part of POSIX
-  echo "Error: Unrecognized shell, only bash and zsh are supported."
+  echo "Error: Unrecognized shell, only 'bash' and 'zsh' are supported."
   return 1
 fi
 
 # check if dir is really pointing to an omnet++ installation dir
 if [ ! -f "$dir/configure.user" -o ! -f "$dir/include/omnetpp.h" -o ! -f "$dir/Version" ]; then
     echo "Error: '$dir' does not look like an OMNeT++ root directory"
-    return 1
+    if [[ "$sourced" == "yes" ]]; then
+      return 1
+    else
+      exit 1
+    fi
 fi
 
-# check if we are in a properly configured nix shell
-if [[ -f /etc/NIXOS && "$name" != "opp_shell" && "$name" != "opp_shell_native" ]]; then
-    echo "Error: must be sourced from a properly configured nix shell started by 'nix run .opp_shell' or 'nix develop .opp_shell#native'."
+# handle sourcing vs executing this script
+if [[ "$sourced" == "yes" ]]; then
+  # check if we are in a properly configured nix shell and throw error if not
+  if [[ -f /etc/NIXOS && "$name" != "opp_shell" && "$name" != "opp_shell_native" ]]; then
+    echo "Error: On NixOS, setenv cannot be sourced. Use './setenv' instead, which will start a separate shell."
     return 1
+  fi
+else
+  unset bash_options
+  if [[ $# > 0 ]]; then
+    bash_options=(-c -- "$*") # pass command to bash to execute
+  fi
+
+  if [[ -f /etc/NIXOS ]]; then
+    # setenv was executed on NixOS so we invoke a properly configured FHS shell to install/map all dependencies
+    # to their standard locations
+    __omnetpp_root=$dir exec nix run --extra-experimental-features nix-command --extra-experimental-features flakes "$dir/.opp_shell" -- "${bash_options[@]}"    
+    exit $? # implicit exit after exec, so this is not necessarily needed
+  else
+    if [[ $# == 0 ]]; then
+      echo "Error: You are running this script instead of sourcing it. Make sure to use it as 'source setenv' or '. setenv', otherwise its settings won't take effect."
+      exit 1
+    fi
+    exec /usr/bin/env bash --rcfile "$dir/setenv" "${bash_options[@]}"
+    exit $? # implicit exit after exec, so this is not necessarily needed
+  fi
 fi
 
 # Activate local python virtual environment if present in the root directory.
@@ -193,4 +238,3 @@ fi
 
 # Mingw doesn't like extra colons in paths, so remove them using a shell function
 opp_path_cleanup PATH PYTHONPATH OMNETPP_IMAGE_PATH
-
