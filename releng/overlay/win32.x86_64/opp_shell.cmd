@@ -17,7 +17,7 @@ IF EXIST "opp-tools-win32-x86_64-clang64-toolchain.7z" (
 
 cd "%HOME%"
 rem Open the MinGW command shell (you may add -full-path to force the MSYS shell to inherit the current system path)
-if "%1" == "ide" (
+if "%1" == "opp_ide" (
   rem if the first paramter is "ide" we start the IDE instead of the shell. This can be used to start the IDE from a shortcut
   call "%HOME%\tools\win32.x86_64\msys2_shell.cmd" -%ENVIRONMENT% -c "nohup >/dev/null 2>/dev/null $HOME/bin/opp_ide"
 ) else (
