@@ -19,5 +19,6 @@ Installation Guide
    ch-redhat
    ch-opensuse
    ch-archlinux
+   ch-nixos
    ch-generic-unix
    ch-build-options

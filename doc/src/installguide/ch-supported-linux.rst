@@ -13,6 +13,7 @@ The following distributions and versions are explicitly covered by the ``install
 -  **Red Hat Enterprise Linux (RHEL) / AlmaLinux**: 9.x and 10.x (and compatible distributions like Rocky Linux, CentOS Stream)
 -  **OpenSUSE**: Tumbleweed (rolling release)
 -  **Arch Linux**: (rolling release)
+-  **NixOS**: (25.11 or later)
 
 This chapter describes the general installation process common to these distributions. For distribution-specific details, particularly regarding the installation of prerequisite system packages, please refer to the relevant chapter:
 
@@ -21,6 +22,7 @@ This chapter describes the general installation process common to these distribu
 -  :ref:`ch-redhat`
 -  :ref:`ch-opensuse`
 -  :ref:`ch-archlinux`
+-  :ref:`ch-nixos`
 
 If you are using the ``install.sh`` script, it will attempt to auto-detect your distribution and install the necessary system packages.
 
