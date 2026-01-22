@@ -2134,7 +2134,7 @@ def pivot_for_barchart(df, groups, series, confidence_level=None, sort=True):
     def aggfunc(values):
         if values.empty:
             return None
-        elif np.issubdtype(values.dtype, np.number):
+        elif pd.api.types.is_numeric_dtype(values):
             return values.mean()
         else:
             uniq = values.unique()
