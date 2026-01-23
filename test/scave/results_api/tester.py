@@ -80,7 +80,13 @@ def addMissingNewLine(str):
 
 def sanitize_and_compare_csv(df, ref_filename):
     df = sanitize(df)
-    actual = str([str(n) + ": " + str(t) for n, t in zip(df.columns.values, df.dtypes.values)]) + "\n"
+    dtype_strs = [str(t) for t in df.dtypes.values]
+    # Compatibility with the new string type in Pandas 3.x.
+    # See: https://pandas.pydata.org/docs/user_guide/migration-3-strings.html
+    # TODO: Update the expected output CSV, and substitute the other way.
+    if not utils._version_less_than(pd.__version__, "3.0.0"):
+        dtype_strs = ["object" if t == "str" else t for t in dtype_strs]
+    actual = str([str(n) + ": " + t for n, t in zip(df.columns.values, dtype_strs)]) + "\n"
 
     # The line_terminator parameter was renamed in Pandas 1.5.0 - in a backwards-compatible way,
     # but with an annoying FutureWarning; and the old name was removed in Pandas 2.0.0.
