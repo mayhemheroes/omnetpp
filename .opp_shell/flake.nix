@@ -121,12 +121,15 @@
             # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
             export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
 
-            if [ -z "$__omnetpp_root" ]; then
-              __omnetpp_root=.
+            if [ -z "$__omnetpp_root_dir" ]; then
+              dir=.
+            else
+              dir=$__omnetpp_root_dir
+              unset __omnetpp_root_dir
             fi
 
             # initialization must be run from the omnetpp root directory
-            cd $__omnetpp_root
+            cd $dir
 
             # Initialize venv using uv
             if [ ! -d ".venv" ]; then
@@ -137,8 +140,6 @@
                 echo "Syncing dependencies..."
                 uv pip install -r python/requirements.txt
               fi
-            else
-              source .venv/bin/activate
             fi
 
             if [ -f ./setenv ]; then
@@ -147,6 +148,15 @@
             
             # restore the original working directory
             cd - >/dev/null
+
+            # Check if we should run a command or start interactive shell
+            if [ $# -gt 0 ]; then
+              # Execute the command and exit
+              exec "$@"
+            else
+              # Start interactive shell
+              exec bash
+            fi
           '';
         };
 
@@ -175,17 +185,18 @@
             # Disable Nix hardening specifically for fortify to avoid the warning in debug builds (-O0)
             export NIX_HARDENING_ENABLE="stackprotector,format,relro,bindnow,pic"
 
-            if [ -z "$__omnetpp_root" ]; then
-              __omnetpp_root=.
+            if [ -z "$__omnetpp_root_dir" ]; then
+              dir=.
+            else
+              dir=$__omnetpp_root_dir
+              unset __omnetpp_root_dir
             fi
 
-            echo "__omnetpp_root: $__omnetpp_root"
-            if [ -f $__omnetpp_root/setenv ]; then
-              source $__omnetpp_root/setenv
+            if [ -f $dir/setenv ]; then
+              source $dir/setenv
             fi
           '';
         };
-
 
       in
       {
