@@ -1,0 +1,121 @@
+{
+    "repo_notes": [
+        {
+            "content": "OMNeT++ is a component-based, modular, and open-architecture discrete event simulation environment, primarily used for building network simulators. It includes a C++ simulation kernel, various user interfaces (Qtenv, Cmdenv), and an Eclipse-based IDE."
+        }
+    ],
+    "pages": [
+        {
+            "title": "Introduction",
+            "purpose": "High-level overview of the OMNeT++ simulation framework and its architecture and features. Introduction to OMNeT++ as a discrete event simulation framework for networks and distributed systems."
+        },
+        {
+            "title": "Installation",
+            "purpose": "Installation instructions for Linux, macOS, and Windows",
+        },
+        {
+            "title": "OMNeT++ IDE",
+            "purpose": "Guidance on using the Integrated Development Environment for model building. Covering NED (Graphical and text-based editing of network descriptions), INI (Form-based and text editing of configuration files), MSG (Creating custom message types with .msg files), and C++ editing, debugging, and running simulations. Additional features of the IDE like Sequence Diagrams, Result Analysis, and more."
+        },
+        {
+            "title": "TicToc Tutorial - Your First Simulation",
+            "purpose": "Walk through the classic TicToc example to learn the basics"
+        },
+        {
+            "title": "Core Concepts",
+            "purpose": "Understanding the underlying principles of OMNeT++ simulations.",
+        },
+        {
+            "title": "Simulation Model Structure",
+            "purpose": "Understanding the concepts of modules, gates, connections, and network topology"
+        },
+        {
+            "title": "NED Language",
+            "purpose": "Explain the Network Description Language (NED) for defining network structure. Introduce the syntax and semantics of NED, including modules, gates, channels, and network topology."
+        },
+        {
+            "title": "INI Configuration",
+            "purpose": "Explain the INI configuration files for configuring simulation runs, parameters, and scenarios"
+        },
+        {
+            "title": "Messages and Packets",
+            "purpose": "Explain message and packet definitions using .msg files, message passing and packet modeling"
+        },
+        {
+            "title": "Simulation Time and Events",
+            "purpose": "Explain how discrete event simulation works in OMNeT++. Introduce simulation time, events, scheduling, and the simulation kernel."
+        },
+        {
+            "title": "C++ API Guide",
+            "purpose": "Reference for developing simulation models using the C++ API. Main API groups: cSimpleModule, cCompoundModule, cMessage, cPacket, cChannel, cGate, cPar, cProperty, cResultRecorder, cStatistics, cRNG, cComponent, cEnvir, cSimulation, cEnvir, cSimulation"
+        },
+        {
+            "title": "Random Number Generation",
+            "purpose": "RNG streams and distribution functions"
+        },
+        {
+            "title": "Simple Modules",
+            "purpose": "Creating behavior with cSimpleModule class. Basic module structure, event handling, message processing, and state management."
+        },
+        {
+            "title": "Compound Modules",
+            "purpose": "Creating complex module structures with cCompoundModule class. Basic module structure, possibility to create hierarchical networks, submodules, channels, etc."
+        },
+        {
+            "title": "Module Communication",
+            "purpose": "Working with cMessage and cPacket classes, sending messages, using gates and channels"
+        },
+        {
+            "title": "Parameters and Configuration",
+            "purpose": "Accessing module parameters and configuration. Using cPar, cProperty, and configuration effectively. Various ways to set parameters and configuration options. Properties, units, volatility, mutability, etc."
+        },
+        {
+            "title": "NED Functions",
+            "purpose": "Using NED functions in simulation models. Introducing various built-in functions, function groups, and how to create custom ones."
+        },
+        {
+            "title": "Statistics and Result Recording",
+            "purpose": "Using statistics, signals, and result recorders"
+        },
+        {
+            "title": "Result Analysis Workflow",
+            "purpose": "Best practices for collecting and analyzing results. Overview of the tools for result analysis. Using the tools for result analysis effectively.",
+        },
+        {
+            "title": "Building and Running Simulations",
+            "purpose": "How to build and run simulations. Overview of the tools for building and running simulations. Using the tools for building and running simulations effectively."
+        },
+        {
+            "title": "Qtenv - Graphical Runtime Environment",
+            "purpose": "How to run the simulation. Details on the graphical runtime interface for interactive simulation. Overview of the graphical simulation execution environment. Running simulations interactively with visualization. Inspecting module state, messages, and using breakpoints. Useful Qtenv features and how to use them effectively."
+        },
+        {
+            "title": "Cmdenv - Command-Line Runtime Environment",
+            "purpose": "How to run the simulation. Details on the command-line runtime interface for non-interactive simulation. Various command-line options and their meanings. Running simulations in batch mode in parallel."
+        },
+        {
+            "title": "Sample Simulations",
+            "purpose": "Overview and explanation of included example models from the /sample directory (except the tictoc example, which is covered elsewhere)."
+        },
+        {
+            "title": "Model Design and Best Practices",
+            "purpose": "Common patterns and recommended methods for organizing simulation models, better performance, and analysis."
+        },
+        {
+            "title": "Performance Optimization",
+            "purpose": "Tips for efficient simulation execution"
+        },
+        {
+            "title": "OMNeT++ Repository Structure",
+            "purpose": "Describe the structure of the OMNeT++ repository. Enumerate all the various directories and files, subsystems, and tools."
+        },
+        {
+            "title": "Compiling and Building OMNeT++",
+            "purpose": "Information for building the OMNeT++ framework itself. Various build options and tools. Releng and release process."
+        },
+        {
+            "title": "Developing, Testing and Debugging OMNeT++",
+            "purpose": "How to build, test, and debug the OMNeT++ framework. Tips, tricks, and best practices, recommended workflows."
+        }
+    ]
+}
