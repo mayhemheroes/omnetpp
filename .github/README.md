@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/omnetpp/omnetpp)
+
 # OMNeT++
 
 OMNeT++ is a public-source, component-based, modular and open-architecture
