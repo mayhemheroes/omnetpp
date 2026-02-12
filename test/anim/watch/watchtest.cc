@@ -22,9 +22,22 @@ struct Point
     Point(int x1, int y1) {x=x1; y=y1;}
 };
 
+// no op<<
+struct Unprintable
+{
+    Unprintable(int a1) : a(a1) {}
+    int a;
+};
+
 std::ostream& operator<<(std::ostream& os, const Point& p)
 {
     return os << "(" << p.x << "," << p.y << ")";
+}
+
+bool operator<(const Point& lhs, const Point& rhs)
+{
+    if (lhs.x != rhs.x) return lhs.x < rhs.x;
+    return lhs.y < rhs.y;
 }
 
 std::ostream& operator<<(std::ostream& os, const GeneratedStruct& gs)
@@ -53,15 +66,40 @@ class APolygon : public cObject
     APolygon(int nsides, int edgeLength) {n=nsides; edgeLen=edgeLength;}
     std::string str() const override {
         std::stringstream out;
-        out << "n=" << n << ", edgeLen=" << edgeLen << " (printed by str())";
+        out << "Poly: n=" << n << ", edgeLen=" << edgeLen << " (printed by str())";
         return out.str();
     }
 };
 
 std::ostream& operator<<(std::ostream& os, const APolygon& p)
 {
-    return os << "n=" << p.n << ", edgeLen=" << p.edgeLen << " (printed by op<<)";
+    return os << "Poly: n=" << p.n << ", edgeLen=" << p.edgeLen << " (printed by op<<)";
 }
+
+class AStar : public APolygon
+{
+    public:
+    int pointy;
+    AStar(int nsides, int edgeLength, int pointiness) : APolygon(nsides, edgeLength) {pointy = pointiness;}
+    std::string str() const override {
+        std::stringstream out;
+        out << "Star: n=" << n << ", edgeLen=" << edgeLen << ", pointy=" << pointy << " (printed by str())";
+        return out.str();
+    }
+};
+
+std::ostream& operator<<(std::ostream& os, const AStar& s) {
+    return os << "Star: n=" << s.n << ", edgeLen=" << s.edgeLen << ", pointy=" << s.pointy << " (printed by op<<)";
+}
+
+// no descriptor, no way to get base struct descriptor
+struct GeneratedStructSub : public GeneratedStruct { };
+
+// no descriptor, should use base class descriptor via cObject::getDescriptor
+class GeneratedPacketSub : public GeneratedPacket {
+public:
+    using GeneratedPacket::GeneratedPacket;
+};
 
 //
 // Main function
@@ -105,6 +143,9 @@ void WatchTest::activity()
 
     Point point_rw(100, 200);
     WATCH_RW(point_rw);
+
+    Unprintable up{42};
+    // WATCH(up); // it's documented that this doesn't need to work
 
     //
     // Structs/classes via cObject and str(); no structdesc.
@@ -207,17 +248,35 @@ void WatchTest::activity()
     vgs.push_back(gs3);
     WATCH_VECTOR(vgs);
 
+    GeneratedStructSub gss;
+    gss.foo = 55;
+    gss.bar = 66;
+    gss.baz = "fiftyfive";
     std::vector<GeneratedStruct *> vgsp;
     vgsp.push_back(&gs1);
     vgsp.push_back(&gs2);
     vgsp.push_back(&gs3);
+    vgsp.push_back(&gss);
     WATCH_PTRVECTOR(vgsp);
 
+    // no way to get desc for this, but op<< of GeneratedStruct should work
+    std::vector<GeneratedStructSub *> vgssp;
+    vgssp.push_back(&gss);
+    WATCH_PTRVECTOR(vgssp);
+
+    GeneratedPacketSub *pks = new GeneratedPacketSub("packetSub");
     std::vector<GeneratedPacket *> vpacket;
     vpacket.push_back(pk1);
     vpacket.push_back(pk2);
     vpacket.push_back(pk3);
+    vpacket.push_back(pks); // should be described by desc of GeneratedPacket
     WATCH_PTRVECTOR(vpacket);
+
+    // this should still use desc of GeneratedPacket
+    // NOTE: see the comment in cStlContainerWatcherBase::getDescriptor() for why this doesn't work
+    std::vector<GeneratedPacketSub *> vpkssp;
+    vpkssp.push_back(pks);
+    WATCH_PTRVECTOR(vpkssp);
 
     std::list<GeneratedStruct> lgs;
     lgs.push_back(gs1);
@@ -272,6 +331,53 @@ void WatchTest::activity()
     mpacket[2] = pk2;
     mpacket[3] = pk3;
     WATCH_PTRMAP(mpacket);
+
+    std::map<int, Unprintable *> mup;
+    mup[1] = new Unprintable(11);
+    mup[2] = nullptr;
+    mup[3] = new Unprintable(33);
+    WATCH_MAP(mup);
+
+    std::map<Unprintable *, std::string> mupkey;
+    mupkey[new Unprintable(100)] = "one hundred";
+    mupkey[nullptr] = "null";
+    mupkey[new Unprintable(200)] = "two hundred";
+    WATCH_MAP(mupkey);
+
+    std::map<int *, std::string> mnullptrkey;
+    mnullptrkey[nullptr] = "null";
+    mnullptrkey[new int(42)] = "forty-two";
+    WATCH_MAP(mnullptrkey);
+
+    std::map<Point, std::string> mpointkey;
+    mpointkey[Point(1, 2)] = "one-two";
+    mpointkey[Point(3, 4)] = "three-four";
+    mpointkey[Point(0, 0)] = "origin";
+    WATCH_MAP(mpointkey);
+
+    std::map<GeneratedStruct, std::string> mgskey;
+    mgskey[gs1] = "first";
+    mgskey[gs2] = "second";
+    mgskey[gs3] = "third";
+    WATCH_MAP(mgskey);
+
+    std::vector<Unprintable *> vup;
+    vup.push_back(new Unprintable(1));
+    vup.push_back(new Unprintable(2));
+    vup.push_back(nullptr);
+    WATCH_VECTOR(vup);
+
+    std::vector<APolygon *> vpoly;
+    vpoly.push_back(new AStar(3, 100, 20)); // this will still use op<< of APolygon
+    vpoly.push_back(new APolygon(4, 100));
+    vpoly.push_back(nullptr);
+    WATCH_PTRVECTOR(vpoly);
+
+    std::vector<AStar *> vstar;
+    vstar.push_back(new AStar(3, 100, 20));
+    vstar.push_back(new AStar(5, 150, 30));
+    vstar.push_back(nullptr);
+    WATCH_PTRVECTOR(vstar);
 
     // TBD: PTRVECTOR, PTRMAP etc.
     for ( ; ; ) {
