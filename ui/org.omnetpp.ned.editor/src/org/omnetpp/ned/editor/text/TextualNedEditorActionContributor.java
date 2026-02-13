@@ -23,6 +23,7 @@ import org.omnetpp.ned.editor.text.actions.FormatSourceAction;
 import org.omnetpp.ned.editor.text.actions.GotoDeclarationAction;
 import org.omnetpp.ned.editor.text.actions.NedTextEditorAction;
 import org.omnetpp.ned.editor.text.actions.OrganizeImportsAction;
+import org.omnetpp.ned.editor.text.actions.OpenTypeHierarchyAction;
 import org.omnetpp.ned.editor.text.actions.ToggleCommentAction;
 
 /**
@@ -38,6 +39,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
     private RetargetTextEditorAction fToggleCommentAction;
     private RetargetTextEditorAction fCorrectIndentationAction;
     private RetargetTextEditorAction fFindTextInNedFilesAction;
+    private RetargetTextEditorAction fOpenTypeHierarchyAction;
 
     /**
      * Default constructor.
@@ -54,6 +56,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
         fToggleCommentAction = createRetargetAction(ToggleCommentAction.ID);
         fCorrectIndentationAction = createRetargetAction(CorrectIndentationAction.ID);
         fFindTextInNedFilesAction = createRetargetAction(FindTextInNedFilesActionDelegate.ID);
+        fOpenTypeHierarchyAction = createRetargetAction(OpenTypeHierarchyAction.ID);
     }
 
     private static RetargetTextEditorAction createRetargetAction(String id) {
@@ -82,6 +85,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
         fToggleCommentAction.setAction(getAction(editor, ToggleCommentAction.ID));
         fCorrectIndentationAction.setAction(getAction(editor, CorrectIndentationAction.ID));
         fFindTextInNedFilesAction.setAction(getAction(editor, FindTextInNedFilesActionDelegate.ID));
+        fOpenTypeHierarchyAction.setAction(getAction(editor, OpenTypeHierarchyAction.ID));
     }
 
     @Override

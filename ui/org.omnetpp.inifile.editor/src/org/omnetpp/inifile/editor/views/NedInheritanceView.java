@@ -7,11 +7,6 @@
 
 package org.omnetpp.inifile.editor.views;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.eclipse.jface.action.IAction;
@@ -44,14 +39,11 @@ import org.omnetpp.common.util.ActionExt;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.inifile.editor.model.InifileAnalyzer;
 import org.omnetpp.ned.core.NedResourcesPlugin;
+import org.omnetpp.ned.core.NedTypeHierarchyUtil;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeInfo;
-import org.omnetpp.ned.model.interfaces.INedTypeLookupContext;
-import org.omnetpp.ned.model.interfaces.INedTypeResolver;
 import org.omnetpp.ned.model.interfaces.ISubmoduleOrConnection;
-import org.omnetpp.ned.model.pojo.ExtendsElement;
-import org.omnetpp.ned.model.pojo.InterfaceNameElement;
 import org.omnetpp.ned.model.ui.NedModelLabelProvider;
 
 /**
@@ -192,17 +184,9 @@ public class NedInheritanceView extends AbstractModuleView {
         }
 
         // build tree: first the inheritance chain, then the subtype hierarchy
-        final GenericTreeNode rootNode = new GenericTreeNode("root");
-        GenericTreeNode currentNode = rootNode;
-        List<INedTypeInfo> extendsChain = inputNedType.getInheritanceChain();
-        for (INedTypeInfo nedType : extendsChain.reversed()) {
-            if (nedType != inputNedType) {
-                GenericTreeNode newNode = new GenericTreeNode(nedType.getNedElement());
-                currentNode.addChild(newNode);
-                currentNode = newNode;
-            }
-        }
-        GenericTreeNode inputNedTypeNode = buildInheritanceTreeOf(inputNedType, currentNode, new HashSet<INedTypeInfo>());
+        NedTypeHierarchyUtil.HierarchyResult hierarchy = NedTypeHierarchyUtil.buildInheritanceTree(inputNedType);
+        GenericTreeNode rootNode = hierarchy.rootNode;
+        GenericTreeNode inputNedTypeNode = hierarchy.focusNode;
 
         // prevent collapsing all treeviewer nodes: only set it on viewer if it's different from old input
         if (!GenericTreeUtils.treeEquals(rootNode, (GenericTreeNode)treeViewer.getInput())) {
@@ -216,43 +200,6 @@ public class NedInheritanceView extends AbstractModuleView {
         // refresh the viewer anyway, because e.g. parameter value changes are not reflected in the input tree
         treeViewer.refresh();
         setContentDescription("");
-    }
-
-    private GenericTreeNode buildInheritanceTreeOf(INedTypeInfo typeInfo, GenericTreeNode parentNode, Set<INedTypeInfo> visited) {
-        GenericTreeNode node = new GenericTreeNode(typeInfo.getNedElement());
-        parentNode.addChild(node);
-
-        if (!visited.contains(typeInfo)) {  // cycle detection
-            visited.add(typeInfo);
-            List<INedTypeInfo> subtypes = getSubtypesOf(typeInfo);
-            subtypes.sort(Comparator.comparing(INedTypeInfo::getName));
-            for (INedTypeInfo type : subtypes)
-                buildInheritanceTreeOf(type, node, visited);
-        }
-        return node;
-    }
-
-    private List<INedTypeInfo> getSubtypesOf(INedTypeInfo inputType) {
-        List<INedTypeInfo> result = new ArrayList<INedTypeInfo>();
-        INedTypeResolver res = inputType.getResolver();
-
-        // examine all NED types we know of, whether they extend/implement this one (not too efficient)
-        for (INedTypeInfo type : res.getToplevelNedTypesFromAllProjects()) {
-            INedTypeLookupContext lookupContext = type.getNedElement().getParentLookupContext();
-            for (INedElement child : type.getNedElement()) {
-                String superName = null;
-                if (child instanceof ExtendsElement)
-                    superName = ((ExtendsElement)child).getName();
-                else if (child instanceof InterfaceNameElement)
-                    superName = ((InterfaceNameElement)child).getName();
-                if (superName != null) {
-                    INedTypeInfo superType = res.lookupNedType(superName, lookupContext);
-                    if (superType == inputType)
-                        result.add(type);
-                }
-            }
-        }
-        return result;
     }
 
 }

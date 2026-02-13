@@ -184,6 +184,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+G">
       </key>
+      <key
+            commandId="org.omnetpp.ned.editor.text.OpenTypeHierarchy"
+            contextId="org.omnetpp.context.nedTextEditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+T">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -234,6 +240,12 @@
             description="Distribute gate labels to connected gates"
             id="org.omnetpp.ned.editor.text.DistributeAllGateLabels"
             name="Distribute Gate Labels">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Show the type hierarchy of the NED type at cursor"
+            id="org.omnetpp.ned.editor.text.OpenTypeHierarchy"
+            name="Open Type Hierarchy">
       </command>
    </extension>
    <extension
