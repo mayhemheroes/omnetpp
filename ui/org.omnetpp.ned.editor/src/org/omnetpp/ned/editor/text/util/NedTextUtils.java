@@ -7,6 +7,8 @@
 
 package org.omnetpp.ned.editor.text.util;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -115,8 +117,16 @@ public class NedTextUtils {
             else if (element instanceof ParamElement) {
                 String paramName = ((ParamElement)element).getName();
                 if (word.equals(paramName)) {
+                    // Cursor is on a bare param name (no dotted path prefix)
                     IHasParameters hasParameters = (IHasParameters) findParentWithClass(element, IHasParameters.class);
                     ParamElementEx declElement = hasParameters.getParamDeclarations().get(paramName);
+                    return createInfo(element, wordRegion, declElement);
+                }
+                else if (paramName.endsWith("." + word)) {
+                    // Cursor is on the last segment of a dotted deep-assignment path,
+                    // e.g. cursor on "proxyArpInterfaces" in "ipv4.arp.proxyArpInterfaces = ...".
+                    // Resolve the declaration by walking the path through the type hierarchy.
+                    ParamElementEx declElement = resolveDeepParamDeclaration((ParamElementEx)element, word);
                     return createInfo(element, wordRegion, declElement);
                 }
             }
@@ -201,6 +211,43 @@ public class NedTextUtils {
 
     private static Info createInfo(INedElement element, IRegion wordRegion, INedElement declElement) {
         return declElement == null ? null : new Info(element, wordRegion, declElement);
+    }
+
+    /**
+     * Resolves the parameter declaration for the last segment of a deep-assignment
+     * param name like {@code "ipv4.arp.proxyArpInterfaces"} by walking the path
+     * through the type hierarchy starting from the compound module that contains
+     * the assignment. Returns null if the path cannot be resolved.
+     */
+    private static ParamElementEx resolveDeepParamDeclaration(ParamElementEx assignmentParam, String lastSegment) {
+        String fullPath = assignmentParam.getName();
+        // Strip trailing "." + lastSegment to get the prefix path (e.g. "ipv4.arp")
+        String prefix = fullPath.substring(0, fullPath.length() - lastSegment.length() - 1);
+        String[] segments = prefix.split("\\.");
+
+        // Start from the enclosing compound module type
+        INedTypeElement enclosingType = assignmentParam.getEnclosingTypeElement();
+        if (enclosingType == null)
+            return null;
+        INedTypeInfo currentTypeInfo = enclosingType.getNedTypeInfo();
+        if (currentTypeInfo == null)
+            return null;
+
+        // Walk each segment of the prefix path, resolving submodule types
+        for (String segment : segments) {
+            if (segment.equals("**") || segment.equals("*"))
+                return null; // wildcard — cannot resolve statically
+            Map<String, SubmoduleElementEx> submodules = currentTypeInfo.getSubmodules();
+            SubmoduleElementEx sub = submodules.get(segment);
+            if (sub == null)
+                return null;
+            currentTypeInfo = sub.getNedTypeInfo();
+            if (currentTypeInfo == null)
+                return null;
+        }
+
+        // Now currentTypeInfo is the type that declares the parameter
+        return currentTypeInfo.getParamDeclarations().get(lastSegment);
     }
 
     private static INedElement lookupTypeElement(String dottedWord, INedTypeLookupContext context) {

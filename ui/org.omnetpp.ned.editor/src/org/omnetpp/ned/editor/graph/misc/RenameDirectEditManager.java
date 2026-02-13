@@ -100,8 +100,11 @@ public class RenameDirectEditManager extends DirectEditManager {
     @Override
     protected void unhookListeners() {
         super.unhookListeners();
+        if (getCellEditor() == null || verifyListener == null)
+            return;
         Text text = (Text) getCellEditor().getControl();
-        text.removeVerifyListener(verifyListener);
+        if (text != null)
+            text.removeVerifyListener(verifyListener);
         verifyListener = null;
     }
 

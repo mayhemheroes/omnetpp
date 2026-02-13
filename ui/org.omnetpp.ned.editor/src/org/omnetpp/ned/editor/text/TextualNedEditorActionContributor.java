@@ -24,6 +24,7 @@ import org.omnetpp.ned.editor.text.actions.GotoDeclarationAction;
 import org.omnetpp.ned.editor.text.actions.NedTextEditorAction;
 import org.omnetpp.ned.editor.text.actions.OrganizeImportsAction;
 import org.omnetpp.ned.editor.text.actions.OpenTypeHierarchyAction;
+import org.omnetpp.ned.editor.text.actions.RenameAction;
 import org.omnetpp.ned.editor.text.actions.ToggleCommentAction;
 
 /**
@@ -38,6 +39,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
     private RetargetTextEditorAction fOrganizeImportsAction;
     private RetargetTextEditorAction fToggleCommentAction;
     private RetargetTextEditorAction fCorrectIndentationAction;
+    private RetargetTextEditorAction fRenameAction;
     private RetargetTextEditorAction fFindTextInNedFilesAction;
     private RetargetTextEditorAction fOpenTypeHierarchyAction;
 
@@ -55,6 +57,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
         fOrganizeImportsAction = createRetargetAction(OrganizeImportsAction.ID);
         fToggleCommentAction = createRetargetAction(ToggleCommentAction.ID);
         fCorrectIndentationAction = createRetargetAction(CorrectIndentationAction.ID);
+        fRenameAction = createRetargetAction(RenameAction.ID);
         fFindTextInNedFilesAction = createRetargetAction(FindTextInNedFilesActionDelegate.ID);
         fOpenTypeHierarchyAction = createRetargetAction(OpenTypeHierarchyAction.ID);
     }
@@ -84,6 +87,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
         fOrganizeImportsAction.setAction(getAction(editor, OrganizeImportsAction.ID));
         fToggleCommentAction.setAction(getAction(editor, ToggleCommentAction.ID));
         fCorrectIndentationAction.setAction(getAction(editor, CorrectIndentationAction.ID));
+        fRenameAction.setAction(getAction(editor, RenameAction.ID));
         fFindTextInNedFilesAction.setAction(getAction(editor, FindTextInNedFilesActionDelegate.ID));
         fOpenTypeHierarchyAction.setAction(getAction(editor, OpenTypeHierarchyAction.ID));
     }
@@ -101,6 +105,7 @@ public class TextualNedEditorActionContributor extends TextEditorActionContribut
         sourceMenu.add(fFormatSourceAction);
         sourceMenu.add(new Separator());
         sourceMenu.add(fOrganizeImportsAction);
+        sourceMenu.add(fRenameAction);
         sourceMenu.add(new Separator());
         sourceMenu.add(fContentAssistProposal);
         menuManager.insertAfter(IWorkbenchActionConstants.M_EDIT, sourceMenu);

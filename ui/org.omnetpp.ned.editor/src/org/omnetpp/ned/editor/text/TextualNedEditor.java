@@ -65,6 +65,7 @@ import org.omnetpp.ned.editor.text.actions.GotoDeclarationAction;
 import org.omnetpp.ned.editor.text.actions.InferAllGateLabelsAction;
 import org.omnetpp.ned.editor.text.actions.OrganizeImportsAction;
 import org.omnetpp.ned.editor.text.actions.OpenTypeHierarchyAction;
+import org.omnetpp.ned.editor.text.actions.RenameAction;
 import org.omnetpp.ned.editor.text.actions.ToggleCommentAction;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.NedSourceRegion;
@@ -289,6 +290,10 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
         a = new InferAllGateLabelsAction(this);
         setAction(a.getId(), a);
 
+        a = new RenameAction(this);
+        setAction(a.getId(), a);
+        markAsContentDependentAction(a.getId(), true);
+
         a = new DistributeAllGateLabelsAction(this);
         setAction(a.getId(), a);
 
@@ -313,6 +318,7 @@ public class TextualNedEditor extends TextEditor implements INedChangeListener, 
 
         addAction(menu, ITextEditorActionConstants.GROUP_FIND, GotoDeclarationAction.ID);
         addAction(menu, ITextEditorActionConstants.GROUP_FIND, OpenTypeHierarchyAction.ID);
+        addAction(menu, ITextEditorActionConstants.GROUP_FIND, RenameAction.ID);
         addAction(menu, ITextEditorActionConstants.GROUP_FIND, FindTextInNedFilesActionDelegate.ID);
     }
 

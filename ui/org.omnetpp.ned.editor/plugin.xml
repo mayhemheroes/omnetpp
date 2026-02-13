@@ -196,6 +196,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+T">
       </key>
+      <key
+            commandId="org.omnetpp.ned.editor.text.Rename"
+            contextId="org.omnetpp.context.nedTextEditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+M2+R">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -234,6 +240,12 @@
             description="Perform text search in workspace NED files"
             id="org.omnetpp.ned.editor.text.performTextSearchWorkspace"
             name="Search Text in NED Files">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            description="Rename a NED type and update all references"
+            id="org.omnetpp.ned.editor.text.Rename"
+            name="Rename">
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
