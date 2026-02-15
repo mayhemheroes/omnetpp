@@ -1827,39 +1827,58 @@ bool EnvirBase::ensureDebugger(cRuntimeError *error)
         return detectDebugger() != DebuggerPresence::NOT_PRESENT;
     }
     else {
+        bool debuggerPresent = (detectDebugger() == DebuggerPresence::PRESENT);
 
+        // If no debugger and stack trace is available, print it and return (no DEBUG_TRAP)
+
+        // IMPORTANT: If you are getting stack frames printed multiple times, it is normally
+        // due to a catch-and-throw-new-cRuntimeError block that adds another (redundant/duplicate)
+        // call to notifiyEnvir() (it is called from cRuntimeError's constructor).
+        // Such blocks should be rewritten with plain "throw;", calling prependMessage() or
+        // appendMessage() if necessary.
+
+        if (!debuggerPresent && isStacktraceAvailable()) {
+            printf("\n<!> %s\n", error->getFormattedMessage().c_str());
+            printf("\n[No debugger present and attaching a debugger is disabled, but stack trace printing is available -- printing stack trace instead of triggering debug interrupt]\n");
+            printStacktrace(0);
+            printf("\n");
+            return false;
+        }
+
+        if (!isStacktraceAvailable())
+            printf("\n[Note: Stack trace printing is not available]\n");
+
+        // Debugger present, or no stack trace available -> print message and trigger DEBUG_TRAP
 #ifdef NDEBUG
-       printf("\n[Warning: Program was compiled without debug info, you might not be able to debug.]\n");
+        printf("\n[Warning: Program was compiled without debug info, you might not be able to debug.]\n");
 #endif
 
-   printf("\n"
-          "RUNTIME ERROR. A cRuntimeError exception is about to be thrown, and you\n"
-          "requested (by setting debug-on-errors=true in the ini file) that errors\n"
-          "abort execution and break into the debugger.\n\n"
+        printf("\n"
+               "RUNTIME ERROR. A cRuntimeError exception is about to be thrown, and you\n"
+               "requested (by setting debug-on-errors=true in the ini file) that errors\n"
+               "abort execution and break into the debugger.\n\n"
 #ifdef _MSC_VER
-           "If you see a [Debug] button on the Windows crash dialog and you have\n"
-           "just-in-time debugging enabled, select it to get into the Visual Studio\n"
-           "debugger. Otherwise, you should already have attached to this process from\n"
-           "Visual Studio. Once in the debugger, see you can browse to the context of\n"
-           "the error in the \"Call stack\" debug view.\n\n"
+               "If you see a [Debug] button on the Windows crash dialog and you have\n"
+               "just-in-time debugging enabled, select it to get into the Visual Studio\n"
+               "debugger. Otherwise, you should already have attached to this process from\n"
+               "Visual Studio. Once in the debugger, see you can browse to the context of\n"
+               "the error in the \"Call stack\" debug view.\n\n"
 #else
-           "You should now probably be running the simulation under gdb or another\n"
-           "debugger. The simulation kernel will now raise a SIGINT signal which will\n"
-           "get you into the debugger. If you are not running under a debugger, you can\n"
-           "still use the core dump for post-mortem debugging. Once in the debugger,\n"
-           "view the call stack (in gdb: \"bt\" command) to see the context of the\n"
-           "runtime error.\n\n"
+               "You should now probably be running the simulation under gdb or another\n"
+               "debugger. The simulation kernel will now raise a SIGINT signal which will\n"
+               "get you into the debugger. If you are not running under a debugger, you can\n"
+               "still use the core dump for post-mortem debugging. Once in the debugger,\n"
+               "view the call stack (in gdb: \"bt\" command) to see the context of the\n"
+               "runtime error.\n\n"
 #endif
-       );
+        );
 
-       printf("<!> %s\n", error->getFormattedMessage().c_str());
-       printf("\nTRAPPING on the exception above, due to a debug-on-errors=true configuration option. Is your debugger ready?\n");
-       fflush(stdout);
+        printf("<!> %s\n", error->getFormattedMessage().c_str());
+        printf("\nTRAPPING on the exception above, due to a debug-on-errors=true configuration option. Is your debugger ready?\n");
+        fflush(stdout);
 
-       return true;
+        return true;
     }
-
-    return false;
 }
 
 DebuggerPresence EnvirBase::detectDebugger()
