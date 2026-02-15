@@ -309,6 +309,10 @@ void SectionBasedConfiguration::activateConfig(const char *configName, int runNu
         variables = computeVariables(getActiveConfigName(), getActiveRunNumber(), sectionChain, &scenario, locationToVarName);
         runId = variables[CFGVAR_RUNID];
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Scenario generator");
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Scenario generator: %s", e.what());
     }
@@ -418,6 +422,10 @@ std::string SectionBasedConfiguration::internalGetConfigAsString(cConfigOption *
             str = Expression().parse(str.c_str()).stringValue();
         return str;
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error getting value of config option '%s': %s", option->getName(), e.what());
     }
@@ -431,6 +439,10 @@ intval_t SectionBasedConfiguration::internalGetConfigAsInt(cConfigOption *option
         std::string str = substituteVariables(value, sectionId, entryId, variables, locationToVarName);
         return Expression().parse(str.c_str()).intValue();
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error getting value of config option '%s': %s", option->getName(), e.what());
     }
@@ -443,6 +455,10 @@ bool SectionBasedConfiguration::internalGetConfigAsBool(cConfigOption *option, c
         const char *value = internalGetValue(sectionChain, option->getName(), option->getDefaultValue(), &sectionId, &entryId);
         std::string str = substituteVariables(value, sectionId, entryId, variables, locationToVarName);
         return Expression().parse(str.c_str()).boolValue();
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Error getting value of config option '%s': %s", option->getName(), e.what());
@@ -462,6 +478,10 @@ int SectionBasedConfiguration::getNumRunsInConfig(const char *configName) const
     // count the runs and return the result
     try {
         return Scenario(v, constraint, "").getNumRuns();
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Could not compute number of runs in config %s", configName);
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Could not compute number of runs in config %s: %s", configName, e.what());
@@ -511,6 +531,10 @@ std::vector<cConfiguration::RunInfo> SectionBasedConfiguration::unrollConfig(con
         }
         return result;
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Scenario generator");
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Scenario generator: %s", e.what());
     }
@@ -530,6 +554,11 @@ std::vector<Scenario::IterationVariable> SectionBasedConfiguration::collectItera
                 Scenario::IterationVariable iterVar;
                 try {
                     parseVariable(pos, iterVar.varName, iterVar.value, iterVar.parvar, pos);
+                }
+                catch (cRuntimeError& e) {
+                    e.prependMessage("Scenario generator");
+                    e.appendMessage("at %s=%s", entry.getKey(), entry.getValue());
+                    throw;
                 }
                 catch (std::exception& e) {
                     throw cRuntimeError("Scenario generator: %s at %s=%s", e.what(), entry.getKey(), entry.getValue());

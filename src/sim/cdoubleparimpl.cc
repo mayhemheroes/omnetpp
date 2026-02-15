@@ -116,6 +116,10 @@ double cDoubleParImpl::doubleValue(cComponent *context, const cPar *targetPar) c
             cValue v = evaluate(expr, context, targetPar);
             return v.doubleValueInUnit(getUnit()); // allows conversion from INT
         }
+        catch (cRuntimeError& e) {
+            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError(e, expr->getSourceLocation().c_str());
         }

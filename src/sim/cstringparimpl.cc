@@ -159,6 +159,10 @@ std::string cStringParImpl::stdstringValue(cComponent *context, const cPar *targ
             validate(s);
             return s;
         }
+        catch (cRuntimeError& e) {
+            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError(e, expr->getSourceLocation().c_str());
         }

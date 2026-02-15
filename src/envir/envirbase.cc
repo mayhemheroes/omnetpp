@@ -874,6 +874,10 @@ std::vector<int> EnvirBase::resolveRunFilter(const char *configName, const char 
                 if (expr.boolValue())
                     runNumbers.push_back(runNumber);
             }
+            catch (cRuntimeError& e) {
+                e.prependMessage("Cannot evaluate run filter");
+                throw;
+            }
             catch (std::exception& e) {
                 throw cRuntimeError("Cannot evaluate run filter: %s", e.what());
             }
@@ -915,6 +919,9 @@ void EnvirBase::readParameter(cPar *par)
     else if (!opp_isempty(str)) {
         try {
             par->parse(str, entry.getBaseDirectory(), entry.getSourceLocation());
+        }
+        catch (cRuntimeError&) {
+            throw;  // already has location info from parimpl
         }
         catch (std::exception& e) {
             throw cRuntimeError("%s -- at %s", e.what(), entry.getSourceLocation().str().c_str());
@@ -1532,6 +1539,14 @@ int EnvirBase::parseSimtimeResolution(const char *resolution)
         }
         return (int)exp;
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage(
+                "Invalid value \"%s\" for configuration option simtime-resolution: it must be "
+                "a valid second-or-smaller time unit (s, ms, us, ns, ps, fs or as), "
+                "a power-of-ten multiple of such unit (e.g. 100ms), or a base-10 scale "
+                "exponent in the -18..0 range", resolution);
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError(
                 "Invalid value \"%s\" for configuration option simtime-resolution: it must be "
@@ -1625,10 +1640,14 @@ void EnvirBase::setupRNGMapping(cComponent *component)
             }
             tmpmap[modRng] = physRng;
         }
+        catch (cRuntimeError& e) {
+            e.appendMessage("in configuration entry *.%s = %s for module/channel %s",
+                    suffix, value, component->getFullPath().c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError("%s in configuration entry *.%s = %s for module/channel %s",
                     e.what(), suffix, value, component->getFullPath().c_str());
-
         }
     }
 

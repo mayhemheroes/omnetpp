@@ -124,6 +124,9 @@ cXMLElement *XMLDocCache::parseDocument(const char *filename)
         parser.parseFile(filename);
         return saxHandler.getTree();
     }
+    catch (cRuntimeError&) {
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("%s", e.what()); // just convert
     }
@@ -138,6 +141,9 @@ cXMLElement *XMLDocCache::parseContent(const char *content)
         parser.setHandler(&saxHandler);
         parser.parseContent(content);
         return saxHandler.getTree();
+    }
+    catch (cRuntimeError&) {
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("%s", e.what()); // just convert

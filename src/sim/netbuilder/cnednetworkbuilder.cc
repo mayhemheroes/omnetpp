@@ -76,12 +76,11 @@ static void updateOrRethrowException(std::exception& e, NedElement *context)
 {
     std::string loc = context ? context->getSourceLocation().str() : "";
     if (!loc.empty()) {
-        std::string msg = std::string(e.what()) + ", at " + loc;
         cException *ce = dynamic_cast<cException *>(&e);
         if (ce)
-            ce->setMessage(msg.c_str());
+            ce->appendMessage("at %s", loc.c_str());
         else
-            throw cRuntimeError("%s", msg.c_str());  // cannot set msg on existing exception object, throw new one
+            throw cRuntimeError("%s, at %s", e.what(), loc.c_str());  // cannot modify existing exception object, throw new one
     }
 }
 
@@ -274,6 +273,10 @@ void cNedNetworkBuilder::doParam(cComponent *component, ParamElement *paramNode,
                     expr->setSourceLocation(loc); // note: if we do it earlier, file:line may show up TWICE in the error message: one added inside convertToConst(), the other in the 'catch' block at the bottom of this function
                 impl->setIsSet(!paramNode->getIsDefault());
                 impl->setSourceLocation(loc);
+            }
+            catch (cRuntimeError& e) {
+                e.prependMessage("Error setting up parameter '%s'", paramName);
+                throw;
             }
             catch (std::exception& e) {
                 throw cRuntimeError(component, "Error setting up parameter '%s': %s", paramName, e.what());

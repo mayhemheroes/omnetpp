@@ -199,7 +199,8 @@ bool cPar::isExpression() const
 }
 
 #define TRY(x) \
-    try { x; } catch (std::exception& e) { throw cRuntimeError(E_PARAM, getFullName(), e.what()); }
+    try { x; } catch (cRuntimeError& e) { e.prependMessage(cErrorMessages::get(E_PARAM), getFullName()); throw; } \
+              catch (std::exception& e) { throw cRuntimeError(E_PARAM, getFullName(), e.what()); }
 
 bool cPar::boolValue() const
 {
@@ -451,6 +452,10 @@ void cPar::doConvertToConst(bool isInternalChange)
     try {
         p->convertToConst(evalContext, this);
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage(cErrorMessages::get(E_PARAM), getFullName());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError(E_PARAM, getFullName(), e.what());
     }
@@ -494,6 +499,11 @@ void cPar::parse(const char *text, const char *baseDirectory, FileLine loc, bool
         try {
             tmp->setBaseDirectory(baseDirectory);
             tmp->parse(text, loc, this);
+        }
+        catch (cRuntimeError& e) {
+            delete tmp;
+            e.prependMessage("Cannot assign '%s' to parameter '%s'", text, getFullPath().c_str());
+            throw;
         }
         catch (std::exception& e) {
             delete tmp;

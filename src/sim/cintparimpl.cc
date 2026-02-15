@@ -111,6 +111,10 @@ intval_t cIntParImpl::intValue(cComponent *context, const cPar *targetPar) const
             cValue v = evaluate(expr, context, targetPar);
             return v.intValueInUnit(getUnit());
         }
+        catch (cRuntimeError& e) {
+            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError(e, expr->getSourceLocation().c_str());
         }

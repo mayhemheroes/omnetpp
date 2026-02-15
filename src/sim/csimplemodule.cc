@@ -133,19 +133,17 @@ void cSimpleModule::activate(void *p)
     }
     catch (cRuntimeError *e) {  // compat
         // IMPORTANT: No transferTo() in catch blocks! See Note 2 below.
-        exception = new cRuntimeError("%s [NOTE: exception was thrown by pointer. "
-                                      "In OMNeT++ 4.0+, exceptions have to be thrown by value. "
-                                      "Please delete 'new' from 'throw new ...' in the code]",
-                                      e->what());
-        delete e;
+        e->appendMessage("[NOTE: exception was thrown by pointer. "
+                         "In OMNeT++ 4.0+, exceptions have to be thrown by value. "
+                         "Please delete 'new' from 'throw new ...' in the code]");
+        exception = e;
     }
     catch (cException *e) {  // compat
         // IMPORTANT: No transferTo() in catch blocks! See Note 2 below.
-        exception = new cRuntimeError("%s [NOTE: exception was thrown with pointer. "
-                                      "In OMNeT++ 4.0+, exceptions have to be thrown by value. "
-                                      "Please delete 'new' from 'throw new ...' in the code]",
-                                      e->what());
-        delete e;
+        e->appendMessage("[NOTE: exception was thrown with pointer. "
+                         "In OMNeT++ 4.0+, exceptions have to be thrown by value. "
+                         "Please delete 'new' from 'throw new ...' in the code]");
+        exception = e;
     }
     catch (cException& e) {
         // IMPORTANT: No transferTo() in catch blocks! See Note 2 below.

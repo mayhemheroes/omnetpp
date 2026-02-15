@@ -39,6 +39,9 @@ void cPatternMatcher::setPattern(const char *pattern, bool dottedpath, bool full
     try {
         impl->setPattern(pattern, dottedpath, fullstring, casesensitive);
     }
+    catch (cRuntimeError&) {
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("%s", e.what()); // allow debug-on-error
     }

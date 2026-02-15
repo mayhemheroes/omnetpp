@@ -204,6 +204,11 @@ SignalSource cStatisticBuilder::doStatisticSource(cComponent *component, cProper
             return parser.parse(component, statisticProperty, statisticName, sourceSpec, checkSignalDecl, needWarmupFilter);
         }
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Cannot add statistic '%s' to module %s (NED type: %s): Error in source=%s",
+                statisticName, component->getFullPath().c_str(), component->getNedTypeName(), sourceSpec);
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Cannot add statistic '%s' to module %s (NED type: %s): Error in source=%s: %s",
                 statisticName, component->getFullPath().c_str(), component->getNedTypeName(), sourceSpec, e.what());
@@ -226,6 +231,11 @@ void cStatisticBuilder::doResultRecorder(const SignalSource& source, const char 
             StatisticRecorderParser parser;
             parser.parse(source, recordingMode, component, statisticName, attrsProperty);
         }
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Cannot add statistic '%s' to module %s (NED type: %s): Bad recording mode '%s'",
+                statisticName, component->getFullPath().c_str(), component->getNedTypeName(), recordingMode);
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Cannot add statistic '%s' to module %s (NED type: %s): Bad recording mode '%s': %s",

@@ -78,6 +78,10 @@ void FakeGUI::parseExpression(cConfiguration *cfg, cConfigOption *configOption, 
         Expression::MultiAstTranslator translator({ &extraTranslator, Expression::getDefaultAstTranslator() });
         expression.parse(text, &translator);
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error in config option '%s'", configOption->getName());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error in config option '%s': %s", configOption->getName(), e.what());
     }

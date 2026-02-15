@@ -692,6 +692,10 @@ void ModuleCanvasViewer::drawSubmodule(cModule *submod)
     try {
         SubmoduleItemUtil::setupFromDisplayString(item, submod);
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error drawing submodule %s", submod->getNedTypeAndFullPath().c_str());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error drawing submodule %s: %s", submod->getNedTypeAndFullPath().c_str(), e.what());
     }
@@ -714,6 +718,10 @@ void ModuleCanvasViewer::redrawEnclosingModule()
 
     try {
         CompoundModuleItemUtil::setupFromDisplayString(compoundModuleItem, object, zoomFactor, getSubmodulesRect());
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error redrawing module %s", object->getNedTypeAndFullPath().c_str());
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Error redrawing module %s: %s", object->getNedTypeAndFullPath().c_str(), e.what());
@@ -781,6 +789,10 @@ void ModuleCanvasViewer::drawConnection(cGate *gate)
     try {
         item->setLine(getConnectionLine(gate));
         ConnectionItemUtil::setupFromDisplayString(item, gate, showArrowHeads);
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error drawing connection originating in gate %s", gate->getFullPath().c_str());
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Error drawing connection originating in gate %s: %s", gate->getFullPath().c_str() , e.what());
@@ -992,6 +1004,10 @@ void ModuleCanvasViewer::refreshSubmodule(cModule *submod)
     try {
         SubmoduleItemUtil::setupFromDisplayString(item, submod);
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error redrawing submodule %s", submod->getNedTypeAndFullPath().c_str());
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error redrawing submodule %s: %s", submod->getNedTypeAndFullPath().c_str(), e.what());
     }
@@ -1025,6 +1041,10 @@ void ModuleCanvasViewer::refreshConnection(cGate *gate)
     ConnectionItem *item = connectionGraphicsItems[gate];
     try {
         ConnectionItemUtil::setupFromDisplayString(item, gate, showArrowHeads);
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error refreshing connection originating in gate %s", gate->getFullPath().c_str());
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Error refreshing connection originating in gate %s: %s", gate->getFullPath().c_str(), e.what());

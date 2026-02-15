@@ -21,7 +21,8 @@ using namespace omnetpp::common;
 
 namespace omnetpp {
 
-#define TRY(code)   try { code; } catch (std::exception& e) { throw cRuntimeError("cMatchExpression: %s", removePrefix(e.what())); }
+#define TRY(code)   try { code; } catch (cRuntimeError& e) { e.prependMessage("cMatchExpression"); throw; } \
+                                  catch (std::exception& e) { throw cRuntimeError("cMatchExpression: %s", removePrefix(e.what())); }
 
 const char *removePrefix(const char *s)
 {

@@ -911,6 +911,10 @@ static cValue opp_eval(const char *txt, cExpression::Context *context) //TOOD si
         expr.parseNedExpr(txt);
         return expr.evaluate(context);
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Error evaluating expression \"%s\"", txt);
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Error evaluating expression \"%s\": %s", txt, e.what());
     }

@@ -426,6 +426,10 @@ const SimTime SimTime::parse(const char *s)
         double d = UnitConversion::parseQuantity(s, unit);  // "unit" is OUT parameter
         return unit.empty() ? d : UnitConversion::convertUnit(d, unit.c_str(), "s");
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Cannot convert string \"%s\" to SimTime", s);
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Cannot convert string \"%s\" to SimTime: %s", s, e.what());
     }

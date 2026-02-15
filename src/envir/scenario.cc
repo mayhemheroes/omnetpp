@@ -40,6 +40,11 @@ Scenario::Scenario(const std::vector<IterationVariable>& iterationVariables, con
         try {
             varExt.iterator.parse(var.value.c_str());
         }
+        catch (cRuntimeError& e) {
+            e.prependMessage("Cannot parse iteration variable '%s'", var.varName.c_str());
+            e.appendMessage("in '%s'", var.value.c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError("Cannot parse iteration variable '%s' (%s in '%s')", var.varName.c_str(), e.what(), var.value.c_str());
         }
@@ -166,6 +171,10 @@ ExprValue Scenario::getIterationVariableValue(const char *varName)
         else
             return UnitConversion::parseQuantity(value.c_str());  // converts to double  FIXME units should NOT be accepted here!!!!!
     }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Wrong value for iteration variable %s", varName);
+        throw;
+    }
     catch (std::exception& e) {
         throw cRuntimeError("Wrong value for iteration variable %s: %s", varName, e.what());
     }
@@ -272,6 +281,10 @@ bool Scenario::evaluateConstraint()
         constraint->substituteVariables(iteratorsByName);
         constraint->evaluate();
         return constraint->boolValue();
+    }
+    catch (cRuntimeError& e) {
+        e.prependMessage("Cannot evaluate constraint expression");
+        throw;
     }
     catch (std::exception& e) {
         throw cRuntimeError("Cannot evaluate constraint expression: %s", e.what());

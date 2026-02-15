@@ -19,7 +19,8 @@
 namespace omnetpp {
 
 
-#define TRY(code)   try { code; } catch (std::exception& e) { throw cRuntimeError("%s", e.what()); }
+#define TRY(code)   try { code; } catch (cRuntimeError&) { throw; } \
+                                  catch (std::exception& e) { throw cRuntimeError("%s", e.what()); }
 
 bool opp_isblank(const char *txt)
 {

@@ -154,6 +154,10 @@ cXMLElement *cXMLParImpl::xmlValue(cComponent *context, const cPar *targetPar) c
             }
             return obj;
         }
+        catch (cRuntimeError& e) {
+            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            throw;
+        }
         catch (std::exception& e) {
             throw cRuntimeError(e, expr->getSourceLocation().c_str());
         }
