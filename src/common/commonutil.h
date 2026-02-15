@@ -104,6 +104,17 @@ inline bool opp_exiting() {return __exiting;}
 COMMON_API void panic(const char *message);
 
 /**
+ * Returns true if stack trace printing is available (compiled with WITH_BACKTRACE).
+ */
+COMMON_API bool isStacktraceAvailable();
+
+/**
+ * Prints a stack trace to stderr. The numFramesToSkip parameter specifies
+ * how many stack frames to omit from the top of the trace.
+ */
+COMMON_API void printStacktrace(int numFramesToSkip = 0);
+
+/**
  * For handling unrecoverable errors. It prints the exception's message and aborts.
  * Often used in destructors instead of throw, because throwing from destructors is
  * not allowed by C++ rules.

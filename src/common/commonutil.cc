@@ -23,6 +23,9 @@
 #include "omnetpp/platdep/platmisc.h"
 #include "commonutil.h"
 #include "opp_ctype.h"
+#ifdef WITH_BACKTRACE
+#include "backward.h"
+#endif
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -236,6 +239,30 @@ const char *opp_typename(const std::type_info& t)
     return it->second.c_str();
 }
 
+
+//----
+
+bool isStacktraceAvailable()
+{
+#ifdef WITH_BACKTRACE
+    return true;
+#else
+    return false;
+#endif
+}
+
+void printStacktrace(int numFramesToSkip)
+{
+#ifdef WITH_BACKTRACE
+    fprintf(stderr, "\n--- Stack trace begin ---\n");
+    backward::StackTrace st;
+    st.load_here(32);
+    st.skip_n_firsts(numFramesToSkip);
+    backward::Printer p;
+    p.print(st, stderr);
+    fprintf(stderr, "--- Stack trace end ---\n");
+#endif
+}
 
 }  // namespace common
 }  // namespace omnetpp

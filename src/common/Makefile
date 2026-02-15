@@ -46,6 +46,7 @@ OBJS= $O/lcgrandom.o $O/filelock.o $O/filereader.o $O/linetokenizer.o \
 ifeq ($(WITH_BACKTRACE),yes)
   OBJS+= $O/backward.o
   LDFLAGS+= $(BACKWARD_LDFLAGS)
+  COPTS+= -DWITH_BACKTRACE
 endif
 
 GENERATED_SOURCES= expression.tab.h expression.tab.cc expression.lex.cc expression.lex.h \
