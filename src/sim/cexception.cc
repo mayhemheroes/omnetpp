@@ -139,6 +139,24 @@ void cException::init(const cObject *where, ErrorCode errorcode, const std::stri
     exitIfStartupError();
 }
 
+void cException::prependMessage(const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    std::string text = opp_vstringf(fmt, va);
+    va_end(va);
+    msg = text + ": " + msg;
+}
+
+void cException::appendMessage(const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    std::string text = opp_vstringf(fmt, va);
+    va_end(va);
+    msg = msg + ": " + text;
+}
+
 static const char *getKindStr(cComponent::ComponentKind kind, bool capitalized)
 {
     switch (kind) {

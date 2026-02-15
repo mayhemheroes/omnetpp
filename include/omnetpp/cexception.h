@@ -145,9 +145,16 @@ class SIM_API cException : public std::exception
     virtual void setMessage(const char *txt) {msg = txt;}
 
     /**
-     * Prefixes the message with the given text and a colon.
+     * Prefixes the message with the given printf-like formatted text and a colon.
      */
-    virtual void prependMessage(const char *txt) {msg = std::string(txt) + ": " + msg;}
+    _OPP_GNU_ATTRIBUTE(format(printf, 2, 3))
+    virtual void prependMessage(const char *fmt, ...);
+
+    /**
+     * Appends the given printf-like formatted text to the message, separated by a colon.
+     */
+    _OPP_GNU_ATTRIBUTE(format(printf, 2, 3))
+    virtual void appendMessage(const char *fmt, ...);
     //@}
 
     /** @name Getting exception info */
