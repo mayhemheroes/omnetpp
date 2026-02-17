@@ -235,6 +235,34 @@ class LAYOUT_API Pt
             return !isNaN(x) && !isNaN(y) && !isNaN(z);
         }
 
+        Pt operator+(const Pt& other) const {
+            return Pt(x + other.x, y + other.y, z + other.z);
+        }
+
+        Pt operator-(const Pt& other) const {
+            return Pt(x - other.x, y - other.y, z - other.z);
+        }
+
+        Pt operator*(double d) const {
+            return Pt(x * d, y * d, z * d);
+        }
+
+        Pt operator-() const {
+            return Pt(-x, -y, -z);
+        }
+
+        Pt& operator+=(const Pt& other) {
+            return add(other);
+        }
+
+        bool operator==(const Pt& other) const {
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        bool operator!=(const Pt& other) const {
+            return !(*this == other);
+        }
+
         static double determinant(double a1, double a2, double b1, double b2) {
             return a1 * b2 - a2 * b1;
         }
@@ -312,6 +340,21 @@ class LAYOUT_API Ln {
             double y = Pt::determinant(a, y1 - y2, b, y3 - y4) / c;
 
             return Pt(x, y, 0);
+        }
+
+        Pt pointAt(double t) const {
+            return Pt(begin.x + t * (end.x - begin.x),
+                      begin.y + t * (end.y - begin.y),
+                      begin.z + t * (end.z - begin.z));
+        }
+
+        Ln unitVector() const {
+            Pt dir = end - begin;
+            double len = dir.getLength();
+            if (len == 0)
+                return *this;
+            dir = dir * (1.0 / len);
+            return Ln(begin, begin + dir);
         }
 
         static Ln getNil() {
@@ -534,6 +577,64 @@ class LAYOUT_API Rc {
 
         bool isNil() const {
             return pt.isNil() && rs.isNil();
+        }
+
+        bool isValid() const {
+            return rs.width > 0 && rs.height > 0;
+        }
+
+        void setLeft(double x) {
+            rs.width += (pt.x - x);
+            pt.x = x;
+        }
+
+        void setRight(double x) {
+            rs.width = x - pt.x;
+        }
+
+        void setTop(double y) {
+            rs.height += (pt.y - y);
+            pt.y = y;
+        }
+
+        void setBottom(double y) {
+            rs.height = y - pt.y;
+        }
+
+        bool contains(const Pt& p) const {
+            return pt.x <= p.x && p.x <= pt.x + rs.width &&
+                   pt.y <= p.y && p.y <= pt.y + rs.height;
+        }
+
+        bool contains(const Rc& other) const {
+            return pt.x <= other.pt.x &&
+                   pt.y <= other.pt.y &&
+                   other.pt.x + other.rs.width <= pt.x + rs.width &&
+                   other.pt.y + other.rs.height <= pt.y + rs.height;
+        }
+
+        Rc intersected(const Rc& other) const {
+            double x1 = std::max(pt.x, other.pt.x);
+            double y1 = std::max(pt.y, other.pt.y);
+            double x2 = std::min(pt.x + rs.width, other.pt.x + other.rs.width);
+            double y2 = std::min(pt.y + rs.height, other.pt.y + other.rs.height);
+            if (x2 > x1 && y2 > y1)
+                return Rc(x1, y1, 0, x2 - x1, y2 - y1);
+            else
+                return Rc(x1, y1, 0, 0, 0);
+        }
+
+        Pt center() const {
+            return getCenterCenter();
+        }
+
+        bool operator==(const Rc& other) const {
+            return pt.x == other.pt.x && pt.y == other.pt.y &&
+                   rs.width == other.rs.width && rs.height == other.rs.height;
+        }
+
+        bool operator!=(const Rc& other) const {
+            return !(*this == other);
         }
 };
 

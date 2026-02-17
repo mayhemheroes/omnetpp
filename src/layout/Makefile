@@ -30,7 +30,7 @@ COPTS=$(CFLAGS) $(INCL_FLAGS)
 
 IMPLIBS= -loppcommon$D
 
-OBJS= $O/geometry.o $O/graphcomponent.o $O/heapembedding.o $O/startreeembedding.o \
+OBJS= $O/arrowcoords.o $O/geometry.o $O/graphcomponent.o $O/heapembedding.o $O/startreeembedding.o \
       $O/forcedirectedparametersbase.o $O/forcedirectedparameters.o $O/forcedirectedembedding.o \
       $O/graphlayouter.o $O/basicspringembedderlayout.o $O/forcedirectedgraphlayouter.o
 
