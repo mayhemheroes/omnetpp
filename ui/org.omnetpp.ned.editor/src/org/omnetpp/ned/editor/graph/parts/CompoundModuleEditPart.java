@@ -55,9 +55,11 @@ public class CompoundModuleEditPart extends ModuleEditPart {
     private static final String PREF_SECTION = "ViewerSettings";
     private static final String PREF_SCALE = ":scale";
     private static final String PREF_ICONSCALE = ":iconScale";
+    private static final String PREF_CONNECTION_BUNDLING = ":connectionBundling";
     private float scale = Float.NaN;
     private float zoomByFactor = 1.3f;
     private float iconScale = Float.NaN;
+    private Boolean connectionBundlingEnabled = null;
 
     // stores  the connection model - connection editPart mapping for the compound module
     private final Map<Object, ConnectionEditPart> modelToConnectionPartsRegistry = new HashMap<Object, ConnectionEditPart>();
@@ -379,6 +381,22 @@ public class CompoundModuleEditPart extends ModuleEditPart {
             iconScale = 1.0f;
         this.iconScale = iconScale;
         getSettings().put(getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_ICONSCALE, iconScale);
+    }
+
+    public boolean isConnectionBundlingEnabled() {
+        if (connectionBundlingEnabled == null) {
+            try {
+                connectionBundlingEnabled = getSettings().getBoolean(getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_CONNECTION_BUNDLING);
+            } catch (Exception e) {
+                connectionBundlingEnabled = false;
+            }
+        }
+        return connectionBundlingEnabled;
+    }
+
+    public void setConnectionBundlingEnabled(boolean enabled) {
+        this.connectionBundlingEnabled = enabled;
+        getSettings().put(getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_CONNECTION_BUNDLING, enabled);
     }
 
     public void changeLayout() {

@@ -124,6 +124,7 @@ import org.omnetpp.ned.editor.graph.actions.PropertiesAction;
 import org.omnetpp.ned.editor.graph.actions.RelayoutAction;
 import org.omnetpp.ned.editor.graph.actions.ScaleDownIconsAction;
 import org.omnetpp.ned.editor.graph.actions.ScaleUpIconsAction;
+import org.omnetpp.ned.editor.graph.actions.ToggleConnectionBundlingAction;
 import org.omnetpp.ned.editor.graph.actions.TogglePinAction;
 import org.omnetpp.ned.editor.graph.actions.ToggleSnapToGeometryAction;
 import org.omnetpp.ned.editor.graph.actions.ToggleSnapToGridAction;
@@ -427,6 +428,9 @@ public class GraphicalNedEditor
         action = new ToggleSnapToGridAction(viewer);
         getActionRegistry().registerAction(action);
 
+        action = new ToggleConnectionBundlingAction(this);
+        getActionRegistry().registerAction(action);
+
         // register global actions to the keybinding service otherwise the CTRL-Z CTRL-Y and DEL
         // will be captured by the text editor after switching there
         ActionRegistry registry = getActionRegistry();
@@ -574,6 +578,10 @@ public class GraphicalNedEditor
         getSelectionActions().add(action.getId());
 
         action = new ScaleDownIconsAction(this);
+        registry.registerAction(action);
+        getSelectionActions().add(action.getId());
+
+        action = new ToggleConnectionBundlingAction(this);
         registry.registerAction(action);
         getSelectionActions().add(action.getId());
 

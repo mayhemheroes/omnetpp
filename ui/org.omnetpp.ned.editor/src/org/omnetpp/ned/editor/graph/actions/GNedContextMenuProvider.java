@@ -41,6 +41,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
+import org.omnetpp.ned.editor.graph.actions.ToggleConnectionBundlingAction;
 
 /**
  * Adds actions to the context menu in the graphical editor area
@@ -133,6 +134,9 @@ public class GNedContextMenuProvider extends ContextMenuProvider {
         manager.appendToGroup(GROUP_REST, action);
 
         action = ar.getAction(ToggleSnapToGeometryAction.ID);
+        manager.appendToGroup(GROUP_REST, action);
+
+        action = ar.getAction(ToggleConnectionBundlingAction.ID);
         manager.appendToGroup(GROUP_REST, action);
 
         action = ar.getAction(RelayoutAction.ID);

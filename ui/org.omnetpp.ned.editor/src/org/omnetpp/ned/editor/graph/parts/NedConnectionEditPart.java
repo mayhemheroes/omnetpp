@@ -31,6 +31,7 @@ import org.omnetpp.figures.ConnectionFigure;
 import org.omnetpp.figures.ConnectionKindFigure;
 import org.omnetpp.figures.ITooltipTextProvider;
 import org.omnetpp.figures.routers.ConnectionRoutingConstraint;
+import org.omnetpp.ned.editor.graph.actions.ToggleConnectionBundlingAction;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.editor.NedEditor;
 import org.omnetpp.ned.editor.graph.dialogs.PropertiesDialog;
@@ -344,6 +345,10 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
             return;
         }
         if (compoundPart == null || compoundPart.getModel() == null)
+            return;
+
+        // Skip bundling if disabled for this compound module type
+        if (!compoundPart.isConnectionBundlingEnabled())
             return;
 
         String srcMod = connectionModel.getSrcModule();
