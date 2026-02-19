@@ -12,7 +12,8 @@
 #include "layout/graphlayouter.h"
 #include "layout/basicspringembedderlayout.h"
 #include "layout/forcedirectedgraphlayouter.h"
-// #include "layout/geometry.h"
+#include "layout/geometry.h"
+#include "layout/arrowcoords.h"
 // #include "layout/forcedirectedparametersbase.h"
 // #include "layout/forcedirectedparameters.h"
 // #include "layout/forcedirectedembedding.h"
@@ -188,7 +189,11 @@ FIXUP_GETNODEPOSITION(ForceDirectedGraphLayouter);
 %include "layout/graphlayouter.h"
 %include "layout/basicspringembedderlayout.h"
 %include "layout/forcedirectedgraphlayouter.h"
-// %include "layout/geometry.h"
+
+// Geometry types and arrowcoords for connection routing
+%ignore omnetpp::layout::Cc;  // not needed for arrowcoords
+%include "layout/geometry.h"
+%include "layout/arrowcoords.h"
 // %include "layout/forcedirectedparametersbase.h"
 // %include "layout/forcedirectedparameters.h"
 // %include "layout/forcedirectedembedding.h"
