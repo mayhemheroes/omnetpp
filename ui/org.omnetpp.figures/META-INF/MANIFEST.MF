@@ -16,5 +16,6 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.omnetpp.figures,
  org.omnetpp.figures.anchors,
  org.omnetpp.figures.layout,
- org.omnetpp.figures.misc
+ org.omnetpp.figures.misc,
+ org.omnetpp.figures.routers
 Automatic-Module-Name: org.omnetpp.figures

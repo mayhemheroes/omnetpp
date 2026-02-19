@@ -7,9 +7,12 @@
 
 package org.omnetpp.ned.editor.graph.parts;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
@@ -22,16 +25,19 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.omnetpp.common.displaymodel.IDisplayString;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.figures.ConnectionFigure;
 import org.omnetpp.figures.ConnectionKindFigure;
 import org.omnetpp.figures.ITooltipTextProvider;
+import org.omnetpp.figures.routers.ConnectionRoutingConstraint;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.editor.NedEditor;
 import org.omnetpp.ned.editor.graph.dialogs.PropertiesDialog;
 import org.omnetpp.ned.editor.graph.parts.policies.NedConnectionEditPolicy;
 import org.omnetpp.ned.editor.graph.parts.policies.NedConnectionEndpointEditPolicy;
 import org.omnetpp.ned.model.INedElement;
+import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
 import org.omnetpp.ned.model.interfaces.INedModelProvider;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
@@ -64,17 +70,47 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
 
     @Override
     public void activateFigure() {
+        ConnectionFigure cfig = getConnectionFigure();
+        ConnectionElementEx connectionModel = getModel();
+
+        // Get the connection layer and its router
+        org.eclipse.draw2d.ConnectionLayer layer = (ConnectionLayer)((CompoundModuleEditPart)getParent()).getFigure().
+             getSubmoduleArea().getConnectionLayer();
+        org.eclipse.draw2d.ConnectionRouter router = layer.getConnectionRouter();
+
+        // Set routing constraint - the router will store it
+        ConnectionRoutingConstraint routingConstraint = new ConnectionRoutingConstraint();
+        String modeStr = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
+        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
+            routingConstraint.mode = modeStr.charAt(0);
+        routingConstraint.srcAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCX, 50);
+        routingConstraint.srcAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCY, 50);
+        routingConstraint.destAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTX, 50);
+        routingConstraint.destAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTY, 50);
+
+        // compute connection bundling: group connections by (srcModule, destModule, mode)
+        computeBundling(connectionModel, routingConstraint);
+
+        // Set constraint in router BEFORE setting router on connection
+        router.setConstraint(cfig, routingConstraint);
+
         // add the connection to the compound module's connection layer instead of the global one
-        ((CompoundModuleEditPart)getParent()).getFigure().
-             getSubmoduleArea().getConnectionLayer().add(getConnectionFigure());
+        layer.add(getConnectionFigure());
+
+        // Set the router AFTER adding to layer (triggers routing, which will read constraint from router)
+        cfig.setConnectionRouter(router);
     }
 
     @Override
     public void deactivateFigure() {
+        // Remove constraint from router
+        ConnectionFigure cfig = getConnectionFigure();
+        if (cfig.getConnectionRouter() != null)
+            cfig.getConnectionRouter().remove(cfig);
         // remove the connection figure from the parent
         getFigure().getParent().remove(getFigure());
-        getConnectionFigure().setSourceAnchor(null);
-        getConnectionFigure().setTargetAnchor(null);
+        cfig.setSourceAnchor(null);
+        cfig.setTargetAnchor(null);
     }
 
     @Override
@@ -170,6 +206,21 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
 
         cfig.setDisplayString(connectionModel.getDisplayString());
         cfig.setArrowHeadEnabled(!connectionModel.getIsBidirectional());
+
+        // set routing constraint for the connection router (arrowcoords)
+        ConnectionRoutingConstraint routingConstraint = new ConnectionRoutingConstraint();
+        String modeStr = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
+        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
+            routingConstraint.mode = modeStr.charAt(0);
+        routingConstraint.srcAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCX, 50);
+        routingConstraint.srcAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCY, 50);
+        routingConstraint.destAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTX, 50);
+        routingConstraint.destAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTY, 50);
+
+        // compute connection bundling: group connections by (srcModule, destModule, mode)
+        computeBundling(connectionModel, routingConstraint);
+
+        cfig.setRoutingConstraint(routingConstraint);
 
         boolean isConditional = connectionModel.getFirstConditionChild() != null;
         boolean isGroup = connectionModel.getFirstLoopChild() != null;
@@ -278,6 +329,72 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
 
     public ConnectionElementEx getModel() {
         return (ConnectionElementEx)super.getModel();
+    }
+
+    /**
+     * Computes the bundle index and size for connection arrow distribution.
+     * Connections between the same module pair with the same routing mode are
+     * grouped together. Bidirectional connections count as a single visual line.
+     */
+    private void computeBundling(ConnectionElementEx connectionModel, ConnectionRoutingConstraint constraint) {
+        CompoundModuleEditPart compoundPart;
+        try {
+            compoundPart = getCompoundModulePart();
+        } catch (Exception e) {
+            return;
+        }
+        if (compoundPart == null || compoundPart.getModel() == null)
+            return;
+
+        String srcMod = connectionModel.getSrcModule();
+        String destMod = connectionModel.getDestModule();
+        if (srcMod == null || destMod == null)
+            return;
+
+        // canonical ordering: alphabetically smaller module name first
+        String modA, modB;
+        if (srcMod.compareTo(destMod) <= 0) {
+            modA = srcMod;
+            modB = destMod;
+        } else {
+            modA = destMod;
+            modB = srcMod;
+        }
+
+        // get all connections between this module pair from the model
+        // (connections in both directions)
+        CompoundModuleElementEx compoundModel = compoundPart.getModel();
+        List<ConnectionElementEx> abConns = compoundModel.getConnections(modA, null, modB, null);
+        List<ConnectionElementEx> baConns = modA.equals(modB) ?
+                java.util.Collections.emptyList() :
+                compoundModel.getConnections(modB, null, modA, null);
+
+        // Build ordered list of all connections between this module pair with
+        // the same routing mode. Each connection is one visual line.
+        // In NED, a <--> connection is a single model element (not two),
+        // so no deduplication of reverse directions is needed.
+        List<ConnectionElementEx> visualLines = new ArrayList<>();
+        for (ConnectionElementEx conn : abConns)
+            if (getRoutingMode(conn) == constraint.mode)
+                visualLines.add(conn);
+        for (ConnectionElementEx conn : baConns)
+            if (getRoutingMode(conn) == constraint.mode)
+                visualLines.add(conn);
+
+        // find this connection's index
+        int index = visualLines.indexOf(connectionModel);
+
+        if (index >= 0 && visualLines.size() > 1) {
+            constraint.bundleIndex = index;
+            constraint.bundleSize = visualLines.size();
+        }
+    }
+
+    private char getRoutingMode(ConnectionElementEx conn) {
+        String modeStr = conn.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
+        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
+            return modeStr.charAt(0);
+        return 'a';
     }
 
     public INedTypeElement getNedTypeElementToOpen() {

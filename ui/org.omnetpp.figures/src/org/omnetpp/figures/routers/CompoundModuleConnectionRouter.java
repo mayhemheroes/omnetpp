@@ -7,71 +7,162 @@
 
 package org.omnetpp.figures.routers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.omnetpp.figures.CompoundModuleFigure;
 import org.omnetpp.figures.anchors.CompoundModuleGateAnchor;
 import org.omnetpp.figures.anchors.IAnchorBounds;
+import org.omnetpp.layout.engine.LayoutEngine;
+import org.omnetpp.layout.engine.Ln;
+import org.omnetpp.layout.engine.Rc;
 
 /**
- * Very basic straight connection router. It handles a CompoundModuleGateAnchor
- * differently so reference point can be calculated correctly.
+ * Connection router that uses the native arrowcoords() algorithm from the layout
+ * library for submodule-to-submodule connections. This produces the same visual
+ * result as Qtenv's runtime rendering. Self-connections are drawn as circular arcs.
+ * Connections involving CompoundModuleGateAnchors fall back to the anchor-based
+ * routing for correct compound module border placement.
  *
  * @author rhornig
  */
 public class CompoundModuleConnectionRouter extends AbstractRouter
 {
+    private Map<Connection, Object> constraints = new HashMap<>();
+
     public CompoundModuleConnectionRouter() { }
 
+    @Override
+    public void setConstraint(Connection connection, Object constraint) {
+        constraints.put(connection, constraint);
+    }
+
+    @Override
+    public void remove(Connection connection) {
+        constraints.remove(connection);
+    }
+
     /**
-     * Routes the given Connection directly between the source and target anchors.
-     * Handles CompoundModuleGateAnchors differently, because they cannot provide a
-     * reference point without knowing the other end's reference point
+     * Routes the given Connection. For non-self connections between submodule
+     * figures, uses the native arrowcoords() algorithm. For self-connections,
+     * draws a circular arc. For connections involving compound module anchors,
+     * falls back to anchor-based routing.
      * @param conn the connection to be routed
      */
     public void route(Connection conn) {
         PointList points = conn.getPoints();
         points.removeAllPoints();
 
-        if (!isSelfConnection(conn)) {
-            // connection between two different modules (straight line)
-            Point start, end;
-            conn.translateToRelative(start = getStartPoint(conn));
-            conn.translateToRelative(end = getEndPoint(conn));
-            points.addPoint(start);
-            points.addPoint(end);
+        if (isSelfConnection(conn)) {
+            routeSelfConnection(conn, points);
+        }
+        else if (isCompoundModuleAnchorConnection(conn)) {
+            // connections to/from compound module border: use anchor-based routing
+            routeWithAnchors(conn, points);
         }
         else {
-            // self connections (both src and target is the same figure.
-            // draw a 3/4 circle in upper right corner for submodules
-            // and a 1/4 circle for compound modules
-            IAnchorBounds owner = (IAnchorBounds)conn.getSourceAnchor().getOwner(); // can be only a submodule or compound module figure
-            Point center = owner.getAnchorBounds().getTopRight();
-            conn.getSourceAnchor().getOwner().translateFromParent(center);
-
-            double radius = 14;
-            double delta = Math.PI*2/20;
-            double angle = Math.PI/2;
-            int steps = 16;
-            if (owner instanceof CompoundModuleFigure) {
-                // compound modules have only a 1/4 circle
-                delta = -delta;
-                steps = 6;
-                radius += 10;
-            }
-            for (int i=0; i<steps; ++i, angle += delta) {
-                points.addPoint((int)(0.5+center.x-Math.sin(angle)*radius),
-                                (int)(0.5+center.y+Math.cos(angle)*radius));
-            }
+            // submodule-to-submodule: use native arrowcoords
+            routeWithArrowCoords(conn, points);
         }
 
         conn.setPoints(points);
     }
 
+    protected void routeWithArrowCoords(Connection conn, PointList points) {
+        IFigure srcFigure = conn.getSourceAnchor().getOwner();
+        IFigure destFigure = conn.getTargetAnchor().getOwner();
+
+        if (!(srcFigure instanceof IAnchorBounds) || !(destFigure instanceof IAnchorBounds)) {
+            // fallback if figures don't provide anchor bounds
+            routeWithAnchors(conn, points);
+            return;
+        }
+
+        Rectangle srcBounds = ((IAnchorBounds)srcFigure).getAnchorBounds().getCopy();
+        Rectangle destBounds = ((IAnchorBounds)destFigure).getAnchorBounds().getCopy();
+
+        // translate bounds to absolute coordinates
+        srcFigure.translateToAbsolute(srcBounds);
+        destFigure.translateToAbsolute(destBounds);
+
+        // read routing constraint from the router's constraint map
+        char mode = 'a';
+        double srcAnchX = 50, srcAnchY = 50, destAnchX = 50, destAnchY = 50;
+        Object constraint = constraints.get(conn);
+        if (constraint instanceof ConnectionRoutingConstraint) {
+            ConnectionRoutingConstraint rc = (ConnectionRoutingConstraint)constraint;
+            mode = rc.mode;
+            srcAnchX = rc.srcAnchX;
+            srcAnchY = rc.srcAnchY;
+            destAnchX = rc.destAnchX;
+            destAnchY = rc.destAnchY;
+        }
+
+        Rc srcRc = new Rc(srcBounds.x, srcBounds.y, 0, srcBounds.width, srcBounds.height);
+        Rc destRc = new Rc(destBounds.x, destBounds.y, 0, destBounds.width, destBounds.height);
+
+        int bundleIndex = 0, bundleSize = 1;
+        if (constraint instanceof ConnectionRoutingConstraint) {
+            bundleIndex = ((ConnectionRoutingConstraint)constraint).bundleIndex;
+            bundleSize = ((ConnectionRoutingConstraint)constraint).bundleSize;
+        }
+
+        Ln line = LayoutEngine.arrowcoords(srcRc, destRc, bundleIndex, bundleSize, mode, srcAnchX, srcAnchY, destAnchX, destAnchY);
+
+        Point start = new Point((int)Math.round(line.getBegin().getX()), (int)Math.round(line.getBegin().getY()));
+        Point end = new Point((int)Math.round(line.getEnd().getX()), (int)Math.round(line.getEnd().getY()));
+
+        conn.translateToRelative(start);
+        conn.translateToRelative(end);
+        points.addPoint(start);
+        points.addPoint(end);
+    }
+
+    protected void routeWithAnchors(Connection conn, PointList points) {
+        Point start, end;
+        conn.translateToRelative(start = getStartPoint(conn));
+        conn.translateToRelative(end = getEndPoint(conn));
+        points.addPoint(start);
+        points.addPoint(end);
+    }
+
+    protected void routeSelfConnection(Connection conn, PointList points) {
+        // self connections (both src and target is the same figure.
+        // draw a 3/4 circle in upper right corner for submodules
+        // and a 1/4 circle for compound modules
+        IAnchorBounds owner = (IAnchorBounds)conn.getSourceAnchor().getOwner(); // can be only a submodule or compound module figure
+        Point center = owner.getAnchorBounds().getTopRight();
+        conn.getSourceAnchor().getOwner().translateFromParent(center);
+
+        double radius = 14;
+        double delta = Math.PI*2/20;
+        double angle = Math.PI/2;
+        int steps = 16;
+        if (owner instanceof CompoundModuleFigure) {
+            // compound modules have only a 1/4 circle
+            delta = -delta;
+            steps = 6;
+            radius += 10;
+        }
+        for (int i=0; i<steps; ++i, angle += delta) {
+            points.addPoint((int)(0.5+center.x-Math.sin(angle)*radius),
+                            (int)(0.5+center.y+Math.cos(angle)*radius));
+        }
+    }
+
     protected boolean isSelfConnection(Connection conn) {
         return conn.getSourceAnchor().getOwner() == conn.getTargetAnchor().getOwner();
+    }
+
+    protected boolean isCompoundModuleAnchorConnection(Connection conn) {
+        return conn.getSourceAnchor() instanceof CompoundModuleGateAnchor
+            || conn.getTargetAnchor() instanceof CompoundModuleGateAnchor;
     }
 
     protected Point getEndPoint(Connection conn) {
