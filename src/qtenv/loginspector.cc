@@ -660,6 +660,15 @@ void LogInspector::toLogMode()
     setMode(LOG);
 }
 
+void LogInspector::setExcludedModuleIds(const std::set<int>& ids)
+{
+    excludedModuleIds = ids;
+    sourceContentProvider->setExcludedModuleIds(excludedModuleIds);
+    recreateProviders();
+    updateFilterActionIcon();
+    saveFilterSettings();
+}
+
 void LogInspector::saveColumnWidths()
 {
     auto widths = textWidget->getColumnWidths();

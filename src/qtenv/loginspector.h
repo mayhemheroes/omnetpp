@@ -172,6 +172,8 @@ class QTENV_API LogInspector : public Inspector
 
       virtual Mode getMode() const {return mode;}
       virtual void setMode(Mode mode);
+
+      void setExcludedModuleIds(const std::set<int>& ids);
 };
 
 }  // namespace qtenv

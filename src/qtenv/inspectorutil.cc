@@ -32,7 +32,9 @@
 #include "genericobjectinspector.h"
 #include "objecttreeinspector.h"
 #include "moduleinspector.h"
+#include "loginspector.h"
 #include "mainwindow.h"
+#include "qtutil.h"
 
 namespace omnetpp {
 using namespace common;
@@ -159,6 +161,48 @@ void InspectorUtil::fillInspectorContextMenu(QMenu *menu, cObject *object, Inspe
                 getQtenv()->getMainModuleInspector()->setObject(pathEndModule);
                 getQtenv()->getMainObjectTreeInspector()->highlightGate(pathEndGate);
             });
+        }
+
+        // This context menu item is only added for the embedded module inspector
+        // because that one has a companion loginspector (also the embedded one),
+        // and these two are always inspecting the same object. If top-level module
+        // inspectors also had this, they would either have to open a new log inspector
+        // window, or set the filter for the embedded log inspector - but that would be
+        // problematic, because it may inspect an entirely different (and unrelated)
+        // object, and remembering the module filter for that type would lead to confusion.
+        if (insp == getQtenv()->getMainModuleInspector()) {
+            cGate *nextGate = gate->getNextGate();
+            if (nextGate) {
+                cModule *srcModule = gate->getOwnerModule();
+                cModule *destModule = nextGate->getOwnerModule();
+                QAction *showConnMessages = menu->addAction("Show Messages/Packets Between These Modules");
+                QObject::connect(showConnMessages, &QAction::triggered, [srcModule, destModule]() {
+                    LogInspector *logInsp = getQtenv()->getMainLogInspector();
+                    if (!logInsp) return;
+
+                    logInsp->setMode(LogInspector::MESSAGES);
+
+                    std::set<int> keepIds;
+                    cModule *m = srcModule;
+                    while (m) { keepIds.insert(m->getId()); m = m->getParentModule(); }
+
+                    m = destModule;
+                    while (m) { keepIds.insert(m->getId()); m = m->getParentModule(); }
+
+                    cCollectObjectsOfTypeVisitor<cModule> v;
+                    v.process(getSimulation()->getSystemModule());
+                    cModule **mods = (cModule **)v.getArray();
+
+                    std::set<int> excludedModuleIds;
+                    for (int i = 0; i < v.getArraySize(); ++i) {
+                        if (keepIds.find(mods[i]->getId()) == keepIds.end()) {
+                            excludedModuleIds.insert(mods[i]->getId());
+                        }
+                    }
+
+                    logInsp->setExcludedModuleIds(excludedModuleIds);
+                });
+            }
         }
     }
 
