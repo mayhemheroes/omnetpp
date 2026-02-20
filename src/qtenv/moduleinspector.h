@@ -54,6 +54,7 @@ private Q_SLOTS:
     void relayout();
     void zoomIn(int x = 0, int y = 0, int n = 1);
     void zoomOut(int x = 0, int y = 0, int n = 1);
+    void resetZoom();
     void increaseIconSize() { zoomIconsBy(1.25); }
     void decreaseIconSize() { zoomIconsBy(0.8); }
     void addNameFormatItem(SubmoduleNameFormat format, QString label, QActionGroup *actionGroup, QMenu *subMenu);

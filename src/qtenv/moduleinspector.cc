@@ -443,6 +443,11 @@ void ModuleInspector::zoomOut(int x, int y, int n)
     zoomBy(1.0 / (getPref(PREF_ZOOMBYFACTOR, 1.3).toDouble() * n), true, x, y);
 }
 
+void ModuleInspector::resetZoom()
+{
+    zoomBy(1.0 / getZoomFactor(), true);
+}
+
 void ModuleInspector::zoomBy(double mult, bool snaptoone, int x, int y)
 {
     if (!object)
@@ -700,9 +705,11 @@ void ModuleInspector::createContextMenu(const std::vector<cObject *>& objects, c
     menu->addAction(decreaseIconSizeAction);
 
     menu->addSeparator();
+    menu->addAction(canvasRelayoutAction);
     menu->addAction(canvasZoomInAction);
     menu->addAction(canvasZoomOutAction);
-    menu->addAction(canvasRelayoutAction);
+    QAction *resetZoomAction = menu->addAction("Reset Zoom", this, SLOT(resetZoom()));
+    resetZoomAction->setEnabled(getZoomFactor() != 1);
 
     menu->addSeparator();
     menu->addAction("Layouting Settings...", this, SLOT(runPreferencesDialog()))
