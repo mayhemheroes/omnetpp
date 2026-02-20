@@ -679,22 +679,22 @@ void LogInspector::saveFilterSettings()
     QStringList excludedModules;
     for (auto id : excludedModuleIds)
         excludedModules.append(getQtenv()->getComponentHistory()->getComponentFullPath(id).c_str());
-    setPref(PREF_EXCLUDED_MODULES, excludedModules);
-    setPref(PREF_LINE_FILTER_STRING, QString::fromStdString(lineFilterString));
-    setPref(PREF_LINE_FILTER_IS_REGEX, lineFilterIsRegex);
-    setPref(PREF_LINE_FILTER_IS_CASE_SENSITIVE, lineFilterIsCaseSensitive);
+    setPref(PREF_EXCLUDED_MODULES, excludedModules, true);
+    setPref(PREF_LINE_FILTER_STRING, QString::fromStdString(lineFilterString), true);
+    setPref(PREF_LINE_FILTER_IS_REGEX, lineFilterIsRegex, true);
+    setPref(PREF_LINE_FILTER_IS_CASE_SENSITIVE, lineFilterIsCaseSensitive, true);
 }
 
 void LogInspector::restoreFilterSettings()
 {
-    QStringList excludedModules = getPref(PREF_EXCLUDED_MODULES, QStringList()).toStringList();
+    QStringList excludedModules = getPref(PREF_EXCLUDED_MODULES, QStringList(), true).toStringList();
     for (auto path : excludedModules)
         if (auto mod = getSimulation()->findModuleByPath(path.toUtf8()))
             excludedModuleIds.insert(mod->getId());
     sourceContentProvider->setExcludedModuleIds(excludedModuleIds);
-    lineFilterString = getPref(PREF_LINE_FILTER_STRING, "").toString().toStdString();
-    lineFilterIsRegex = getPref(PREF_LINE_FILTER_IS_REGEX, false).toBool();
-    lineFilterIsCaseSensitive = getPref(PREF_LINE_FILTER_IS_CASE_SENSITIVE, false).toBool();
+    lineFilterString = getPref(PREF_LINE_FILTER_STRING, "", true).toString().toStdString();
+    lineFilterIsRegex = getPref(PREF_LINE_FILTER_IS_REGEX, true).toBool();
+    lineFilterIsCaseSensitive = getPref(PREF_LINE_FILTER_IS_CASE_SENSITIVE, true).toBool();
 
     recreateProviders();
 
