@@ -14,10 +14,8 @@ The following NixOS releases are known to work:
 Installation Prerequisites
 --------------------------
 
-The |omnetpp| installation script (``install.sh``) can detect NixOS and install all the 
-dependencies automatically. This method sets up a so called FHS (Filesystem
-Hierarchy Standard) chroot environment with all the required packages mapped to their
-standard locations. |omnetpp| assumes that certain features are enabled in your 
+The |omnetpp| installation script (``install.sh``) can detect NixOS and install all the
+dependencies automatically. |omnetpp| assumes that certain features are enabled in your
 NixOS configuration. Make sure that ``nix.settings.experimental-features = [ "nix-command" "flakes" ];``
 is present in your NixOS configuration (``/etc/nixos/configuration.nix``).
 
@@ -32,13 +30,11 @@ After the script has finished, you can start an |omnetpp| session any time by ty
 
 .. code::
 
-   $ ./setenv
+   # set up in the current shell
+   $ source setenv
 
-.. note::
-
-   Instead of sourcing the ``setenv`` script (like on other Linux distros),
-   on NixOS you always have to run the ``./setenv`` command. This will start a
-   separate shell with all the dependencies properly installed.
+   # or within a new shell
+   $ ./setenv bash
 
 Post-Installation Steps
 ~~~~~~~~~~~~~~~~~~~~~~~

@@ -2,7 +2,7 @@
 #
 # OMNeT++ environment setter
 #
-# This script sets all the required environment variables so 
+# This script sets all the required environment variables so
 # OMNeT++ tools can be executed. It can be either sourced or executed:
 #
 # Executing:
@@ -24,7 +24,7 @@ if [ "$BASH_VERSION" != "" ]; then # for BASH
   if [[ "$BASH_SOURCE" != "$0" ]]; then
     sourced=yes
   fi
-elif [ "$ZSH_VERSION" != "" ]; then 
+elif [ "$ZSH_VERSION" != "" ]; then
   # the script is here is implicitly known to be sourced because the shebang is /usr/bin/env bash
   # so it always executes under bash, not zsh
   dir=$(cd $(dirname $0) && pwd)
@@ -57,22 +57,24 @@ fi
 # to avoid inadvertedly calling setenv instead of sourcing it.
 if [[ "$sourced" == "yes" ]]; then
   # check if we are in a properly configured nix shell and throw error if not
-  if [[ -f /etc/NIXOS && "$name" != "opp_shell" && "$name" != "opp_shell_native" ]]; then
-    echo "Error: On NixOS, setenv cannot be sourced. Use './setenv' instead, which will start a separate shell."
-    return 1
+  if [[ -f /etc/NIXOS && "$name" != "opp_shell" ]]; then
+    skip_setenv=true
+    eval "$(nix print-dev-env --extra-experimental-features nix-command --extra-experimental-features flakes $dir/.opp_shell)"
+    unset skip_setenv
   fi
 else
+  # we have executed setenv so we need at least 1 explicit parameter as a command to be executed
+  if [[ $# == 0 ]]; then
+    echo "Error: Use 'setenv <command>' to execute a command or make sure to source this script as 'source setenv' or '. setenv' to set up your current shell, otherwise its settings won't take effect."
+    exit 1
+  fi
   if [[ -f /etc/NIXOS ]]; then
-    # setenv was executed on NixOS so we invoke a properly configured FHS shell to install/map all dependencies
-    # to their standard locations
-    __omnetpp_root_dir="$dir" exec nix run --extra-experimental-features nix-command --extra-experimental-features flakes "$dir/.opp_shell" -- "$@"
-    # implicit exit
+    # setenv was executed on NixOS so we invoke a properly configured develoment shell to install all dependencies
+    # to their standard locations. setenv will be sourced in the shellHook
+    exec nix develop --extra-experimental-features nix-command --extra-experimental-features flakes "$dir/.opp_shell" -c -- "$@"
+    # implicit exit because of exec
   else
-    if [[ $# == 0 ]]; then
-      echo "Error: You are running this script instead of sourcing it. Make sure to use it as 'source setenv' or '. setenv', otherwise its settings won't take effect."
-      exit 1
-    fi
-    source "$dir/setenv" "$@" && exec "$@"
+    source "$dir/setenv" && exec "$@"
     # implicit exit
   fi
 fi
@@ -89,16 +91,14 @@ fi
 #
 # NOTE: On NixOS we must avoid activating a virtual environment UNLESS we are in an FHS shell
 # where all necessary libraries are mapped to their standard locations. Modules (with wheels)
-# installed by pip will not work in a standard Nix environment. if /usr/bin/python does
-# not exist, it is safe to assume we are in a Nix environment so we should not activate a
-# virtual environment.
+# installed by pip will not work in a standard Nix environment.
 #
-if [ -x /usr/bin/python -a -f "$dir/.venv/bin/activate" ] ; then
+if [ -f "$dir/.venv/bin/activate" ] ; then
   [[ "$quiet" != "true" ]] && echo "Activating python virtual environment in '$dir/.venv'"
   source $dir/.venv/bin/activate
 fi
 
-# check for HOMEBREW (on macOS) environment and activate dependent packages 
+# check for HOMEBREW (on macOS) environment and activate dependent packages
 # (Unless we are in a nix shell... In that case the environment should already be set up
 # and brew should not be used at all)
 if [ "$(uname)" = "Darwin" -a "$(command -v brew)" != "" -a -z "$IN_NIX_SHELL" ]; then

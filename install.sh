@@ -18,7 +18,7 @@ assume_yes=false
 no_3d=false
 no_gui=false
 no_build=false
-quiet=false
+quiet_flag=false
 PYTHON3=python3
 
 # print the usage and supported options
@@ -54,7 +54,7 @@ ask_user() {
 
 # quiet echo function - only output if not in quiet mode
 echo_q() {
-    if ! $quiet; then
+    if ! $quiet_flag; then
         echo "$@"
     fi
 }
@@ -62,7 +62,7 @@ echo_q() {
 # echo the command and then run it.
 echo_run() {
     local cmd="$*"
-    if ! $quiet; then
+    if ! $quiet_flag; then
         echo -e "${YELLOW}\$ $cmd${RESET}"
         echo
     fi
@@ -195,9 +195,9 @@ install_deps() {
             echo_root_run "pacman -Sy --needed --noconfirm $packages ; pacman -Scc --noconfirm"
 
         elif [[ "$ID" == "nixos" ]]; then
-            echo_q -e "${RED}NixOS detected, dependencies must be installed using './setenv'.${RESET}"
-            echo_q -e "${YELLOW}Please run './setenv' and then restart this script.${RESET}"
-            exit 1
+            echo_q -e "${YELLOW}NixOS detected, dependencies should already be installed.${RESET}"
+            echo_q
+            # do not install python dependencies
         else
             echo_q -e "${RED}Package manager (apt, dnf, zypper, pacman) not detected.\nSee 'doc/InstallGuide.pdf' and install the required packages manually.${RESET}"
             exit 1
@@ -272,7 +272,7 @@ install_deps() {
         echo_run "pacman -S --needed --noconfirm $packages"
         echo_run "pacman -Scc --noconfirm"
 
-        # we are using pacman to install all needed python modules 
+        # we are using pacman to install all needed python modules
         # so installing a virtual environment is not needed
     fi
 }
@@ -285,7 +285,7 @@ install_deps() {
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -q)
-            quiet=true
+            quiet_flag=true
             shift
             ;;
         -y)
@@ -340,32 +340,13 @@ if ! ask_user "Continue installing OMNeT++?" ; then
     exit 0
 fi
 
-# on nix os? we have to run './setenv' and invoke this script again in that environment
-if [ -f /etc/NIXOS ]; then
-    rm -rf .venv 
-    
-    echo_q
-    echo_q -e "${YELLOW}Running './setenv' to install dependencies.${RESET}"
-    ./setenv ./install.sh -q -y $@
-    echo_q -e "${GREEN}On NixOS, use './setenv' to start the OMNeT++ environment.${RESET}"
-    exit 0
-fi
-
-# on nixos, if we are in the correct environment, we do not need dependency installation, just a config/build cycle
-if [[ "$name" == "opp_shell" || "$name" == "opp_shell_native" ]]; then
-    echo_q
-    echo_q -e "${GREEN}NixOS shell '${YELLOW}$name${GREEN}' detected. Skipping dependency installation.${RESET}"
-    echo_q
-else
-    echo_q
-    echo_q -e "${GREEN}*** Installing dependencies ***${RESET}"
-    echo_q
-    install_deps
-fi
-
 # activate the OMNeT++ environment (including the python virtualenv)
 echo_q
-echo_run source setenv
+echo_run source setenv -q
+
+echo_q -e "${GREEN}*** Installing dependencies ***${RESET}"
+echo_q
+install_deps
 
 # configure the simulator
 echo_q
@@ -386,6 +367,7 @@ if ! $no_build; then
 else
     echo_q -e "${YELLOW}Skipping configuration and build as requested.${RESET}"
 fi
+
 echo_q
 echo_q -e "${GREEN}*** Installation completed ***${RESET}"
 echo_q
