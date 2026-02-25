@@ -135,6 +135,18 @@ class cStdVectorWatcher : public cStlContainerWatcherBase
                 return any_ptr(&v[i]);
         }
     }
+    virtual void forEachChild(cVisitor *v) override {
+        if constexpr (std::is_pointer_v<T>) {
+            if constexpr (std::is_base_of_v<cObject,std::remove_pointer_t<T>>)
+                for (auto elem : this->v)
+                    if (elem) v->visit((cObject *)elem);
+        }
+        else {
+            if constexpr (std::is_base_of_v<cObject,T>)
+                for (auto& elem : this->v)
+                    v->visit((cObject *)&elem);
+        }
+    }
 };
 
 template <class T>
@@ -225,6 +237,18 @@ class cIteratorBasedContainerWatcherBase : public cStlContainerWatcherBase
                 return any_ptr((cObject *)&value_ref(it));
             else
                 return any_ptr(&value_ref(it));
+        }
+    }
+    void forEachChild(cVisitor *v) override {
+        if constexpr (std::is_pointer_v<T>) {
+            if constexpr (std::is_base_of_v<cObject,std::remove_pointer_t<T>>)
+                for (auto it2 = begin(); it2 != end(); ++it2)
+                    if (value_ref(it2)) v->visit((cObject *)value_ref(it2));
+        }
+        else {
+            if constexpr (std::is_base_of_v<cObject,T>)
+                for (auto it2 = begin(); it2 != end(); ++it2)
+                    v->visit((cObject *)&value_ref(it2));
         }
     }
 
