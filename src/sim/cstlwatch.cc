@@ -61,21 +61,18 @@ class SIM_API cStdVectorWatcherDescriptor : public cClassDescriptor  // noncopya
 };
 
 cStdVectorWatcherDescriptor::cStdVectorWatcherDescriptor(const char *vecType, const char *elemType) :
-    cClassDescriptor(vecType, nullptr), vectorTypeName(vecType), elementTypeName(elemType)
+    cClassDescriptor(vecType, "omnetpp::cWatchBase"), vectorTypeName(vecType), elementTypeName(elemType)
 {
 }
 
 const char **cStdVectorWatcherDescriptor::getPropertyNames() const
 {
-    static const char **names = {
-        nullptr
-    };
-    return names;
+    return getBaseClassDescriptor()->getPropertyNames();
 }
 
 const char *cStdVectorWatcherDescriptor::getProperty(const char *propertyname) const
 {
-    return nullptr;
+    return getBaseClassDescriptor()->getProperty(propertyname);
 }
 
 int cStdVectorWatcherDescriptor::getFieldCount() const
