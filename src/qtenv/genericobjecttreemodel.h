@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <QtCore/QAbstractItemModel>
 #include <QtWidgets/QMenu>
-#include <QtCore/QSortFilterProxyModel>
 #include <QtWidgets/QTreeView>
 #include "omnetpp/cobject.h"
 #include "omnetpp/cclassdescriptor.h"
@@ -39,20 +38,6 @@ struct QTENV_API HighlightRange {
     int64_t length; // the number of highlighted characters
 };
 
-// This is used as a proxy for GenericObjectTreeModel.
-// If the relevant property is set (not empty), it will only show
-// elements (objects/fields) which have that property on them.
-class QTENV_API PropertyFilteredGenericObjectTreeModel : public QSortFilterProxyModel {
-    QString relevantProperty;
-
-public:
-    using QSortFilterProxyModel::QSortFilterProxyModel;
-
-    void setRelevantProperty(const QString &relevantProperty); // this is "packetData" in PACKET mode, and "" in all others
-
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-};
-
 // encapsulates the tree model, handles QModelIndexes, etc
 class QTENV_API GenericObjectTreeModel : public QAbstractItemModel
 {
@@ -65,7 +50,7 @@ public:
         FLAT,
         INHERITANCE,
         CHILDREN,
-        PACKET   // this is never seen by this (source) model or the Nodes, only sets filtering in the proxy model, and FLAT mode in this one
+        PACKET
     };
 
     enum class DataRole : int {

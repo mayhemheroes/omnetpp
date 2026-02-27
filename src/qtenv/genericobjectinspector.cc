@@ -162,8 +162,6 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     connect(cycleSubtreeModeAction, &QAction::triggered, this, &GenericObjectInspector::cycleSelectedSubtreeMode);
     addAction(cycleSubtreeModeAction);
 
-    proxyModel = new PropertyFilteredGenericObjectTreeModel(this);
-
     mode = (Mode)getPref(PREF_MODE, QVariant::fromValue(0), false).toInt();
 
     doSetMode(mode);
@@ -184,28 +182,15 @@ void GenericObjectInspector::recreateModel(bool keepNodeModeOverrides)
 {
     GenericObjectTreeModel *newSourceModel;
 
-    // The following two lines are a workaround for a crash introduced in Qt 5.11.
-    // See: QTBUG-44962, QTBUG-67948, QTBUG-68427. These were fixed in 5.11.1, so
-    // 5.11 is the only affected version. But let's keep this here, it's not a big deal...
-    delete proxyModel;
-    proxyModel = new PropertyFilteredGenericObjectTreeModel(this);
-
     GenericObjectTreeModel::NodeModeOverrideMap newNodeModeOverrides = sourceModel != nullptr && keepNodeModeOverrides
         ? sourceModel->getNodeModeOverrides() : GenericObjectTreeModel::NodeModeOverrideMap{};
 
-    if (mode == Mode::PACKET) {
-        newSourceModel = new GenericObjectTreeModel(object, Mode::FLAT, newNodeModeOverrides, this);
-        proxyModel->setRelevantProperty("packetData");
-    } else {
-        newSourceModel = new GenericObjectTreeModel(object, mode, newNodeModeOverrides, this);
-        proxyModel->setRelevantProperty("");
-    }
+    newSourceModel = new GenericObjectTreeModel(object, mode, newNodeModeOverrides, this);
 
-    proxyModel->setSourceModel(newSourceModel);
-    treeView->setModel(proxyModel);
+    treeView->setModel(newSourceModel);
 
     // expanding the top level item
-    treeView->expand(proxyModel->index(0, 0, QModelIndex()));
+    treeView->expand(newSourceModel->index(0, 0, QModelIndex()));
 
     delete sourceModel;
     sourceModel = newSourceModel;
@@ -252,7 +237,7 @@ void GenericObjectInspector::closeEvent(QCloseEvent *event)
 
 void GenericObjectInspector::onTreeViewActivated(const QModelIndex &index)
 {
-    auto object = sourceModel->getCObjectPointerToInspect(proxyModel->mapToSource(index));
+    auto object = sourceModel->getCObjectPointerToInspect(index);
     if (!object)
         return;
 
@@ -287,7 +272,7 @@ void GenericObjectInspector::gatherVisibleDataIfSafe()
 
 void GenericObjectInspector::createContextMenu(QPoint pos)
 {
-    QModelIndex sourceIndex = proxyModel->mapToSource(treeView->indexAt(pos));
+    QModelIndex sourceIndex = treeView->indexAt(pos);
     TreeNode *node = static_cast<TreeNode*>(sourceIndex.internalPointer());
 
     if (node) {
@@ -329,10 +314,11 @@ void GenericObjectInspector::createContextMenu(QPoint pos)
         std::string nodeId = node->getNodeIdentifier().toStdString();
         const auto& overrides = sourceModel->getNodeModeOverrides();
         int nodeModeOverride = containsKey(overrides, nodeId) ? (int)overrides.at(nodeId) : -1;
+        bool nodeIsCPacket = dynamic_cast<cPacket *>(sourceModel->getCObjectPointer(sourceIndex)) != nullptr;
         for (auto p : std::vector<std::pair<const char *, Mode>>{
             {"Grouped", Mode::GROUPED}, {"Flat", Mode::FLAT},
-            {"Inheritance", Mode::INHERITANCE}, {"Children", Mode::CHILDREN}
-            // PACKET can't be put here because it is never set on the sourceModel
+            {"Inheritance", Mode::INHERITANCE}, {"Children", Mode::CHILDREN},
+            {"Packet", Mode::PACKET}
         }) {
             QAction *action = subtreeModeSubmenu->addAction(p.first, [this, sourceIndex, p](bool checked) {
                 sourceModel->setData(sourceIndex, checked ? (int)p.second : -1, (int)GenericObjectTreeModel::DataRole::NODE_MODE_OVERRIDE);
@@ -340,6 +326,8 @@ void GenericObjectInspector::createContextMenu(QPoint pos)
             });
             action->setCheckable(true);
             action->setChecked(nodeModeOverride == (int)p.second);
+            if (p.second == Mode::PACKET && !nodeIsCPacket)
+                action->setEnabled(false);
         }
 
         subtreeModeSubmenu->addSeparator();
@@ -362,7 +350,7 @@ void GenericObjectInspector::copySelectedLineToClipboard(bool onlyHighlightedPar
     QModelIndexList selection = treeView->selectionModel()->selectedIndexes();
 
     if (!selection.isEmpty()) {
-        TreeNode *node = static_cast<TreeNode*>(proxyModel->mapToSource(selection.first()).internalPointer());
+        TreeNode *node = static_cast<TreeNode*>(selection.first().internalPointer());
         QString text = node->getData(Qt::DisplayRole).toString();
 
         if (onlyHighlightedPart) {
@@ -379,18 +367,19 @@ void GenericObjectInspector::cycleSelectedSubtreeMode()
 {
     QModelIndexList selection = treeView->selectionModel()->selectedIndexes();
     if (!selection.isEmpty()) {
-        QModelIndex sourceIndex = proxyModel->mapToSource(selection.first());
+        QModelIndex sourceIndex = selection.first();
         TreeNode *node = static_cast<TreeNode*>(sourceIndex.internalPointer());
 
         Mode currMode = node->getMode();
         Mode nextMode;
+        bool nodeIsCPacket = dynamic_cast<cPacket *>(sourceModel->getCObjectPointer(sourceIndex)) != nullptr;
 
         switch (currMode) {
             case Mode::GROUPED:     nextMode = Mode::FLAT;        break;
             case Mode::FLAT:        nextMode = Mode::INHERITANCE; break;
             case Mode::INHERITANCE: nextMode = Mode::CHILDREN;    break;
-            case Mode::CHILDREN:    nextMode = Mode::GROUPED;     break;
-            case Mode::PACKET:      ASSERT(false);                break;   // this is never seen by the source model or the nodes
+            case Mode::CHILDREN:    nextMode = nodeIsCPacket ? Mode::PACKET : Mode::GROUPED; break;
+            case Mode::PACKET:      nextMode = Mode::GROUPED;     break;
         };
 
         sourceModel->setData(sourceIndex, (int)nextMode, (int)GenericObjectTreeModel::DataRole::NODE_MODE_OVERRIDE);
@@ -415,14 +404,11 @@ bool GenericObjectInspector::updateData()
     QModelIndexList indices = getVisibleNodes();
     for (auto i : indices) {
         if (i.isValid()) {
-            QModelIndex sourceIndex = proxyModel->mapToSource(i);
-            if (sourceIndex.isValid()) {
-                TreeNode *node = static_cast<TreeNode *>(sourceIndex.internalPointer());
-                if (node->updateData()) {
-                    changed = true;
-                    // we should do this here, but we don't because it is super slow
-                    //Q_EMIT dataChanged(i, i);
-                }
+            TreeNode *node = static_cast<TreeNode *>(i.internalPointer());
+            if (node->updateData()) {
+                changed = true;
+                // we should do this here, but we don't because it is super slow
+                //Q_EMIT dataChanged(i, i);
             }
         }
     }
@@ -436,7 +422,7 @@ QString GenericObjectInspector::getSelectedNode()
     if (selection.isEmpty())
         return "";
 
-    TreeNode *node = static_cast<TreeNode*>(proxyModel->mapToSource(selection.first()).internalPointer());
+    TreeNode *node = static_cast<TreeNode*>(selection.first().internalPointer());
     return node->getNodeIdentifier();
 }
 
@@ -445,7 +431,7 @@ void GenericObjectInspector::selectNode(const QString &identifier)
     QModelIndexList visible = getVisibleNodes();
 
     for (auto v : visible) {
-        TreeNode *node = static_cast<TreeNode*>(proxyModel->mapToSource(v).internalPointer());
+        TreeNode *node = static_cast<TreeNode*>(v.internalPointer());
         if (node->getNodeIdentifier() == identifier) {
             treeView->clearSelection();
             treeView->selectionModel()->select(v, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -457,7 +443,7 @@ void GenericObjectInspector::selectNode(const QString &identifier)
 
 QSet<QString> GenericObjectInspector::getExpandedNodes()
 {
-    return getExpandedNodes(proxyModel->index(0, 0, QModelIndex()));
+    return getExpandedNodes(sourceModel->index(0, 0, QModelIndex()));
 }
 
 
@@ -465,10 +451,10 @@ QSet<QString> GenericObjectInspector::getExpandedNodes(const QModelIndex &index)
 {
     QSet<QString> result;
     if (treeView->isExpanded(index)) {
-        result.insert(static_cast<TreeNode *>(proxyModel->mapToSource(index).internalPointer())->getNodeIdentifier());
-        int numChildren = proxyModel->rowCount(index);
+        result.insert(static_cast<TreeNode *>(index.internalPointer())->getNodeIdentifier());
+        int numChildren = sourceModel->rowCount(index);
         for (int i = 0; i < numChildren; ++i) {
-            result.unite(getExpandedNodes(proxyModel->index(i, 0, index)));
+            result.unite(getExpandedNodes(sourceModel->index(i, 0, index)));
         }
     }
     return result;
@@ -478,7 +464,7 @@ void GenericObjectInspector::expandNodes(const QSet<QString> &ids)
 {
     bool wasAnimated = treeView->isAnimated();
     treeView->setAnimated(false); // the last expanded node was animated without this, we don't need that
-    QModelIndex rootIndex = proxyModel->index(0, 0, QModelIndex());
+    QModelIndex rootIndex = sourceModel->index(0, 0, QModelIndex());
     expandNodes(ids, rootIndex);
     treeView->setAnimated(wasAnimated); // restoring the view to how it was before
 }
@@ -486,12 +472,12 @@ void GenericObjectInspector::expandNodes(const QSet<QString> &ids)
 
 void GenericObjectInspector::expandNodes(const QSet<QString> &ids, const QModelIndex &index)
 {
-    if (ids.contains(static_cast<TreeNode *>(proxyModel->mapToSource(index).internalPointer())->getNodeIdentifier())) {
+    if (ids.contains(static_cast<TreeNode *>(index.internalPointer())->getNodeIdentifier())) {
         treeView->expand(index);
 
-        int numChildren = proxyModel->rowCount(index);
+        int numChildren = sourceModel->rowCount(index);
         for (int i = 0; i < numChildren; ++i)
-            expandNodes(ids, proxyModel->index(i, 0, index));
+            expandNodes(ids, sourceModel->index(i, 0, index));
     }
 }
 
@@ -516,7 +502,7 @@ bool GenericObjectInspector::gatherMissingData()
     bool changed = false;
     QModelIndexList indices = getVisibleNodes();
     for (auto i : indices) {
-        TreeNode *node = static_cast<TreeNode *>(proxyModel->mapToSource(i).internalPointer());
+        TreeNode *node = static_cast<TreeNode *>(i.internalPointer());
         if (node->gatherDataIfMissing()) {
             // not doing it, super slow, see caller
             //Q_EMIT dataChanged(i, i);

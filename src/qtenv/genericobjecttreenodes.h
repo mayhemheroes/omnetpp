@@ -142,7 +142,7 @@ class QTENV_API TreeNode
     // and arrival modules/gates in a message, etc.)
     virtual cObject *getContainingCObjectPointer();
 
-    // used by the PropertyFilteredGenericObjectTreeModel in PACKET mode
+    // used in PACKET mode to filter fields by the "packetData" property
     virtual bool matchesPropertyFilter(const QString &property) { return true; }
 
     virtual ~TreeNode();
@@ -162,7 +162,6 @@ class QTENV_API SuperClassNode : public TreeNode
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
-    // currently unused, filtering is only done in PACKET mode, which sets FLAT mode on the source model
     bool matchesPropertyFilter(const QString &property) override;
 };
 
@@ -255,7 +254,6 @@ class QTENV_API FieldGroupNode : public TreeNode
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
-    // currently unused, filtering is only done in PACKET mode, which sets FLAT mode on the source model
     bool matchesPropertyFilter(const QString &property) override;
 };
 

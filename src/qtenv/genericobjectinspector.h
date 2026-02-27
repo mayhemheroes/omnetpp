@@ -49,15 +49,7 @@ public:
 
 protected:
     QTreeView *treeView;
-    // This is the "source" model, producing the tree in all modes.
-    // The view never uses this directly, only through the proxyModel.
     GenericObjectTreeModel *sourceModel = nullptr;
-    // This is a proxy, which is a transparent pass-through in all modes except in PACKET.
-    // In PACKET mode, it filters the source model (which should be set to FLAT mode in this case)
-    // to match a certain (object or field) property - "packetData" at the moment.
-    // The view is always connected to this model, so accessing TreeNodes
-    // (internalPointer, then static_cast) requires index mapping (mapToSource) first.
-    PropertyFilteredGenericObjectTreeModel *proxyModel = nullptr;
 
     QAction *copyLineAction;
     QAction *copyLineHighlightedAction;

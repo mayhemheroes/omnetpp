@@ -115,6 +115,15 @@ int TreeNode::computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode 
             return visitor.getCount();
         }
 
+        case Mode::PACKET: {
+            int count = 0;
+            auto base = desc->getBaseClassDescriptor();
+            for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
+                if (fieldMatchesPropertyFilter(desc, i, "packetData"))
+                    ++count;
+            return count;
+        }
+
         case Mode::INHERITANCE:
             if (!excludeInherited)
                 return desc->getInheritanceChainLength();
@@ -158,6 +167,21 @@ std::vector<TreeNode *> TreeNode::makeObjectChildNodes(any_ptr obj, cClassDescri
                 result.push_back(new TextNode(this, result.size(), QString("<!> Error: ") + e.what(), mode));
             }
 
+            break;
+        }
+
+        case Mode::PACKET: {
+            auto base = desc->getBaseClassDescriptor();
+            for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
+                if (fieldMatchesPropertyFilter(desc, i, "packetData"))
+                    result.push_back(new FieldNode(this, result.size(), obj, desc, i, mode));
+
+            // sorting the fields alphabetically
+            std::sort(result.begin(), result.end(), [](TreeNode *a, TreeNode *b) {
+                return a->computeData(Qt::DisplayRole).toString() < b->computeData(Qt::DisplayRole).toString();
+            });
+            for (size_t i = 0; i < result.size(); ++i)
+                result[i]->indexInParent = i;
             break;
         }
 

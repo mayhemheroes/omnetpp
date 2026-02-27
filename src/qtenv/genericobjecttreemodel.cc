@@ -34,27 +34,6 @@ using namespace common;
 namespace qtenv {
 
 
-void PropertyFilteredGenericObjectTreeModel::setRelevantProperty(const QString &relevantProperty)
-{
-    if (this->relevantProperty != relevantProperty) {
-        this->relevantProperty = relevantProperty;
-        invalidateFilter();
-    }
-}
-
-bool PropertyFilteredGenericObjectTreeModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-    if (relevantProperty.isEmpty() || !sourceParent.isValid())
-        return true; // empty filter is pass-through, and always including the tree roots
-
-    QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
-
-    TreeNode *treeNode = static_cast<TreeNode *>(sourceIndex.internalPointer());
-
-    return treeNode ? treeNode->matchesPropertyFilter(relevantProperty) : true;
-}
-
-
 GenericObjectTreeModel::GenericObjectTreeModel(cObject *object, Mode mode, const NodeModeOverrideMap& modeOverrides, QObject *parent)
     : GenericObjectTreeModel(std::vector<cObject*>{object}, mode, modeOverrides, parent)
 {
@@ -300,7 +279,6 @@ void GenericObjectTreeModel::setNodeMode(const QModelIndex &index, Mode mode)
 
     Q_EMIT layoutAboutToBeChanged();
 
-    ASSERT(mode != Mode::PACKET);
     node->doSetMode(mode);
 
     refreshChildList(index);
@@ -323,7 +301,6 @@ void GenericObjectTreeModel::unsetNodeMode(const QModelIndex &index)
     Q_EMIT layoutAboutToBeChanged();
 
     Mode parentMode = node->getParent() != nullptr ? node->getParent()->getMode() : inspectorMode;
-    ASSERT(parentMode != Mode::PACKET);
     node->doSetMode(parentMode);
 
     refreshChildList(index);
