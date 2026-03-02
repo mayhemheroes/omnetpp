@@ -49,20 +49,21 @@ import org.omnetpp.common.ui.HtmlHoverInfo;
 import org.omnetpp.common.ui.IHoverInfoProvider;
 import org.omnetpp.common.util.ActionExt;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.IGotoInifile;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.ITimeout;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamCollector;
-import org.omnetpp.inifile.editor.model.ParamResolution;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.PropertyResolution;
-import org.omnetpp.inifile.editor.model.SectionKey;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.ITimeout;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamCollector;
+import org.omnetpp.inifile.core.model.ParamResolution;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.PropertyResolution;
+import org.omnetpp.inifile.core.model.SectionKey;
+import org.omnetpp.inifile.core.model.Timeout;
 import org.omnetpp.ned.core.IModuleTreeVisitor;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.core.NedTreeTraversal;
@@ -297,11 +298,11 @@ public class ModuleHierarchyView extends AbstractModuleView {
             public Image getImage(Object element) {
                 if (element instanceof ParamAssignmentGroupNode)
                     // TODO: find/make a better icon
-                    return InifileUtils.ICON_PAR_GROUP;
+                    return InifileImages.ICON_PAR_GROUP;
                 else if (element instanceof SignalNode)
-                    return InifileUtils.ICON_SIGNAL;
+                    return InifileImages.ICON_SIGNAL;
                 else if (element instanceof StatisticNode)
-                    return InifileUtils.ICON_STATISTIC;
+                    return InifileImages.ICON_STATISTIC;
                 else if (element instanceof GenericTreeNode)
                     element = ((GenericTreeNode)element).getPayload();
                 if (element instanceof SubmoduleOrConnectionPayload) {
@@ -318,11 +319,11 @@ public class ModuleHierarchyView extends AbstractModuleView {
                     return image!=null ? image : NedModelLabelProvider.getInstance().getImage(mn.element);
                 }
                 else if (element instanceof ParamResolution)
-                    return InifileUtils.suggestImage(((ParamResolution) element).type);
+                    return InifileImages.suggestImage(((ParamResolution) element).type);
                 else if (element instanceof ErrorNode)
-                    return InifileUtils.ICON_ERROR;
+                    return InifileImages.ICON_ERROR;
                 else if (element instanceof InformationNode)
-                    return InifileUtils.ICON_INFO;
+                    return InifileImages.ICON_INFO;
                 else
                     return null;
             }

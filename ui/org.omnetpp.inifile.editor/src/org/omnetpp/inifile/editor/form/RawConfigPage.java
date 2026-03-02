@@ -16,9 +16,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IInifileDocument;
 
 /**
  * Form page for editing all config entries. Currently unused.

@@ -27,11 +27,11 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.omnetpp.common.ui.TableLabelProvider;
 import org.omnetpp.common.ui.TableTextCellEditor;
 import org.omnetpp.common.util.StringUtils;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.SectionKey;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.SectionKey;
 
 
 /**

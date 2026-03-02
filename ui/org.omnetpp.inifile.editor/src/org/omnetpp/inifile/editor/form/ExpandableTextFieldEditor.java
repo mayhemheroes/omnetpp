@@ -10,8 +10,8 @@ package org.omnetpp.inifile.editor.form;
 import java.util.Map;
 
 import org.eclipse.swt.widgets.Composite;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileDocument;
 
 /**
  * An inifile field editor which displays TextFieldEditor, and lets the user

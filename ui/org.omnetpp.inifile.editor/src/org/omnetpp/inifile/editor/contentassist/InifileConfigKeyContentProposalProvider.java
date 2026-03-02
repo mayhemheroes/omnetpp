@@ -7,9 +7,9 @@
 
 package org.omnetpp.inifile.editor.contentassist;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_DESCRIPTION;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_EXTENDS;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_DESCRIPTION;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_EXTENDS;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +18,12 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.omnetpp.common.contentassist.ContentProposalEx;
 import org.omnetpp.common.contentassist.ContentProposalProvider;
 import org.omnetpp.common.util.StringUtils;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.editor.InifileImages;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileUtils;
 
 /**
  * Generate completion proposals for inifile config keys.
@@ -62,7 +63,7 @@ public class InifileConfigKeyContentProposalProvider extends ContentProposalProv
             for (ConfigOption e : ConfigRegistry.getOptions()) {
                 if (!section.equals(GENERAL) || e!=CFGID_EXTENDS) { // don't propose "extends" in [General]
                     String content = e.getName()+(addEqualSign ? " = " : "");
-                    result.add(new ContentProposalEx(content, content, getConfigHelpText(e, section, doc), InifileUtils.ICON_PROPOSAL_GLOBALCONFIG));
+                    result.add(new ContentProposalEx(content, content, getConfigHelpText(e, section, doc), InifileImages.ICON_PROPOSAL_GLOBALCONFIG));
                 }
             }
         }

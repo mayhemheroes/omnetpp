@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,9 +46,9 @@ import org.omnetpp.common.engine.Common;
 import org.omnetpp.common.ui.SWTFactory;
 import org.omnetpp.common.util.UIUtils;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileUtils;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 
 /**

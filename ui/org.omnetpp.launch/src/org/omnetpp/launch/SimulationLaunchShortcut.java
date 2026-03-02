@@ -7,10 +7,10 @@
 
 package org.omnetpp.launch;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_DESCRIPTION;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.EXTENDS;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_DESCRIPTION;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.EXTENDS;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -69,7 +69,7 @@ import org.eclipse.ui.progress.IProgressService;
 import org.omnetpp.common.project.ProjectUtils;
 import org.omnetpp.common.util.FileUtils;
 import org.omnetpp.common.util.StringUtils;
-import org.omnetpp.inifile.editor.model.InifileParser;
+import org.omnetpp.inifile.core.model.InifileParser;
 import org.omnetpp.launch.tabs.OmnetppLaunchUtils;
 import org.omnetpp.ned.core.INedResources;
 import org.omnetpp.ned.core.NedResourcesPlugin;

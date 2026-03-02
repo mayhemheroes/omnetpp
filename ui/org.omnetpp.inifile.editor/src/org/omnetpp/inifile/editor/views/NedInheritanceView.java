@@ -37,7 +37,7 @@ import org.omnetpp.common.ui.HtmlHoverInfo;
 import org.omnetpp.common.ui.IHoverInfoProvider;
 import org.omnetpp.common.util.ActionExt;
 import org.omnetpp.common.util.StringUtils;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.core.NedTypeHierarchyUtil;
 import org.omnetpp.ned.model.INedElement;

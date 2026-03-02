@@ -33,10 +33,10 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.omnetpp.common.ui.HtmlHoverInfo;
 import org.omnetpp.common.ui.IHoverInfoProvider;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.SectionKey;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.SectionKey;
 
 /**
  * Base class for field editors that allow the user edit a setting

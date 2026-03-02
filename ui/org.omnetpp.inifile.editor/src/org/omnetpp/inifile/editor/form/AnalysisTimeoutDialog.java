@@ -1,6 +1,7 @@
 package org.omnetpp.inifile.editor.form;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.omnetpp.inifile.core.model.IAnalysisTimeoutHandler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -22,9 +23,9 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class AnalysisTimeoutDialog extends MessageDialog {
 
-    public static final int CANCEL = 0;
-    public static final int WAIT = 1;
-    public static final int DISABLE_AND_CANCEL = 2;
+    public static final int CANCEL = IAnalysisTimeoutHandler.CANCEL;
+    public static final int WAIT = IAnalysisTimeoutHandler.WAIT;
+    public static final int DISABLE_AND_CANCEL = IAnalysisTimeoutHandler.DISABLE_AND_CANCEL;
 
     Button analysisEnabledButton;
 

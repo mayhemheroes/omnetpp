@@ -25,14 +25,15 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.omnetpp.common.ui.HoverSupport;
 import org.omnetpp.common.ui.HtmlHoverInfo;
 import org.omnetpp.common.ui.IHoverInfoProvider;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.IGotoInifile;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.IInifileChangeListener;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.core.model.IInifileChangeListener;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
 
 /**
  * Content outline page for the inifile editor.
@@ -65,7 +66,7 @@ public class InifileContentOutlinePage extends ContentOutlinePage implements IIn
             public Image getImage(Object element) {
                 String sectionName = (String)element;
                 InifileAnalyzer inifileAnalyzer = inifileEditor.getEditorData().getInifileAnalyzer();
-                return InifileUtils.getSectionImage(sectionName, inifileAnalyzer);
+                return InifileImages.getSectionImage(sectionName, inifileAnalyzer);
             }
 
             @Override
@@ -176,7 +177,7 @@ public class InifileContentOutlinePage extends ContentOutlinePage implements IIn
     }
 
     /* (non-Javadoc)
-     * @see org.omnetpp.inifile.editor.model.IInifileChangeListener#modelChanged()
+     * @see org.omnetpp.inifile.core.model.IInifileChangeListener#modelChanged()
      */
     public void modelChanged() {
         update();

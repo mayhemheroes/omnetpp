@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.widgets.Composite;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileDocument;
 
 /**
  * An inifile field editor which displays ComboFieldEditor, and lets the user

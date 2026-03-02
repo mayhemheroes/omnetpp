@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.Map;
 
@@ -33,10 +33,10 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.omnetpp.common.ui.SWTFactory;
 import org.omnetpp.common.util.UIUtils;
 import org.omnetpp.inifile.editor.contentassist.InifileValueContentProposalProvider;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigOption.DataType;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigOption.DataType;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.InifileUtils;
 
 /**
  * Text-based editor for inifile entries.

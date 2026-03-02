@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.Map;
 
@@ -28,9 +28,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolItem;
 import org.omnetpp.common.ui.MouseTracker;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileChangeListener;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileChangeListener;
+import org.omnetpp.inifile.core.model.IInifileDocument;
 
 /**
  * An inifile field editor, which displays either a TextFieldEditor or a TableFieldEditor,

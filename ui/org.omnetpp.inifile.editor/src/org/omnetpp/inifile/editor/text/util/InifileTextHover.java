@@ -19,9 +19,9 @@ import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.graphics.Point;
 import org.omnetpp.common.ui.HoverSupport;
 import org.omnetpp.inifile.editor.editors.InifileEditorData;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
 
 /**
  * Presents hover information for ini files.

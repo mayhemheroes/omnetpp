@@ -10,7 +10,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.omnetpp.common.ui.SWTFactory;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
+import org.omnetpp.inifile.core.InifileCorePlugin;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
 
 /**
  * If the cursor is on a line with an unrecognized config option, add the option
@@ -45,7 +46,7 @@ public class InifileEditorPreferencePage extends FieldEditorPreferencePage imple
 
     public InifileEditorPreferencePage() {
         super(GRID);
-        setPreferenceStore(InifileEditorPlugin.getDefault().getPreferenceStore());
+        setPreferenceStore(InifileCorePlugin.getDefault().getPreferenceStore());
         setDescription("Configuration for the OMNeT++ Ini File Editor.");
     }
 

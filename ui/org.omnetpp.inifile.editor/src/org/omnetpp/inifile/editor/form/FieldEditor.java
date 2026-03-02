@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.List;
 import java.util.Map;
@@ -36,10 +36,10 @@ import org.omnetpp.common.ui.HtmlHoverInfo;
 import org.omnetpp.common.ui.IHoverInfoProvider;
 import org.omnetpp.common.util.UIUtils;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
 
 /**
  * Base class for inifile field editors

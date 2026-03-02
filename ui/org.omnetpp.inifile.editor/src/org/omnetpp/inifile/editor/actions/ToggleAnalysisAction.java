@@ -5,7 +5,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
 import org.omnetpp.inifile.editor.text.InifileEditorMessages;
 import org.omnetpp.inifile.editor.text.actions.InifileTextEditorAction;
 

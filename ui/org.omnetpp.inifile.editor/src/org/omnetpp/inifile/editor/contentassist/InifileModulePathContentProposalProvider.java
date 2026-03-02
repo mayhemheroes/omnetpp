@@ -18,14 +18,15 @@ import org.eclipse.swt.graphics.Image;
 import org.omnetpp.common.contentassist.ContentProposalEx;
 import org.omnetpp.common.contentassist.ContentProposalProvider;
 import org.omnetpp.common.engine.PatternMatcher;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamResolution;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamResolution;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.Timeout;
 
 /**
  * Generate proposals for inifile module paths.
@@ -128,7 +129,7 @@ public class InifileModulePathContentProposalProvider extends ContentProposalPro
             // convert strings to actual proposals, and return them. Each group will be sorted separately
             List<IContentProposal> proposals = new ArrayList<IContentProposal>();
             addProposals(proposals, otherProposals, "", null);
-            addProposals(proposals, moduleProposals, "", InifileUtils.ICON_PROPOSAL_MODULE);
+            addProposals(proposals, moduleProposals, "", InifileImages.ICON_PROPOSAL_MODULE);
 
             return proposals;
         }

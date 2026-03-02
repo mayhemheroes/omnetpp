@@ -8,8 +8,8 @@
 package org.omnetpp.inifile.editor.editors;
 
 import org.eclipse.core.runtime.Assert;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
 
 /**
  * Data held by InifileEditor. Introduced because we don't want to pass around

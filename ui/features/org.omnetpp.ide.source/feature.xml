@@ -45,6 +45,13 @@
          unpack="false"/>
 
    <plugin
+         id="org.omnetpp.inifile.core.source"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
          id="org.omnetpp.inifile.editor.source"
          download-size="0"
          install-size="0"

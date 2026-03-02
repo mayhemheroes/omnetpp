@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.views;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -17,9 +17,9 @@ import org.eclipse.ui.part.ShowInContext;
 import org.omnetpp.common.ui.PinnableView;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.inifile.editor.editors.InifileSelectionItem;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileUtils;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileUtils;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.interfaces.INedModelProvider;

@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OMNeT++ INI File Core
+Bundle-SymbolicName: org.omnetpp.inifile.core;singleton:=true
+Bundle-Version: 6.4.0.qualifier
+Bundle-Activator: org.omnetpp.inifile.core.InifileCorePlugin
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: OpenSim Ltd.
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.eclipse.ui,
+ org.omnetpp.common,
+ org.omnetpp.ned.model,
+ org.omnetpp.ned.core,
+ org.omnetpp.ide.nativelibs
+Export-Package: org.omnetpp.inifile.core,
+ org.omnetpp.inifile.core.model
+Automatic-Module-Name: org.omnetpp.inifile.core

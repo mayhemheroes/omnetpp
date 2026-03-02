@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,21 +57,22 @@ import org.omnetpp.common.ui.TableTextCellEditor;
 import org.omnetpp.common.ui.ViewerDragAdapter;
 import org.omnetpp.common.util.DelayedJob;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
 import org.omnetpp.inifile.editor.actions.AddInifileKeysDialog;
 import org.omnetpp.inifile.editor.contentassist.InifileParamKeyContentProposalProvider;
 import org.omnetpp.inifile.editor.contentassist.InifileValueContentProposalProvider;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.SectionKey;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.SectionKey;
+import org.omnetpp.inifile.core.model.Timeout;
 
 /**
  * For editing module parameters and **.typename lines.
@@ -195,7 +196,7 @@ public class ParametersPage extends FormPage {
                 if (element instanceof SectionKey) {
                     if (columnIndex == 0) {
                         SectionKey item = (SectionKey) element;
-                        return InifileUtils.getKeyImage(item.section, item.key, getInifileAnalyzer(), new Timeout(100));
+                        return InifileImages.getKeyImage(item.section, item.key, getInifileAnalyzer(), new Timeout(100));
                     }
                     else if (columnIndex == 1) {
                         SectionKey item = (SectionKey) element;
@@ -205,7 +206,7 @@ public class ParametersPage extends FormPage {
                 }
                 else {
                     if (columnIndex==0)
-                        return InifileUtils.getSectionImage((String)element, getInifileAnalyzer());
+                        return InifileImages.getSectionImage((String)element, getInifileAnalyzer());
                 }
                 return null;
             }

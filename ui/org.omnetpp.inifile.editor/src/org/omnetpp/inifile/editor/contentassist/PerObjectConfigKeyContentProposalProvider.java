@@ -19,19 +19,20 @@ import org.omnetpp.common.contentassist.ContentProposalEx;
 import org.omnetpp.common.contentassist.ContentProposalProvider;
 import org.omnetpp.common.engine.PatternMatcher;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigOption.ObjectKind;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamCollector;
-import org.omnetpp.inifile.editor.model.ParamResolution;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.PropertyResolution;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigOption.ObjectKind;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamCollector;
+import org.omnetpp.inifile.core.model.ParamResolution;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.PropertyResolution;
+import org.omnetpp.inifile.core.model.Timeout;
 import org.omnetpp.ned.core.NedResources;
 import org.omnetpp.ned.model.interfaces.INedTypeResolver;
 import org.omnetpp.ned.model.interfaces.ISubmoduleOrConnection;
@@ -98,15 +99,15 @@ public class PerObjectConfigKeyContentProposalProvider extends ContentProposalPr
 
     protected static Image getImage(ObjectKind kind) {
         switch (kind) {
-        case KIND_PARAMETER: return InifileUtils.ICON_PROPOSAL_PARAMETERCONFIG;
-        case KIND_STATISTIC: return InifileUtils.ICON_PROPOSAL_STATISTICCONFIG;
+        case KIND_PARAMETER: return InifileImages.ICON_PROPOSAL_PARAMETERCONFIG;
+        case KIND_STATISTIC: return InifileImages.ICON_PROPOSAL_STATISTICCONFIG;
         case KIND_COMPONENT:
         case KIND_CHANNEL:
         case KIND_MODULE:
         case KIND_SIMPLE_MODULE:
-        case KIND_UNSPECIFIED_TYPE: return InifileUtils.ICON_PROPOSAL_MODULECONFIG;
-        case KIND_SCALAR: return InifileUtils.ICON_PROPOSAL_SCALARCONFIG;
-        case KIND_VECTOR: return InifileUtils.ICON_PROPOSAL_VECTORCONFIG;
+        case KIND_UNSPECIFIED_TYPE: return InifileImages.ICON_PROPOSAL_MODULECONFIG;
+        case KIND_SCALAR: return InifileImages.ICON_PROPOSAL_SCALARCONFIG;
+        case KIND_VECTOR: return InifileImages.ICON_PROPOSAL_VECTORCONFIG;
         case KIND_OTHER: //TODO
         case KIND_NONE: return null;
         }

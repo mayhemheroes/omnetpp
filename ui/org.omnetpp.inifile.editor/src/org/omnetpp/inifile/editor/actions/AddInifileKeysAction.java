@@ -7,8 +7,8 @@
 
 package org.omnetpp.inifile.editor.actions;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -23,9 +23,9 @@ import org.omnetpp.inifile.editor.editors.InifileEditor;
 import org.omnetpp.inifile.editor.editors.InifileEditorData;
 import org.omnetpp.inifile.editor.editors.InifileSelectionItem;
 import org.omnetpp.inifile.editor.form.AnalysisDisabledDialog;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
 import org.omnetpp.inifile.editor.text.InifileEditorMessages;
 import org.omnetpp.inifile.editor.text.actions.InifileTextEditorAction;
 

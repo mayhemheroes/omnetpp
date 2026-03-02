@@ -52,12 +52,13 @@ import org.omnetpp.common.util.DetailedPartInitException;
 import org.omnetpp.inifile.editor.IGotoInifile;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
 import org.omnetpp.inifile.editor.actions.ToggleAnalysisAction;
+import org.omnetpp.inifile.editor.form.AnalysisTimeoutDialog;
 import org.omnetpp.inifile.editor.form.InifileFormEditor;
-import org.omnetpp.inifile.editor.model.IInifileChangeListener;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument.LineInfo;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileDocument;
+import org.omnetpp.inifile.core.model.IInifileChangeListener;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument.LineInfo;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileDocument;
 import org.omnetpp.inifile.editor.text.InifileTextEditor;
 import org.omnetpp.inifile.editor.views.InifileContentOutlinePage;
 
@@ -150,7 +151,9 @@ public class InifileEditor extends MultiPageEditorPart implements IGotoMarker, I
         IFile file = ((IFileEditorInput)getEditorInput()).getFile();
         IDocument document = textEditor.getDocumentProvider().getDocument(getEditorInput());
         IInifileDocument inifileDocument = new InifileDocument(document, file);
-        editorData.initialize(this, inifileDocument, new InifileAnalyzer(inifileDocument));
+        InifileAnalyzer inifileAnalyzer = new InifileAnalyzer(inifileDocument);
+        inifileAnalyzer.setAnalysisTimeoutHandler(() -> new AnalysisTimeoutDialog(null).open());
+        editorData.initialize(this, inifileDocument, inifileAnalyzer);
 
         // setTargetEditor can be called after editorData is initialized
         toggleAnalysisAction.setTargetEditor(this);

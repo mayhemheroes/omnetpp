@@ -23,9 +23,9 @@ import org.omnetpp.common.Debug;
 import org.omnetpp.common.editor.text.FoldingRegionSynchronizer;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
 import org.omnetpp.inifile.editor.editors.InifileEditorData;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument.LineInfo;
-import org.omnetpp.inifile.editor.model.InifileParser;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument.LineInfo;
+import org.omnetpp.inifile.core.model.InifileParser;
 
 /**
  * This class has one instance per editor. It performs

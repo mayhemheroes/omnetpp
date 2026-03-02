@@ -7,11 +7,11 @@
 
 package org.omnetpp.inifile.editor.form;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_ABSTRACT;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_DESCRIPTION;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.EXTENDS;
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_ABSTRACT;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_DESCRIPTION;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.EXTENDS;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,17 +62,18 @@ import org.omnetpp.common.ui.LocalTransfer;
 import org.omnetpp.common.ui.ViewerDragAdapter;
 import org.omnetpp.common.util.IPredicate;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.actions.AddInifileKeysAction;
 import org.omnetpp.inifile.editor.editors.InifileEditor;
-import org.omnetpp.inifile.editor.model.ConfigOption;
-import org.omnetpp.inifile.editor.model.ConfigRegistry;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.ConfigOption;
+import org.omnetpp.inifile.core.model.ConfigRegistry;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.Timeout;
 
 /**
  * Inifile editor page to manage the sections in the file.
@@ -175,7 +176,7 @@ public class SectionsPage extends FormPage {
                     element = ((GenericTreeNode)element).getPayload();
                 if (element instanceof SectionData) {
                     SectionData payload = (SectionData) element;
-                    return InifileUtils.getSectionImage(payload.sectionName, getInifileAnalyzer());
+                    return InifileImages.getSectionImage(payload.sectionName, getInifileAnalyzer());
                 }
                 return null;
             }

@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.actions;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.CFGID_NETWORK;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.CFGID_NETWORK;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,13 +43,13 @@ import org.eclipse.swt.widgets.Text;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.common.util.UIUtils;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.ITimeout;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamResolution;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ITimeout;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamResolution;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
 
 
 /**

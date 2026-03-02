@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.views;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,21 +57,22 @@ import org.omnetpp.common.ui.IHoverInfoProvider;
 import org.omnetpp.common.ui.TableLabelProvider;
 import org.omnetpp.common.util.ActionExt;
 import org.omnetpp.common.util.StringUtils;
+import org.omnetpp.inifile.editor.InifileImages;
 import org.omnetpp.inifile.editor.IGotoInifile;
 import org.omnetpp.inifile.editor.InifileEditorPlugin;
-import org.omnetpp.inifile.editor.model.IInifileDocument;
-import org.omnetpp.inifile.editor.model.ITimeout;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer.IAnalysisListener;
-import org.omnetpp.inifile.editor.model.InifileHoverUtils;
-import org.omnetpp.inifile.editor.model.InifileUtils;
-import org.omnetpp.inifile.editor.model.ParamCollector;
-import org.omnetpp.inifile.editor.model.ParamResolution;
-import org.omnetpp.inifile.editor.model.ParamResolution.ParamResolutionType;
-import org.omnetpp.inifile.editor.model.ParamResolutionDisabledException;
-import org.omnetpp.inifile.editor.model.ParamResolutionTimeoutException;
-import org.omnetpp.inifile.editor.model.SectionKey;
-import org.omnetpp.inifile.editor.model.Timeout;
+import org.omnetpp.inifile.core.model.IInifileDocument;
+import org.omnetpp.inifile.core.model.ITimeout;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileAnalyzer.IAnalysisListener;
+import org.omnetpp.inifile.editor.text.util.InifileHoverUtils;
+import org.omnetpp.inifile.core.model.InifileUtils;
+import org.omnetpp.inifile.core.model.ParamCollector;
+import org.omnetpp.inifile.core.model.ParamResolution;
+import org.omnetpp.inifile.core.model.ParamResolution.ParamResolutionType;
+import org.omnetpp.inifile.core.model.ParamResolutionDisabledException;
+import org.omnetpp.inifile.core.model.ParamResolutionTimeoutException;
+import org.omnetpp.inifile.core.model.SectionKey;
+import org.omnetpp.inifile.core.model.Timeout;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
@@ -150,7 +151,7 @@ public class ModuleParametersView extends AbstractModuleView {
                 if (columnIndex!=0)
                     return null;
                 if (element instanceof ParamResolution)
-                    return InifileUtils.suggestImage(((ParamResolution) element).type);
+                    return InifileImages.suggestImage(((ParamResolution) element).type);
                 else
                     return null;
             }

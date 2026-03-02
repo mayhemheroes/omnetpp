@@ -7,7 +7,7 @@
 
 package org.omnetpp.inifile.editor.text.assist;
 
-import static org.omnetpp.inifile.editor.model.ConfigRegistry.GENERAL;
+import static org.omnetpp.inifile.core.model.ConfigRegistry.GENERAL;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,9 +43,9 @@ import org.omnetpp.inifile.editor.contentassist.InifileParamKeyContentProposalPr
 import org.omnetpp.inifile.editor.contentassist.InifileValueContentProposalProvider;
 import org.omnetpp.inifile.editor.contentassist.PerObjectConfigKeyContentProposalProvider;
 import org.omnetpp.inifile.editor.editors.InifileEditorData;
-import org.omnetpp.inifile.editor.model.IReadonlyInifileDocument;
-import org.omnetpp.inifile.editor.model.InifileAnalyzer;
-import org.omnetpp.inifile.editor.model.InifileParser;
+import org.omnetpp.inifile.core.model.IReadonlyInifileDocument;
+import org.omnetpp.inifile.core.model.InifileAnalyzer;
+import org.omnetpp.inifile.core.model.InifileParser;
 import org.omnetpp.inifile.editor.text.InifileTextEditorHelper;
 
 /**
