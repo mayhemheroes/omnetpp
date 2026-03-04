@@ -155,6 +155,8 @@
 /ui/*/.polyglot.META-INF
 /ui/*/bin
 /ui/_*/
+/ui/features/*/.polyglot.feature.xml
+/ui/features/*.tycho
 /ui/org.omnetpp.ide.nativelibs/*.cxx
 /ui/org.omnetpp.ide.nativelibs/common.h
 /ui/org.omnetpp.ide.nativelibs/src/org/omnetpp/*/engine/
