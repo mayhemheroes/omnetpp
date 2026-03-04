@@ -752,7 +752,8 @@ void LogInspector::recreateProviders()
     if (bookmark.isValid())
         sourceContentProvider->setBookmark(bookmark);
 
-    auto columnWidths = textWidget->getColumnWidths();
+    bool hadVisibleHeaders = textWidget->getContentProvider() && textWidget->getContentProvider()->showHeaders();
+    auto columnWidths = hadVisibleHeaders ? textWidget->getColumnWidths() : QList<QVariant>();
 
     if (lineFilterString.empty()) {
         filteringContentProvider = nullptr;
@@ -763,7 +764,8 @@ void LogInspector::recreateProviders()
         textWidget->setContentProvider(filteringContentProvider);
     }
 
-    textWidget->setColumnWidths(columnWidths);
+    if (!columnWidths.isEmpty())
+        textWidget->setColumnWidths(columnWidths);
 }
 
 void LogInspector::saveContent()
