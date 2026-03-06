@@ -17,8 +17,9 @@
 #ifndef __OMNETPP_QTENV_OBJECTTREEINSPECTOR_H
 #define __OMNETPP_QTENV_OBJECTTREEINSPECTOR_H
 
-#include "inspector.h"
 #include <QtCore/QModelIndex>
+#include "qtenvdefs.h"
+#include "inspector.h"
 
 class QTreeView;
 

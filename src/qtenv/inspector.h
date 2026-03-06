@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_INSPECTOR_H
 #define __OMNETPP_QTENV_INSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "envir/envirbase.h"
 #include "inspectorutiltypes.h"
 #include "qtutil.h"

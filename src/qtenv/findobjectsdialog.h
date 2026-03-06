@@ -20,8 +20,8 @@
 #include <QtWidgets/QDialog>
 #include <QtCore/QItemSelection>
 #include <QtCore/QModelIndex>
-#include "objectlistmodel.h"
 #include "qtenvdefs.h"
+#include "objectlistmodel.h"
 
 namespace Ui {
 class FindObjectsDialog;

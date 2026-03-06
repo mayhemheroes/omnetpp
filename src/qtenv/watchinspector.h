@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_WATCHINSPECTOR_H
 #define __OMNETPP_QTENV_WATCHINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "inspector.h"
 
 #include <QtWidgets/QLabel>

@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_HISTOGRAMINSPECTOR_H
 #define __OMNETPP_QTENV_HISTOGRAMINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "inspector.h"
 #include "histogramview.h"
 

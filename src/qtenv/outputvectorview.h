@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_OUTPUTVECTORVIEW_H
 
 #include <QtWidgets/QGraphicsView>
+#include "qtenvdefs.h"
 #include "omnetpp/simtime_t.h"
 #include "outputvectorinspector.h"
 #include "vectorplotitem.h"

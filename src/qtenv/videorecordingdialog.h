@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_VIDEORECORDINGDIALOG_H
 
 #include <QtWidgets/QDialog>
+#include "qtenvdefs.h"
 #include "mainwindow.h"
 
 namespace Ui {

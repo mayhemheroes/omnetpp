@@ -19,8 +19,8 @@
 
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
-#include "textviewerwidget.h"
 #include "qtenvdefs.h"
+#include "textviewerwidget.h"
 #include "qtutil.h"
 
 namespace Ui {

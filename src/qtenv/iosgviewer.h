@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_IOSGVIEWER_H
 #define __OMNETPP_QTENV_IOSGVIEWER_H
 
+#include "qtenvdefs.h"
 #include "qtenv.h"
 #include "common/ver.h"
 

@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_GENERICOBJECTINSPECTOR_H
 #define __OMNETPP_QTENV_GENERICOBJECTINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "inspector.h"
 
 #include <QtCore/QModelIndex>

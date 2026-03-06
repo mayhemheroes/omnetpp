@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_TIMELINEINSPECTOR_H
 #define __OMNETPP_QTENV_TIMELINEINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "inspector.h"
 
 namespace omnetpp {

@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_VECTORPLOTITEM_H
 
 #include <QtWidgets/QGraphicsItem>
+#include "qtenvdefs.h"
 #include "outputvectorinspector.h"
 
 namespace omnetpp {

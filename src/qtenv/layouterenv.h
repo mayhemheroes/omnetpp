@@ -17,12 +17,12 @@
 #ifndef __OMNETPP_QTENV_LAYOUTERENV_H
 #define __OMNETPP_QTENV_LAYOUTERENV_H
 
-#include "layout/graphlayouter.h"
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsView>
 #include <QtCore/QObject>
 #include <climits>
 #include "qtenvdefs.h"
+#include "layout/graphlayouter.h"
 #include "qtutil.h"
 #include "displaystringaccess.h"
 

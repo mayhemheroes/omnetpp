@@ -24,6 +24,7 @@
 #include <utility>
 #include <functional>
 #include <QtWidgets/QGraphicsRectItem>
+#include "qtenvdefs.h"
 #include "omnetpp/cchannel.h"
 #include "omnetpp/cmodule.h"
 #include "omnetpp/simtime_t.h"

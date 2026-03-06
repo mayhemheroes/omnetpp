@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_LOGINSPECTOR_H
 
 #include <set>
+#include "qtenvdefs.h"
 #include "omnetpp/cmessageprinter.h"
 #include "logbuffer.h"
 #include "componenthistory.h"

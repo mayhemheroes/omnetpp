@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_OUTPUTVECTORINSPECTORCONFIGDIALOG_H
 
 #include <QtWidgets/QDialog>
+#include "qtenvdefs.h"
 #include "vectorplotitem.h"
 
 namespace Ui {

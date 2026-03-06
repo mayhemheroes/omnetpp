@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <QtWidgets/QGraphicsScene>
+#include "qtenvdefs.h"
 #include "inspector.h"
 #include "modulecanvasviewer.h"
 

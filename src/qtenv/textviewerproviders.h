@@ -22,6 +22,8 @@
 #include <QtGui/QColor>
 #include <QtCore/QDebug>
 
+#include "qtenvdefs.h"
+
 // cRuntimeException is needed somewhere deep in an ASSERT in
 // that logbuffer.h include (for the circularbuffer)
 #include "omnetpp/cexception.h"

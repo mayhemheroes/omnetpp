@@ -19,11 +19,11 @@
 
 #include <vector>
 #include <map>
+#include <QtCore/QObject>
+#include "qtenvdefs.h"
 #include "omnetpp/simtime_t.h"
 #include "omnetpp/cchannel.h"
 #include "circularbuffer.h"
-#include "qtenvdefs.h"
-#include <QtCore/QObject>
 
 namespace omnetpp {
 

@@ -18,6 +18,7 @@
 #define __OMNETPP_QTENV_RUNUNTILDIALOG_H
 
 #include <QtWidgets/QDialog>
+#include "qtenvdefs.h"
 #include "qtenv.h"
 
 namespace Ui {

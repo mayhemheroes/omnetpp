@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <list>
+#include "qtenvdefs.h"
 #include "envir/envirbase.h"
 #include "envir/speedometer.h"
 #include "omnetpp/cchannel.h"

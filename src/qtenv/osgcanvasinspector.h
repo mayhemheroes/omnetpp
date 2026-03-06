@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_OSGCANVASINSPECTOR_H
 #define __OMNETPP_QTENV_OSGCANVASINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "inspector.h"
 
 namespace omnetpp {

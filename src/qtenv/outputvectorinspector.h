@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_OUTPUTVECTORINSPECTOR_H
 #define __OMNETPP_QTENV_OUTPUTVECTORINSPECTOR_H
 
+#include "qtenvdefs.h"
 #include "envir/envirbase.h"
 #include "inspector.h"
 
