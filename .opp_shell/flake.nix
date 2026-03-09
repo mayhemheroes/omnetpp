@@ -131,14 +131,15 @@
             export XDG_DATA_DIRS="${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:$XDG_DATA_DIRS"
 
             if [[ -z "$__omnetpp_root_dir" ]]; then
-              dir=.
+              _priv_dir=.
             else
-              dir=$__omnetpp_root_dir
+              _priv_dir=$__omnetpp_root_dir
             fi
 
-            if [[ -f $dir/setenv && -z "$skip_setenv" ]]; then
-              source $dir/setenv
+            if [[ -f $_priv_dir/setenv && -z "$skip_setenv" ]]; then
+              source $_priv_dir/setenv
             fi
+            unset _priv_dir
           '';
         };
 

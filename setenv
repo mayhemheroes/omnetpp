@@ -20,14 +20,14 @@
 # Get the directory where this script reside using a trick (works differently on bash and zsh)
 # On bash, the current script's name is in 'BASH_SOURCE[0]'
 if [ "$BASH_VERSION" != "" ]; then # for BASH
-  dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+  __root_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
   if [[ "$BASH_SOURCE" != "$0" ]]; then
     sourced=yes
   fi
 elif [ "$ZSH_VERSION" != "" ]; then
   # the script is here is implicitly known to be sourced because the shebang is /usr/bin/env bash
   # so it always executes under bash, not zsh
-  dir=$(cd $(dirname $0) && pwd)
+  __root_dir=$(cd $(dirname $0) && pwd)
   sourced=yes
 else # other shells are not supported, because we use variable manipulation constructs that are not part of POSIX
   echo "Error: Unrecognized shell, only 'bash' and 'zsh' are supported."
@@ -35,8 +35,8 @@ else # other shells are not supported, because we use variable manipulation cons
 fi
 
 # check if dir is really pointing to an omnet++ installation dir
-if [ ! -f "$dir/configure.user" -o ! -f "$dir/include/omnetpp.h" -o ! -f "$dir/Version" ]; then
-    echo "Error: '$dir' does not look like an OMNeT++ root directory"
+if [ ! -f "$__root_dir/configure.user" -o ! -f "$__root_dir/include/omnetpp.h" -o ! -f "$__root_dir/Version" ]; then
+    echo "Error: '$__root_dir' does not look like an OMNeT++ root directory"
     if [[ "$sourced" == "yes" ]]; then
       return 1
     else
@@ -59,7 +59,7 @@ if [[ "$sourced" == "yes" ]]; then
   # check if we are in a properly configured nix shell and throw error if not
   if [[ -f /etc/NIXOS && "$name" != "opp_shell" ]]; then
     skip_setenv=true
-    eval "$(nix print-dev-env --extra-experimental-features nix-command --extra-experimental-features flakes $dir/.opp_shell)"
+    eval "$(nix print-dev-env --extra-experimental-features nix-command --extra-experimental-features flakes $__root_dir/.opp_shell)"
     unset skip_setenv
   fi
 else
@@ -71,10 +71,10 @@ else
   if [[ -f /etc/NIXOS ]]; then
     # setenv was executed on NixOS so we invoke a properly configured develoment shell to install all dependencies
     # to their standard locations. setenv will be sourced in the shellHook
-    exec nix develop --extra-experimental-features nix-command --extra-experimental-features flakes "$dir/.opp_shell" -c -- "$@"
+    exec nix develop --extra-experimental-features nix-command --extra-experimental-features flakes "$__root_dir/.opp_shell" -c -- "$@"
     # implicit exit because of exec
   else
-    source "$dir/setenv" && exec "$@"
+    source "$__root_dir/setenv" && exec "$@"
     # implicit exit
   fi
 fi
@@ -93,9 +93,9 @@ fi
 # where all necessary libraries are mapped to their standard locations. Modules (with wheels)
 # installed by pip will not work in a standard Nix environment.
 #
-if [ -f "$dir/.venv/bin/activate" ] ; then
-  [[ "$quiet" != "true" ]] && echo "Activating python virtual environment in '$dir/.venv'"
-  source $dir/.venv/bin/activate
+if [ -f "$__root_dir/.venv/bin/activate" ] ; then
+  [[ "$quiet" != "true" ]] && echo "Activating python virtual environment in '$__root_dir/.venv'"
+  source $__root_dir/.venv/bin/activate
 fi
 
 # check for HOMEBREW (on macOS) environment and activate dependent packages
@@ -113,8 +113,8 @@ if [ "$(uname)" = "Darwin" -a "$(command -v brew)" != "" -a -z "$IN_NIX_SHELL" ]
 fi
 
 function _numargs() { echo $#; }
-if [ $(_numargs $dir) -gt 1 ]; then
-    echo "Error: Directory name ($dir) must not contain spaces or special characters."
+if [ $(_numargs $__root_dir) -gt 1 ]; then
+    echo "Error: Directory name ($__root_dir) must not contain spaces or special characters."
     return 1
 fi
 
@@ -167,19 +167,19 @@ fi
 # macOS specific settings
 if [ $(uname) = "Darwin" ]; then
   if [ $(uname -m) = "arm64" ]; then
-    if [ -d $dir/tools/macos.x86_64 ]; then
+    if [ -d $__root_dir/tools/macos.x86_64 ]; then
       echo "NOTE: We are running on Apple Silicon, but you have downloaded the x86_64 version of the installation package!"
       echo "Turning on x86_64 emulation by starting a new shell with 'arch -x86_64 /bin/zsh -i' ..."
-      export dir; arch -x86_64 /bin/zsh -c 'source $dir/setenv; zsh -i'
+      export $__root_dir; arch -x86_64 /bin/zsh -c 'source $__root_dir/setenv; zsh -i'
       return 1
     fi
-    if [ -d $dir/tools/macos.aarch64 ]; then
-      TOOLS_DIR=$dir/tools/macos.aarch64
+    if [ -d $__root_dir/tools/macos.aarch64 ]; then
+      TOOLS_DIR=$__root_dir/tools/macos.aarch64
       export PATH=$TOOLS_DIR/bin:$PATH
     fi
   else
-    if [ -d $dir/tools/macos.x86_64 ]; then
-      TOOLS_DIR=$dir/tools/macos.x86_64
+    if [ -d $__root_dir/tools/macos.x86_64 ]; then
+      TOOLS_DIR=$__root_dir/tools/macos.x86_64
       export PATH=$TOOLS_DIR/bin:$PATH
     fi
   fi
@@ -210,17 +210,17 @@ if [ -n "$MSYSTEM" -a "$MS_ABI" = "yes" ] ; then
   fi
 fi
 
-export PATH="$dir/bin:$PATH"
-export PYTHONPATH="$dir/python:$PYTHONPATH"
-export OMNETPP_IMAGE_PATH="$dir/images:$OMNETPP_IMAGE_PATH"
+export PATH="$__root_dir/bin:$PATH"
+export PYTHONPATH="$__root_dir/python:$PYTHONPATH"
+export OMNETPP_IMAGE_PATH="$__root_dir/images:$OMNETPP_IMAGE_PATH"
 export HOSTNAME
 export HOST
 export QT_SELECT=6 # on systems with qtchooser, switch to Qt6
 export QT_LOGGING_RULES='*.warning=false;qt.qpa.*=false' # disable some qt logging
 
-export OMNETPP_RELEASE=$(cat $dir/Version)
-export __omnetpp_root_dir=$dir
-dir=
+export OMNETPP_RELEASE=$(cat $__root_dir/Version)
+export __omnetpp_root_dir=$__root_dir
+unset __root_dir
 
 if [[ "$quiet" != "true" ]]; then
   echo "Environment for '$OMNETPP_RELEASE' in directory '$__omnetpp_root_dir' is ready."
