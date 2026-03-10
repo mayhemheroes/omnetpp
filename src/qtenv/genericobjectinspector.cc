@@ -126,6 +126,13 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     toPacketModeAction->setActionGroup(modeActionGroup);
 
     toolbar->addSeparator();
+    sortByNameAction = toolbar->addAction(QIcon(":/tools/sort"), "Sort by Name", [this]() {
+        setSortByName(!sortByName);
+    });
+    sortByNameAction->setCheckable(true);
+    sortByNameAction->setToolTip("Sort fields alphabetically (children are always unsorted)");
+
+    toolbar->addSeparator();
 
     if (isTopLevel) {
         addTopLevelToolBarActions(toolbar);
@@ -166,6 +173,7 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
 
     mode = (Mode)getPref(PREF_MODE, QVariant::fromValue(0), false).toInt();
     sortByName = getPref(PREF_SORT_BY_NAME, true, false).toBool();
+    sortByNameAction->setChecked(sortByName);
 
     doSetMode(mode);
     recreateModel();
@@ -207,6 +215,7 @@ void GenericObjectInspector::setSortByName(bool sorted)
 {
     if (sortByName != sorted) {
         sortByName = sorted;
+        sortByNameAction->setChecked(sortByName);
         setPref(PREF_SORT_BY_NAME, sortByName, false);
         QSet<QString> expanded = getExpandedNodes();
         int vScrollPos = treeView->verticalScrollBar()->value();

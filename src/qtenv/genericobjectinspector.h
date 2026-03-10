@@ -70,6 +70,7 @@ protected:
     QAction *toInheritanceModeAction;
     QAction *toChildrenModeAction;
     QAction *toPacketModeAction;
+    QAction *sortByNameAction;
 
     void doSetMode(Mode mode);
 

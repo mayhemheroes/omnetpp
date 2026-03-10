@@ -88,5 +88,6 @@
         <file alias="treemode_packet">icons/tools/treemode_packet.svg</file>
         <file alias="rebuild">icons/tools/rebuild.svg</file>
         <file alias="setupbins">icons/tools/setupbins.svg</file>
+        <file alias="sort">icons/tools/sort.svg</file>
     </qresource>
 </RCC>
