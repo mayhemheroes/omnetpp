@@ -98,6 +98,7 @@ namespace omnetpp;
 @property[group](type=string; usage=field; desc="Used for grouping of fields in Qtenv inspectors");
 @property[packetData](type=string; usage=class,field; desc="Denotes packet data in frameworks such as INET; used in Qtenv inspectors");
 @property[eventlog](type=string; usage=field; desc="When @eventlog(skip) is given, eventlog recording will skip this field when serializing objects");
+@property[displayMode](type=string; usage=class; desc="Display mode override for objects of this class in Qtenv inspectors: 'children' or 'details'");
 
 enum cPar::Type;
 enum cGate::Type;
@@ -214,6 +215,7 @@ class cProperty extends cObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     bool isImplicit @getter(isImplicit) @group(fields);
     string index @group(fields);
     string value @getter(str) @hint("Name and value");
@@ -255,6 +257,7 @@ class cChannel extends cComponent
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(channel);
+    @displayMode(details);
     cDisplayString displayString @group(fields) @hint("Controls appearance of this channel in the GUI") @editable @setter(setDisplayString) @fromString($) @toString(.str()) @getter(getDisplayString) @fromValue($.stringValue());
 }
 
@@ -290,6 +293,7 @@ class cModule extends cComponent
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(compound);
+    @displayMode(children);
     int id @group(fields) @hint("Unique module ID -- IDs of deleted modules are not issued again");
     bool isSimple @getter(isSimple) @group(fields) @hint("Whether this is a simple module");
     bool isVector @getter(isVector) @group(fields) @hint("Whether this module is part of a module vector");
@@ -308,6 +312,7 @@ class cSimpleModule extends cModule
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(simple);
+    @displayMode(children);
     bool isTerminated @getter(isTerminated) @group(fields) @hint("Whether this module has terminated");
     bool usesActivity @getter(usesActivity) @group(activity) @hint("Whether this simple module was programmed using the \"activity\" or the \"handleMessage\" C++ method");
     unsigned int stackSize @group(activity) @hint("If module uses \"activity\": stack size allocated for this module -- zero means info not available");
@@ -323,6 +328,7 @@ class cComponentType extends cNoncopyableOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     string nedSource @getter(getNedSource) @hint("NED source of component if available");
     string documentation @getter(getDocumentation) @hint("Documentation of component if available");
 }
@@ -347,6 +353,7 @@ class cRegistrationList extends cNamedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     cObject *contents[] @getter(get) @sizeGetter(size) @hint("Contained objects");
 }
 
@@ -358,6 +365,7 @@ class cGate extends cObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(gate);
+    @displayMode(details);
     char type @group(fields) @enum(cGate::Type) @hint("Gate type");
     int id @group(fields) @hint("Gate id, unique within this module");
     bool isVector @getter(isVector) @group(fields) @hint("Whether this gate is part of a gate vector");
@@ -383,6 +391,7 @@ class cArray extends cOwnedObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(container);
+    @displayMode(children);
     bool takeOwnership @group(fields) @editable @hint("Whether the array should own the objects inserted into it");
     cObject *contents[] @getter(get) @sizeGetter(size) @hint("Objects contained in the array");
 }
@@ -392,6 +401,7 @@ class cEvent extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     short schedulingPriority @group(event) @editable @hint("Controls order of messages with equal timestamps in FES");
     cObject *targetObject @group(event) @hint("The object this message will be delivered to");
     bool isScheduled @getter(isScheduled) @group(sending) @hint("Whether event or message is currently scheduled (or in transit)");
@@ -404,6 +414,7 @@ class cMessage extends cEvent
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon("message");
+    @displayMode(details);
     msgid_t id @group("message") @hint("Automatically assigned unique identifier");
     msgid_t treeId @group("message") @hint("Identifier shared between the message and its copies");
     short kind @group("message") @editable @hint("Generic user-settable attribute, usually carries \"type\" or \"role\" or \"category\" of message");
@@ -461,6 +472,7 @@ class cRandom extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @icon(cogwheel); //TODO
+    @displayMode(details);
     cRNG *rng @getter(getRNG) @setter(setRNG);
 }
 
@@ -619,6 +631,7 @@ class cStatistic extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @icon(statistic);
+    @displayMode(details);
     long count @readonly @group(statistical summary) @hint("Number of observations collected, regardless of their weights");
     double sumWeights @readonly @group(statistical summary) @hint("Sum of weights, which equals the number of observations in the unweighted case");
     double min @readonly @group(statistical summary) @hint("Minimum of the observations");
@@ -736,6 +749,7 @@ class cExpression extends cObject
 {
     @existingClass;
     @overwritePreviousDefinition;
+    @displayMode(details);
     string str @readonly @getter(str);
 }
 
@@ -754,6 +768,7 @@ class cValueArray extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     cValue elements[] @getter(get) @setter(set) @sizeGetter(size);
 }
 
@@ -772,6 +787,7 @@ class cValueMap extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     cValueMap::Entry entries[] @sizeGetter(size) @getter(getEntry) @toValue(toAnyPtr(&($)));
 }
 
@@ -780,6 +796,7 @@ class cFSM extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     int state @hint("Numeric code of the state the FSM is currently in");
     string stateName @hint("Name of the current FSM state");
 }
@@ -789,6 +806,7 @@ class cNedMathFunction extends cNoncopyableOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     string category @hint("Function category");
     string description;
     int numArgs @hint("Number of \"double\" parameters this function takes");
@@ -799,6 +817,7 @@ class cNedFunction extends cNoncopyableOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     string signature @hint("Argument types and return value");
     string category @hint("Function category");
     string description;
@@ -814,6 +833,7 @@ class cOutVector extends cNoncopyableOwnedObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(outvector);
+    @displayMode(details);
     bool isEnabled @getter(isEnabled) @setter(setEnabled) @editable @hint("If disabled, values passed to this object to record are simply discarded");
     long valuesReceived @hint("Number of values passed to this object to record");
     long valuesStored @hint("Number of values actually stored on the disk");
@@ -825,6 +845,7 @@ class cPar extends cObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(param);
+    @displayMode(details);
     @fromString(parse);
     string value @getter(unparse) @setter(parse) @editable;
     char type @enum(cPar::Type) @hint("Parameter type");
@@ -843,6 +864,7 @@ class cMsgPar extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     string value @getter(str) @setter(parse) @editable @hint("Parameter value");
     char type @enum(cPar::Type) @hint("Parameter type");
     bool isNumeric @getter(isNumeric) @group(flags) @hint("Whether parameter is of numeric type");
@@ -855,6 +877,7 @@ class cFutureEventSet extends cOwnedObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(container);
+    @displayMode(children);
     int length @hint("Number of items contained");
     cEvent *events[] @getter(get) @sizeGetter(getLength) @hint("Events and self-messages and currently scheduled, and messages currently in transit");
 }
@@ -872,6 +895,7 @@ class cQueue extends cOwnedObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(queue);
+    @displayMode(children);
     bool takeOwnership @group(fields) @editable @hint("Whether the queue should own the objects inserted into it");
     int length @hint("Number of items in the queue");
     cObject *contents[] @getter(get) @sizeGetter(getLength) @hint("Queue contents");
@@ -908,6 +932,7 @@ class cSimulation extends cNamedObject
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @icon(container);
+    @displayMode(children);
     simtime_t simTime @hint("The current simulation time in seconds");
     int64_t eventNumber @hint("The current event number -- counts from 0 up");
     cFutureEventSet *fes @getter(getFES) @label(futureEvents) @hint("Self-messages scheduled, and messages in transit");
@@ -944,6 +969,7 @@ class cTopology::Node
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @polymorphic(false);
+    @displayMode(details);
     int moduleId @hint("ID of the module this node corresponds to");
     cModule *module @hint("The module this node corresponds to");
     double weight @hint("Node weight -- affects graph algorithms such as shortest path");
@@ -962,6 +988,7 @@ class cTopology::Link
     @overwritePreviousDefinition;
     @descriptor(readonly);
     @polymorphic(false);
+    @displayMode(details);
     double weight @hint("Link weight -- affects graph algorithms such as shortest path");
     bool enabled @getter(isEnabled) @hint("Link state -- affects graph algorithms such as shortest path");
 }
@@ -993,6 +1020,7 @@ class cTopology extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     int numNodes @group(fields) @hint("Number of nodes in this topology object");
     cTopology::Node *node[] @sizeGetter(getNumNodes) @hint("List of nodes in this topology object");
 }
@@ -1002,6 +1030,7 @@ class cXMLElement extends cObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     string tagName @hint("XML element tag");
     string nodeValue @hint("Contents of text node inside this XML element");
     string sourceLocation @hint("Location this XML element was parsed from");
@@ -1095,6 +1124,7 @@ class cFigure extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     int id @group(figure);
     bool visible @group(figure) @getter(isVisible) @editable;
     double zIndex @group(figure) @editable;
@@ -1315,6 +1345,7 @@ class cCanvas extends cOwnedObject
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     cFigure *rootFigure;
     string allTags;
     cFigure::Color backgroundColor @editable;
@@ -1341,6 +1372,7 @@ class cResultFilter extends cResultListener
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(children);
     cResultListener *delegates[] @sizeGetter(getNumDelegates) @getter(getDelegate) @toString(->str());
 }
 
@@ -1489,6 +1521,7 @@ class cResultRecorder extends cResultListener
     @existingClass;
     @overwritePreviousDefinition;
     @descriptor(readonly);
+    @displayMode(details);
     cComponent *component;
     string resultName;
     string statisticName;
