@@ -63,6 +63,7 @@ public:
 private:
     // this is the "global" mode set on the inspector
     Mode inspectorMode;
+    bool sortByName = true;
     std::vector<RootNode *> rootNodes;
     // maps nodeIdentifier to overridden Mode, for nodes whose mode was overridden by the user
     NodeModeOverrideMap nodeModeOverrides;
@@ -72,8 +73,10 @@ private:
     void unsetNodeMode(const QModelIndex &index);
 
 public:
-    GenericObjectTreeModel(cObject *object, Mode mode, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
-    GenericObjectTreeModel(std::vector<cObject *> roots, Mode mode, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
+    GenericObjectTreeModel(cObject *object, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
+    GenericObjectTreeModel(std::vector<cObject *> roots, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
+
+    bool getSortByName() const { return sortByName; }
 
     std::vector<cObject *> getRootObjects();
 

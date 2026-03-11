@@ -176,12 +176,8 @@ std::vector<TreeNode *> TreeNode::makeObjectChildNodes(any_ptr obj, cClassDescri
                 if (fieldMatchesPropertyFilter(desc, i, "packetData"))
                     result.push_back(new FieldNode(this, result.size(), obj, desc, i, mode));
 
-            // sorting the fields alphabetically
-            std::sort(result.begin(), result.end(), [](TreeNode *a, TreeNode *b) {
-                return a->computeData(Qt::DisplayRole).toString() < b->computeData(Qt::DisplayRole).toString();
-            });
-            for (size_t i = 0; i < result.size(); ++i)
-                result[i]->indexInParent = i;
+            if (getRootNode()->getSortByName())
+                sortChildrenByName(result);
             break;
         }
 
@@ -205,19 +201,16 @@ std::vector<TreeNode *> TreeNode::makeObjectChildNodes(any_ptr obj, cClassDescri
                     result.push_back(new FieldNode(this, result.size(), obj, desc, i, mode));
             }
 
+            if (getRootNode()->getSortByName())
+                sortChildrenByName(result);
+
             if (mode == Mode::GROUPED)
                 for (auto& name : groupNames)
                     result.push_back(new FieldGroupNode(this, result.size(), obj, desc, name, mode));
 
-            else { // FLAT
-                // sorting the fields alphabetically
-                std::sort(result.begin(), result.end(), [](TreeNode *a, TreeNode *b) {
-                    return a->computeData(Qt::DisplayRole).toString() < b->computeData(Qt::DisplayRole).toString();
-                });
-                // then adjusting the indexInParent field accordingly
-                for (size_t i = 0; i < result.size(); ++i)
-                    result[i]->indexInParent = i;
-            }
+            // adjusting the indexInParent field accordingly
+            for (size_t i = 0; i < result.size(); ++i)
+                result[i]->indexInParent = i;
         }
     }
 
@@ -416,6 +409,15 @@ bool TreeNode::fieldMatchesPropertyFilter(cClassDescriptor *desc, int fieldIndex
             return fieldProp != -1;
     }
     return true;
+}
+
+void TreeNode::sortChildrenByName(std::vector<TreeNode *>& children)
+{
+    std::sort(children.begin(), children.end(), [](TreeNode *a, TreeNode *b) {
+        return a->computeData(Qt::DisplayRole).toString() < b->computeData(Qt::DisplayRole).toString();
+    });
+    for (size_t i = 0; i < children.size(); ++i)
+        children[i]->indexInParent = i;
 }
 
 TreeNode::~TreeNode()
@@ -781,8 +783,8 @@ bool RootNode::isSameAs(TreeNode *other)
     return object == o->object;
 }
 
-RootNode::RootNode(cObject *object, int indexInParent, Mode mode, const NodeModeOverrideMap& nodeModeOverrides)
-    : TreeNode(nullptr, indexInParent, any_ptr(nullptr), nullptr, mode), object(object), nodeModeOverrides(nodeModeOverrides)
+RootNode::RootNode(cObject *object, int indexInParent, Mode mode, bool sortByName, const NodeModeOverrideMap& nodeModeOverrides)
+    : TreeNode(nullptr, indexInParent, any_ptr(nullptr), nullptr, mode), object(object), sortByName(sortByName), nodeModeOverrides(nodeModeOverrides)
 {
 }
 
@@ -852,6 +854,9 @@ std::vector<TreeNode *> FieldGroupNode::makeChildren()
             result.push_back(new FieldNode(this, result.size(), containingObject, containingDesc, i, mode));
         }
     }
+
+    if (getRootNode()->getSortByName())
+        sortChildrenByName(result);
 
     return result;
 }

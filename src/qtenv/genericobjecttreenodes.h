@@ -60,6 +60,7 @@ class QTENV_API TreeNode
     static cClassDescriptor *getDescriptorForField(any_ptr obj, cClassDescriptor *desc, int fieldIndex, int arrayIndex = 0);
     static int computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode mode, bool excludeInherited = false);
     static bool fieldMatchesPropertyFilter(cClassDescriptor *containingDesc, int fieldIndex, const char *property);
+    static void sortChildrenByName(std::vector<TreeNode *>& children);
     // this is not static just to avoid having to pass mode and this (as parent)
     std::vector<TreeNode *> makeObjectChildNodes(any_ptr obj, cClassDescriptor *desc, bool excludeInherited = false);
     // more helpers, not static only to check if "parent in model tree is parent in ownership tree"
@@ -224,6 +225,7 @@ class QTENV_API FieldNode : public TreeNode
 class QTENV_API RootNode : public TreeNode
 {
     cObject *object;
+    bool sortByName = true;
 
     const NodeModeOverrideMap &nodeModeOverrides;
 
@@ -232,12 +234,13 @@ class QTENV_API RootNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    RootNode(cObject *object, int indexInParent, Mode mode, const NodeModeOverrideMap& nodeModeOverrides);
+    RootNode(cObject *object, int indexInParent, Mode mode, bool sortByName, const NodeModeOverrideMap& nodeModeOverrides);
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
     cObject *getCObjectPointer() override;
 
+    bool getSortByName() const { return sortByName; }
     const NodeModeOverrideMap &getNodeModeOverrides() override { return nodeModeOverrides; }
 };
 

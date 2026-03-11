@@ -41,6 +41,7 @@
 #include <QtWidgets/QApplication>
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
+#include <QtWidgets/QScrollBar>
 
 using namespace omnetpp;
 using namespace omnetpp::common;
@@ -71,6 +72,7 @@ const std::vector<std::string> GenericObjectInspector::containerTypes = {
 };
 
 const QString GenericObjectInspector::PREF_MODE = "mode";
+const QString GenericObjectInspector::PREF_SORT_BY_NAME = "sortbyname";
 
 GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f) : Inspector(parent, isTopLevel, f)
 {
@@ -163,6 +165,7 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     addAction(cycleSubtreeModeAction);
 
     mode = (Mode)getPref(PREF_MODE, QVariant::fromValue(0), false).toInt();
+    sortByName = getPref(PREF_SORT_BY_NAME, true, false).toBool();
 
     doSetMode(mode);
     recreateModel();
@@ -185,7 +188,7 @@ void GenericObjectInspector::recreateModel(bool keepNodeModeOverrides)
     GenericObjectTreeModel::NodeModeOverrideMap newNodeModeOverrides = sourceModel != nullptr && keepNodeModeOverrides
         ? sourceModel->getNodeModeOverrides() : GenericObjectTreeModel::NodeModeOverrideMap{};
 
-    newSourceModel = new GenericObjectTreeModel(object, mode, newNodeModeOverrides, this);
+    newSourceModel = new GenericObjectTreeModel(object, mode, sortByName, newNodeModeOverrides, this);
 
     treeView->setModel(newSourceModel);
 
@@ -198,6 +201,21 @@ void GenericObjectInspector::recreateModel(bool keepNodeModeOverrides)
     gatherVisibleDataIfSafe();
 
     connect(sourceModel, SIGNAL(dataEdited(const QModelIndex&)), this, SLOT(onDataEdited()));
+}
+
+void GenericObjectInspector::setSortByName(bool sorted)
+{
+    if (sortByName != sorted) {
+        sortByName = sorted;
+        setPref(PREF_SORT_BY_NAME, sortByName, false);
+        QSet<QString> expanded = getExpandedNodes();
+        int vScrollPos = treeView->verticalScrollBar()->value();
+        int hScrollPos = treeView->horizontalScrollBar()->value();
+        recreateModel();
+        expandNodes(expanded);
+        treeView->verticalScrollBar()->setValue(vScrollPos);
+        treeView->horizontalScrollBar()->setValue(hScrollPos);
+    }
 }
 
 void GenericObjectInspector::doSetMode(Mode mode)
@@ -232,6 +250,7 @@ void GenericObjectInspector::resizeEvent(QResizeEvent *event)
 void GenericObjectInspector::closeEvent(QCloseEvent *event)
 {
     setPref(PREF_MODE, (int)mode);
+    setPref(PREF_SORT_BY_NAME, sortByName);
     Inspector::closeEvent(event);
 }
 

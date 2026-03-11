@@ -34,18 +34,18 @@ using namespace common;
 namespace qtenv {
 
 
-GenericObjectTreeModel::GenericObjectTreeModel(cObject *object, Mode mode, const NodeModeOverrideMap& modeOverrides, QObject *parent)
-    : GenericObjectTreeModel(std::vector<cObject*>{object}, mode, modeOverrides, parent)
+GenericObjectTreeModel::GenericObjectTreeModel(cObject *object, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent)
+    : GenericObjectTreeModel(std::vector<cObject*>{object}, mode, sortByName, modeOverrides, parent)
 {
     // nothing, delegating to other ctor
 }
 
-GenericObjectTreeModel::GenericObjectTreeModel(std::vector<cObject *> roots, Mode mode, const NodeModeOverrideMap& modeOverrides, QObject *parent)
-    : QAbstractItemModel(parent), inspectorMode(mode), nodeModeOverrides(modeOverrides)
+GenericObjectTreeModel::GenericObjectTreeModel(std::vector<cObject *> roots, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent)
+    : QAbstractItemModel(parent), inspectorMode(mode), sortByName(sortByName), nodeModeOverrides(modeOverrides)
 {
     for (int i = 0; i < (int)roots.size(); ++i) {
         cObject *root = roots[i];
-        RootNode *rootNode = new RootNode(root, i, mode, nodeModeOverrides);
+        RootNode *rootNode = new RootNode(root, i, mode, sortByName, nodeModeOverrides);
         rootNode->init();
         // Since the root node is always going to be expanded right at the beginning,
         // let's just go ahead and fill it with children and data to reduce flickering.
