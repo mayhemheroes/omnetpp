@@ -27,6 +27,7 @@
 class QLabel;
 class QTreeView;
 class QToolBar;
+class QToolButton;
 
 namespace omnetpp {
 namespace qtenv {
@@ -35,13 +36,11 @@ class QTENV_API GenericObjectInspector : public Inspector
 {
     Q_OBJECT
 
-    // The default mode for these types should be CHILDREN
-    static const std::vector<std::string> containerTypes;
-    static const QString PREF_MODE;
     static const QString PREF_SORT_BY_NAME;
 
 public:
     using Mode = GenericObjectTreeModel::Mode;
+    using DetailsMode = GenericObjectTreeModel::DetailsMode;
 
     GenericObjectInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f);
 
@@ -60,19 +59,21 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent *event) override; // DELETES THIS INSPECTOR
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
     void recreateModel(bool keepNodeModeOverrides = true);
 
-    Mode mode = Mode::GROUPED;
+    // Single toggle button shown on hover, right-aligned in each row
+    QWidget *subtreeModeOverlay = nullptr;
+    QToolButton *detailsToggleButton = nullptr;
+
+    void updateSubtreeModeOverlay(const QPoint &viewportPos);
+
     bool sortByName = true;
-    QAction *toGroupedModeAction;
-    QAction *toFlatModeAction;
-    QAction *toInheritanceModeAction;
-    QAction *toChildrenModeAction;
-    QAction *toPacketModeAction;
     QAction *sortByNameAction;
 
-    void doSetMode(Mode mode);
+    // Toggle the given node between Children and Details mode
+    void toggleNodeDetails(const QModelIndex &proxyIndex);
 
 protected Q_SLOTS:
     void onTreeViewActivated(const QModelIndex& index);
@@ -81,15 +82,8 @@ protected Q_SLOTS:
     void createContextMenu(QPoint pos);
     void copySelectedLineToClipboard(bool onlyHighlightedPart);
 
-    void cycleSelectedSubtreeMode();
-
-    void setMode(Mode mode);
-
-    void toGroupedMode()     { setMode(Mode::GROUPED);     }
-    void toFlatMode()        { setMode(Mode::FLAT);        }
-    void toInheritanceMode() { setMode(Mode::INHERITANCE); }
-    void toChildrenMode()    { setMode(Mode::CHILDREN);    }
-    void toPacketMode()      { setMode(Mode::PACKET);      }
+    void toggleSelectedNodeDetails();
+    void cycleSelectedNodeDetailsMode();
 
 private:
 

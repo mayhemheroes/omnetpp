@@ -35,10 +35,13 @@ class QTENV_API TreeNode
 {
   protected:
     using Mode = GenericObjectTreeModel::Mode;
+    using DetailsMode = GenericObjectTreeModel::DetailsMode;
     using DataRole = GenericObjectTreeModel::DataRole;
     using NodeModeOverrideMap = GenericObjectTreeModel::NodeModeOverrideMap;
+    using NodeModeOverride = GenericObjectTreeModel::NodeModeOverride;
 
-    Mode mode; // this might be different for each node
+    Mode mode = Mode::CHILDREN;  // for the Object Tree
+    DetailsMode detailsMode = DetailsMode::GROUPED; // only meaningful when mode == DETAILS
 
     // these make up the tree structure of the model
     TreeNode *parent = nullptr;
@@ -58,7 +61,7 @@ class QTENV_API TreeNode
 
     // helpers
     static cClassDescriptor *getDescriptorForField(any_ptr obj, cClassDescriptor *desc, int fieldIndex, int arrayIndex = 0);
-    static int computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode mode, bool excludeInherited = false);
+    static int computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode mode, DetailsMode detailsMode, bool excludeInherited = false);
     static bool fieldMatchesPropertyFilter(cClassDescriptor *containingDesc, int fieldIndex, const char *property);
     static void sortChildrenByName(std::vector<TreeNode *>& children);
     // this is not static just to avoid having to pass mode and this (as parent)
@@ -88,7 +91,7 @@ class QTENV_API TreeNode
     static const std::vector<int> supportedDataRoles;
 
   public:
-    TreeNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, Mode mode);
+    TreeNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc);
 
     // has to be called before usage. can't be in the constructor because of virtual functions. not recursive.
     void init();
@@ -127,15 +130,21 @@ class QTENV_API TreeNode
     virtual bool setData(const QVariant& value, int role) { return false; }
 
     virtual Mode getMode() { return mode; }
+    virtual DetailsMode getDetailsMode() { return detailsMode; }
     // direct field accessor, only call from GenericObjectTreeModel, which does everything that has to be done before and after!
-    virtual void doSetMode(Mode mode) { this->mode = mode; }
+    virtual void doSetMode(Mode mode, DetailsMode detailsMode = DetailsMode::GROUPED) { this->mode = mode; this->detailsMode = detailsMode; }
     // this will always have to be called after the ctor, when the vtable is already set up properly
-    void restoreModeFromOverrides();
+    void configureDisplayMode();
 
     QString getNodeIdentifier() { ASSERT(!nodeIdentifier.isEmpty()); return nodeIdentifier; }
 
     // returns a nullptr where not applicable
     virtual cObject *getCObjectPointer() { return nullptr; }
+
+    // Returns the class descriptor for the object/struct this node represents.
+    // For cObject nodes, delegates to getCObjectPointer()->getDescriptor().
+    // Subclasses override this for non-cObject compound types.
+    virtual cClassDescriptor *getNodeClassDescriptor();
 
     // Will always return a valid cObject (unless nullptr is inspected)
     // and it will be the object that has this node in its node.
@@ -159,7 +168,7 @@ class QTENV_API SuperClassNode : public TreeNode
 
   public:
     // superClassIndex: up in the inheritance chain, 0 is the most specialized class, and cObject is at the highest level
-    SuperClassNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int superClassIndex, Mode mode);
+    SuperClassNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int superClassIndex);
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
@@ -175,7 +184,7 @@ class QTENV_API ChildObjectNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    ChildObjectNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, cObject *object, Mode mode);
+    ChildObjectNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, cObject *object);
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
@@ -191,7 +200,7 @@ class QTENV_API TextNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    TextNode(TreeNode *parent, int indexInParent, const QString &message, Mode mode);
+    TextNode(TreeNode *parent, int indexInParent, const QString &message);
     int computeChildCount() override { return 0; }
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
@@ -210,7 +219,7 @@ class QTENV_API FieldNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    FieldNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, Mode mode);
+    FieldNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex);
 
     int computeChildCount() override;
     QVariant computeData(int role) override;
@@ -218,6 +227,7 @@ class QTENV_API FieldNode : public TreeNode
     bool isEditable() override;
     bool setData(const QVariant& value, int role) override;
     cObject *getCObjectPointer() override;
+    cClassDescriptor *getNodeClassDescriptor() override;
     QString computeNodeIdentifier() override;
     bool matchesPropertyFilter(const QString &property) override;
 };
@@ -226,6 +236,7 @@ class QTENV_API RootNode : public TreeNode
 {
     cObject *object;
     bool sortByName = true;
+    bool allowModeOverrides = true;
 
     const NodeModeOverrideMap &nodeModeOverrides;
 
@@ -234,13 +245,14 @@ class QTENV_API RootNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    RootNode(cObject *object, int indexInParent, Mode mode, bool sortByName, const NodeModeOverrideMap& nodeModeOverrides);
+    RootNode(cObject *object, int indexInParent, bool sortByName, bool allowModeOverrides, const NodeModeOverrideMap& nodeModeOverrides);
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
     cObject *getCObjectPointer() override;
 
     bool getSortByName() const { return sortByName; }
+    bool getAllowModeOverrides() const { return allowModeOverrides; }
     const NodeModeOverrideMap &getNodeModeOverrides() override { return nodeModeOverrides; }
 };
 
@@ -253,7 +265,7 @@ class QTENV_API FieldGroupNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    FieldGroupNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, const std::string& groupName, Mode mode);
+    FieldGroupNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, const std::string& groupName);
     int computeChildCount() override;
     QVariant computeData(int role) override;
     QString computeNodeIdentifier() override;
@@ -270,7 +282,7 @@ class QTENV_API ArrayElementNode : public TreeNode
     bool isSameAs(TreeNode *other) override;
 
   public:
-    ArrayElementNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, int arrayIndex, Mode mode);
+    ArrayElementNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, int arrayIndex);
     int computeChildCount() override;
 
     QVariant computeData(int role) override;
@@ -279,6 +291,7 @@ class QTENV_API ArrayElementNode : public TreeNode
     virtual bool setData(const QVariant& value, int role) override;
     QString computeNodeIdentifier() override;
     cObject *getCObjectPointer() override;
+    cClassDescriptor *getNodeClassDescriptor() override;
     bool matchesPropertyFilter(const QString &property) override;
 };
 

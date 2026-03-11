@@ -46,41 +46,47 @@ class QTENV_API GenericObjectTreeModel : public QAbstractItemModel
 public:
     // enum classes, so we can typedef them in TreeNode and the Inspector
     enum class Mode {
+        CHILDREN,
+        DETAILS,
+        OPAQUE      // node is a leaf, cannot be opened (no expand arrow)
+    };
+
+    enum class DetailsMode {
         GROUPED,
         FLAT,
         INHERITANCE,
-        CHILDREN,
         PACKET
     };
 
     enum class DataRole : int {
         HIGHLIGHT_RANGE = Qt::UserRole,
-        NODE_MODE_OVERRIDE,  // corresponding value is -1 if no override, otherwise maps to Mode
     };
 
-    typedef std::unordered_map<std::string, Mode> NodeModeOverrideMap;
+    struct NodeModeOverride {
+        Mode mode;
+        DetailsMode detailsMode; // only meaningful when mode == DETAILS
+    };
+    typedef std::unordered_map<std::string, NodeModeOverride> NodeModeOverrideMap;
 
 private:
-    // this is the "global" mode set on the inspector
-    Mode inspectorMode;
     bool sortByName = true;
+    bool allowModeOverrides = true;
     std::vector<RootNode *> rootNodes;
     // maps nodeIdentifier to overridden Mode, for nodes whose mode was overridden by the user
     NodeModeOverrideMap nodeModeOverrides;
 
-    // these can be accessed through setData(), using DataRole::NODE_MODE_OVERRIDE
-    void setNodeMode(const QModelIndex &index, Mode mode);
-    void unsetNodeMode(const QModelIndex &index);
-
 public:
-    GenericObjectTreeModel(cObject *object, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
-    GenericObjectTreeModel(std::vector<cObject *> roots, Mode mode, bool sortByName, const NodeModeOverrideMap& modeOverrides, QObject *parent = nullptr);
+    GenericObjectTreeModel(cObject *object, bool sortByName, const NodeModeOverrideMap& modeOverrides, bool allowModeOverrides = true, QObject *parent = nullptr);
+    GenericObjectTreeModel(std::vector<cObject *> roots, bool sortByName, const NodeModeOverrideMap& modeOverrides, bool allowModeOverrides = true, QObject *parent = nullptr);
 
     bool getSortByName() const { return sortByName; }
 
     std::vector<cObject *> getRootObjects();
 
     const NodeModeOverrideMap& getNodeModeOverrides() const { return nodeModeOverrides;}
+
+    void setNodeMode(const QModelIndex &index, Mode mode, DetailsMode detailsMode = DetailsMode::GROUPED);
+    void unsetNodeMode(const QModelIndex &index);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
@@ -95,8 +101,8 @@ public:
     void fetchMore(const QModelIndex &parent) override;
 
     void refreshTreeStructure();
-    void refreshNodeChildrenRec(const QModelIndex &index);
-    void refreshChildList(const QModelIndex &index);
+    void refreshNodeChildrenRec(const QModelIndex &index, bool emitSignals = true);
+    void refreshChildList(const QModelIndex &index, bool emitSignals = true);
 
     cObject *getCObjectPointer(const QModelIndex &index);
     // same as above, but translates cWatchObj pointers to their watched cObject pointers

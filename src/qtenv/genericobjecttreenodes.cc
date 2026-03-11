@@ -45,7 +45,7 @@ void TreeNode::fill()
     ASSERT((int)children.size() == potentialChildCount);
 
     for (auto c : children) {
-        c->restoreModeFromOverrides();
+        c->configureDisplayMode();
         c->init();
     }
 
@@ -75,7 +75,7 @@ bool TreeNode::isSameAs(TreeNode *other)
 // the ArrayElementNode contains the children of the element itself
 // but the object pointer in those nodes point to the object that
 // contains the array itself, so we need this parameter
-int TreeNode::computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode mode, bool excludeInherited)
+int TreeNode::computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode mode, DetailsMode detailsMode, bool excludeInherited)
 {
     if (obj == nullptr || desc == nullptr)
         return 0;
@@ -83,22 +83,6 @@ int TreeNode::computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode 
     DisableDebugOnErrors dummy;
 
     switch (mode) {
-        case Mode::GROUPED: {
-            std::set<std::string> groupNames;
-            int count = 0;
-            for (int i = 0; i < desc->getFieldCount(); ++i) {
-                const char *thisFieldGroup = desc->getFieldProperty(i, "group");
-                if (!thisFieldGroup)
-                    ++count; // this is a field that is not in a group
-                else
-                    if (groupNames.find(thisFieldGroup) == groupNames.end()) {
-                        ++count; // this is a new field group
-                        groupNames.insert(thisFieldGroup);
-                    }
-            }
-            return count;
-        }
-
         case Mode::CHILDREN: {
             if (!obj.contains<cObject>())
                 return 0;
@@ -115,25 +99,47 @@ int TreeNode::computeObjectChildCount(any_ptr obj, cClassDescriptor *desc, Mode 
             return visitor.getCount();
         }
 
-        case Mode::PACKET: {
-            int count = 0;
-            auto base = desc->getBaseClassDescriptor();
-            for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
-                if (fieldMatchesPropertyFilter(desc, i, "packetData"))
-                    ++count;
-            return count;
+        case Mode::DETAILS: {
+            switch (detailsMode) {
+                case DetailsMode::GROUPED: {
+                    std::set<std::string> groupNames;
+                    int count = 0;
+                    for (int i = 0; i < desc->getFieldCount(); ++i) {
+                        const char *thisFieldGroup = desc->getFieldProperty(i, "group");
+                        if (!thisFieldGroup)
+                            ++count; // this is a field that is not in a group
+                        else
+                            if (groupNames.find(thisFieldGroup) == groupNames.end()) {
+                                ++count; // this is a new field group
+                                groupNames.insert(thisFieldGroup);
+                            }
+                    }
+                    return count;
+                }
+
+                case DetailsMode::PACKET: {
+                    int count = 0;
+                    auto base = desc->getBaseClassDescriptor();
+                    for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
+                        if (fieldMatchesPropertyFilter(desc, i, "packetData"))
+                            ++count;
+                    return count;
+                }
+
+                case DetailsMode::INHERITANCE:
+                    if (!excludeInherited)
+                        return desc->getInheritanceChainLength();
+                    // no break (fall through)
+
+                case DetailsMode::FLAT: {
+                    auto base = desc->getBaseClassDescriptor();
+                    return desc->getFieldCount() - (excludeInherited && base ? base->getFieldCount() : 0);
+                }
+            }
+            return 0;
         }
 
-        case Mode::INHERITANCE:
-            if (!excludeInherited)
-                return desc->getInheritanceChainLength();
-            // no break (fall through)
-
-        case Mode::FLAT: {
-            auto base = desc->getBaseClassDescriptor();
-            return desc->getFieldCount() - (excludeInherited && base ? base->getFieldCount() : 0);
-        }
-
+        case Mode::OPAQUE:
         default:
             return 0;
     }
@@ -161,57 +167,66 @@ std::vector<TreeNode *> TreeNode::makeObjectChildNodes(any_ptr obj, cClassDescri
 
                 cObject **objs = visitor.getArray();
                 for (int i = 0; i < visitor.getArraySize(); ++i)
-                    result.push_back(new ChildObjectNode(this, result.size(), obj, desc, objs[i], mode));
+                    result.push_back(new ChildObjectNode(this, result.size(), obj, desc, objs[i]));
             }
             catch (std::exception &e) {
-                result.push_back(new TextNode(this, result.size(), QString("<!> Error: ") + e.what(), mode));
+                result.push_back(new TextNode(this, result.size(), QString("<!> Error: ") + e.what()));
             }
 
             break;
         }
 
-        case Mode::PACKET: {
-            auto base = desc->getBaseClassDescriptor();
-            for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
-                if (fieldMatchesPropertyFilter(desc, i, "packetData"))
-                    result.push_back(new FieldNode(this, result.size(), obj, desc, i, mode));
+        case Mode::DETAILS: {
+            switch (detailsMode) {
+                case DetailsMode::PACKET: {
+                    auto base = desc->getBaseClassDescriptor();
+                    for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i)
+                        if (fieldMatchesPropertyFilter(desc, i, "packetData"))
+                            result.push_back(new FieldNode(this, result.size(), obj, desc, i));
 
-            if (getRootNode()->getSortByName())
-                sortChildrenByName(result);
+                    if (getRootNode()->getSortByName())
+                        sortChildrenByName(result);
+                    break;
+                }
+
+                case DetailsMode::INHERITANCE:
+                    if (!excludeInherited) {
+                        for (int i = 0; i < desc->getInheritanceChainLength(); i++)
+                            result.push_back(new SuperClassNode(this, result.size(), obj, desc, i));
+                        break;
+                    }
+
+                // if the condition fails, falling through, no break here
+                default: {  // GROUPED and FLAT have much in common
+                    auto base = desc->getBaseClassDescriptor();
+
+                    std::set<std::string> groupNames;
+                    for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i) {
+                        const char *groupName = desc->getFieldProperty(i, "group");
+                        if (detailsMode == DetailsMode::GROUPED && groupName)
+                            groupNames.insert(groupName);
+                        else
+                            result.push_back(new FieldNode(this, result.size(), obj, desc, i));
+                    }
+
+                    if (getRootNode()->getSortByName())
+                        sortChildrenByName(result);
+
+                    if (detailsMode == DetailsMode::GROUPED)
+                        for (auto& name : groupNames)
+                            result.push_back(new FieldGroupNode(this, result.size(), obj, desc, name));
+
+                    // adjusting the indexInParent field accordingly
+                    for (size_t i = 0; i < result.size(); ++i)
+                        result[i]->indexInParent = i;
+                }
+            }
             break;
         }
 
-        case Mode::INHERITANCE:
-            if (!excludeInherited) {
-                for (int i = 0; i < desc->getInheritanceChainLength(); i++)
-                    result.push_back(new SuperClassNode(this, result.size(), obj, desc, i, mode));
-                break;
-            }
-
-        // if the condition fails, falling through, no break here
-        default: {  // GROUPED and FLAT have much in common
-            auto base = desc->getBaseClassDescriptor();
-
-            std::set<std::string> groupNames;
-            for (int i = excludeInherited && base ? base->getFieldCount() : 0; i < desc->getFieldCount(); ++i) {
-                const char *groupName = desc->getFieldProperty(i, "group");
-                if (mode == Mode::GROUPED && groupName)
-                    groupNames.insert(groupName);
-                else
-                    result.push_back(new FieldNode(this, result.size(), obj, desc, i, mode));
-            }
-
-            if (getRootNode()->getSortByName())
-                sortChildrenByName(result);
-
-            if (mode == Mode::GROUPED)
-                for (auto& name : groupNames)
-                    result.push_back(new FieldGroupNode(this, result.size(), obj, desc, name, mode));
-
-            // adjusting the indexInParent field accordingly
-            for (size_t i = 0; i < result.size(); ++i)
-                result[i]->indexInParent = i;
-        }
+        case Mode::OPAQUE:
+        default:
+            break;
     }
 
     return result;
@@ -292,8 +307,8 @@ RootNode *TreeNode::getRootNode()
     return result;
 }
 
-TreeNode::TreeNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, Mode mode)
-    : mode(mode), parent(parent), indexInParent(indexInParent),
+TreeNode::TreeNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc)
+    : parent(parent), indexInParent(indexInParent),
     containingObject(contObject), containingDesc(contDesc)
 {
 }
@@ -313,10 +328,6 @@ TreeNode *TreeNode::getChild(int index)
 
 QVariant TreeNode::getData(int role)
 {
-    if (role == (int)DataRole::NODE_MODE_OVERRIDE)
-        // note: for root items, this is handled on the model level
-        return (parent == nullptr || mode == parent->mode) ? -1 : (int)mode;
-
     bool roleSupported = contains(supportedDataRoles, role);
     if (!roleSupported || data.empty())
         return QVariant();
@@ -359,15 +370,46 @@ void TreeNode::updatePotentialChildCount()
     potentialChildCount = computeChildCount();
 }
 
-void TreeNode::restoreModeFromOverrides()
+cClassDescriptor *TreeNode::getNodeClassDescriptor()
+{
+    cObject *obj = getCObjectPointer();
+    return obj ? obj->getDescriptor() : nullptr;
+}
+
+void TreeNode::configureDisplayMode()
 {
     nodeIdentifier = computeNodeIdentifier();
-    const NodeModeOverrideMap& overrides = getNodeModeOverrides();
 
+    if (!getRootNode()->getAllowModeOverrides())
+        return;
+
+    // Precedence: (1) user per-node override, (2) @displayMode property, (3) default (DETAILS/GROUPED)
+    const NodeModeOverrideMap& overrides = getNodeModeOverrides();
     auto i = overrides.find(nodeIdentifier.toStdString());
 
-    if (i != overrides.end())
-        mode = i->second;
+    if (i != overrides.end()) {
+        mode = i->second.mode;
+        detailsMode = i->second.detailsMode;
+    }
+    else {
+        // Check @displayMode property on this node's class descriptor.
+        cClassDescriptor *desc = getNodeClassDescriptor();
+        if (!desc) {
+            mode = Mode::DETAILS;
+            detailsMode = DetailsMode::GROUPED;
+        }
+        else {
+            const char *displayMode = desc->getProperty("displayMode");
+            if (displayMode && !strcmp(displayMode, "children"))
+                mode = Mode::CHILDREN;
+            else if (displayMode && !strcmp(displayMode, "opaque"))
+                mode = Mode::OPAQUE;
+            else {
+                mode = Mode::DETAILS;
+                detailsMode = DetailsMode::GROUPED;
+            }
+        }
+    }
 }
 
 cObject *TreeNode::getContainingCObjectPointer()
@@ -426,9 +468,11 @@ TreeNode::~TreeNode()
         delete c;
 }
 
-SuperClassNode::SuperClassNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int superClassIndex, Mode mode)
-    : TreeNode(parent, indexInParent, contObject, contDesc, mode)
+SuperClassNode::SuperClassNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int superClassIndex)
+    : TreeNode(parent, indexInParent, contObject, contDesc)
 {
+    mode = Mode::DETAILS;
+    detailsMode = DetailsMode::INHERITANCE;
     superDesc = containingDesc;
     for (int i = 0; i < superClassIndex; ++i)
         superDesc = superDesc->getBaseClassDescriptor();
@@ -436,7 +480,7 @@ SuperClassNode::SuperClassNode(TreeNode *parent, int indexInParent, any_ptr cont
 
 int SuperClassNode::computeChildCount()
 {
-    return computeObjectChildCount(containingObject, superDesc, mode, true);
+    return computeObjectChildCount(containingObject, superDesc, mode, detailsMode, true);
 }
 
 std::vector<TreeNode *> SuperClassNode::makeChildren()
@@ -477,14 +521,14 @@ bool SuperClassNode::matchesPropertyFilter(const QString &property)
     return false;
 }
 
-ChildObjectNode::ChildObjectNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, cObject *object, Mode mode)
-    : TreeNode(parent, indexInParent, contObject, contDesc, mode), object(object)
+ChildObjectNode::ChildObjectNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, cObject *object)
+    : TreeNode(parent, indexInParent, contObject, contDesc), object(object)
 {
 }
 
 int ChildObjectNode::computeChildCount()
 {
-    return computeObjectChildCount(toAnyPtr(object), object ? object->getDescriptor() : nullptr, mode);
+    return computeObjectChildCount(toAnyPtr(object), object ? object->getDescriptor() : nullptr, mode, detailsMode);
 }
 
 QVariant ChildObjectNode::computeData(int role)
@@ -526,8 +570,8 @@ bool ChildObjectNode::isSameAs(TreeNode *other)
 }
 
 
-TextNode::TextNode(TreeNode *parent, int indexInParent, const QString &message, Mode mode)
-    : TreeNode(parent, indexInParent, any_ptr(nullptr), nullptr, mode), message(message)
+TextNode::TextNode(TreeNode *parent, int indexInParent, const QString &message)
+    : TreeNode(parent, indexInParent, any_ptr(nullptr), nullptr), message(message)
 {
 }
 
@@ -555,8 +599,8 @@ bool TextNode::isSameAs(TreeNode *other)
 }
 
 
-FieldNode::FieldNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, Mode mode)
-    : TreeNode(parent, indexInParent, contObject, contDesc, mode), fieldIndex(fieldIndex)
+FieldNode::FieldNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex)
+    : TreeNode(parent, indexInParent, contObject, contDesc), fieldIndex(fieldIndex)
 {
     if (!contDesc->getFieldIsArray(fieldIndex) && contDesc->getFieldIsCompound(fieldIndex)) {
         DisableDebugOnErrors dummy;
@@ -585,7 +629,7 @@ int FieldNode::computeChildCount()
         }
     }
     else
-        return computeObjectChildCount(object, desc, mode);
+        return computeObjectChildCount(object, desc, mode, detailsMode);
 }
 
 std::vector<TreeNode *> FieldNode::makeChildren()
@@ -602,7 +646,7 @@ std::vector<TreeNode *> FieldNode::makeChildren()
             return result;
         }
         for (int i = 0; i < size; ++i)
-            result.push_back(new ArrayElementNode(this, result.size(), containingObject, containingDesc, fieldIndex, i, mode));
+            result.push_back(new ArrayElementNode(this, result.size(), containingObject, containingDesc, fieldIndex, i));
 
         return result;
     }
@@ -759,6 +803,14 @@ cObject *FieldNode::getCObjectPointer()
            : nullptr;
 }
 
+cClassDescriptor *FieldNode::getNodeClassDescriptor()
+{
+    cObject *obj = getCObjectPointer();
+    if (obj)
+        return obj->getDescriptor();
+    return desc; // non-cObject compound field descriptor, computed in ctor
+}
+
 QString FieldNode::computeNodeIdentifier()
 {
     return (parent ? parent->getNodeIdentifier() + "|" : "") + containingDesc->getFieldName(fieldIndex);
@@ -783,14 +835,14 @@ bool RootNode::isSameAs(TreeNode *other)
     return object == o->object;
 }
 
-RootNode::RootNode(cObject *object, int indexInParent, Mode mode, bool sortByName, const NodeModeOverrideMap& nodeModeOverrides)
-    : TreeNode(nullptr, indexInParent, any_ptr(nullptr), nullptr, mode), object(object), sortByName(sortByName), nodeModeOverrides(nodeModeOverrides)
+RootNode::RootNode(cObject *object, int indexInParent, bool sortByName, bool allowModeOverrides, const NodeModeOverrideMap& nodeModeOverrides)
+    : TreeNode(nullptr, indexInParent, any_ptr(nullptr), nullptr), object(object), sortByName(sortByName), allowModeOverrides(allowModeOverrides), nodeModeOverrides(nodeModeOverrides)
 {
 }
 
 int RootNode::computeChildCount()
 {
-    return computeObjectChildCount(toAnyPtr(object), object ? object->getDescriptor() : nullptr, mode);
+    return computeObjectChildCount(toAnyPtr(object), object ? object->getDescriptor() : nullptr, mode, detailsMode);
 }
 
 QVariant RootNode::computeData(int role)
@@ -822,9 +874,11 @@ cObject *RootNode::getCObjectPointer()
     return object;
 }
 
-FieldGroupNode::FieldGroupNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, const std::string& groupName, Mode mode)
-    : TreeNode(parent, indexInParent, contObject, contDesc, mode), groupName(groupName)
+FieldGroupNode::FieldGroupNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, const std::string& groupName)
+    : TreeNode(parent, indexInParent, contObject, contDesc), groupName(groupName)
 {
+    mode = Mode::DETAILS;
+    detailsMode = DetailsMode::GROUPED;
 }
 
 int FieldGroupNode::computeChildCount()
@@ -851,7 +905,7 @@ std::vector<TreeNode *> FieldGroupNode::makeChildren()
     for (int i = 0; i < containingDesc->getFieldCount(); ++i) {
         const char *thisFieldGroup = containingDesc->getFieldProperty(i, "group");
         if (thisFieldGroup && (thisFieldGroup == groupName)) {
-            result.push_back(new FieldNode(this, result.size(), containingObject, containingDesc, i, mode));
+            result.push_back(new FieldNode(this, result.size(), containingObject, containingDesc, i));
         }
     }
 
@@ -920,8 +974,8 @@ bool ArrayElementNode::isSameAs(TreeNode *other)
     return fieldIndex == o->fieldIndex && arrayIndex == o->arrayIndex;
 }
 
-ArrayElementNode::ArrayElementNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, int arrayIndex, Mode mode)
-    : TreeNode(parent, indexInParent, contObject, contDesc, mode), fieldIndex(fieldIndex), arrayIndex(arrayIndex)
+ArrayElementNode::ArrayElementNode(TreeNode *parent, int indexInParent, any_ptr contObject, cClassDescriptor *contDesc, int fieldIndex, int arrayIndex)
+    : TreeNode(parent, indexInParent, contObject, contDesc), fieldIndex(fieldIndex), arrayIndex(arrayIndex)
 {
 }
 
@@ -937,7 +991,7 @@ int ArrayElementNode::computeChildCount()
             return 0;
         }
         cClassDescriptor *fieldDesc = getDescriptorForField(containingObject, containingDesc, fieldIndex, arrayIndex);
-        return computeObjectChildCount(fieldPtr, fieldDesc, mode);
+        return computeObjectChildCount(fieldPtr, fieldDesc, mode, detailsMode);
     }
     return 0;
 }
@@ -1053,6 +1107,16 @@ cObject *ArrayElementNode::getCObjectPointer()
             // not much we can do here
         }
     }
+    return nullptr;
+}
+
+cClassDescriptor *ArrayElementNode::getNodeClassDescriptor()
+{
+    cObject *obj = getCObjectPointer();
+    if (obj)
+        return obj->getDescriptor();
+    if (containingDesc && containingDesc->getFieldIsCompound(fieldIndex))
+        return getDescriptorForField(containingObject, containingDesc, fieldIndex, arrayIndex);
     return nullptr;
 }
 

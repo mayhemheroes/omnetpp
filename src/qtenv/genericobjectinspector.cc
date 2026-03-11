@@ -14,10 +14,10 @@
   `license' for details on this and other legal matters.
 *--------------------------------------------------------------*/
 
-#include <cstring>
 #include <cmath>
 #include <utility>
 #include <vector>
+#include <QtWidgets/QScrollBar>
 #include "omnetpp/cpacket.h"
 #include "omnetpp/cregistrationlist.h"
 #include "common/stringutil.h"
@@ -41,7 +41,10 @@
 #include <QtWidgets/QApplication>
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtCore/QEvent>
+#include <QtCore/QTimer>
 
 using namespace omnetpp;
 using namespace omnetpp::common;
@@ -66,12 +69,6 @@ Register_InspectorFactory(GenericObjectInspectorFactory);
 
 //---- GenericObjectInspector implementation ----
 
-const std::vector<std::string> GenericObjectInspector::containerTypes = {
-    "cArray", "cQueue", "cFutureEventSet", "cSimpleModule",
-    "cModule", "cChannel", "cRegistrationList", "cCanvas"
-};
-
-const QString GenericObjectInspector::PREF_MODE = "mode";
 const QString GenericObjectInspector::PREF_SORT_BY_NAME = "sortbyname";
 
 GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f) : Inspector(parent, isTopLevel, f)
@@ -82,6 +79,7 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     treeView->setHeaderHidden(true);
     treeView->setAttribute(Qt::WA_MacShowFocusRect, false);
     treeView->setUniformRowHeights(true);
+    treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     auto delegate = new HighlighterItemDelegate(treeView);
     treeView->setItemDelegate(delegate);
@@ -105,27 +103,6 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
         toolbar->addWidget(spacer);
     }
 
-    QActionGroup *modeActionGroup = new QActionGroup(this);
-    // mode selection
-    toGroupedModeAction = toolbar->addAction(QIcon(":/tools/treemode_grouped"), "Grouped", this, SLOT(toGroupedMode()));
-    toGroupedModeAction->setCheckable(true);
-    toGroupedModeAction->setActionGroup(modeActionGroup);
-    toFlatModeAction = toolbar->addAction(QIcon(":/tools/treemode_flat"), "Flat", this, SLOT(toFlatMode()));
-    toFlatModeAction->setCheckable(true);
-    toFlatModeAction->setActionGroup(modeActionGroup);
-    toInheritanceModeAction = toolbar->addAction(QIcon(":/tools/treemode_inher"), "Inheritance", this, SLOT(toInheritanceMode()));
-    toInheritanceModeAction->setCheckable(true);
-    toInheritanceModeAction->setActionGroup(modeActionGroup);
-    toolbar->addSeparator();
-    toChildrenModeAction = toolbar->addAction(QIcon(":/tools/treemode_children"), "Children", this, SLOT(toChildrenMode()));
-    toChildrenModeAction->setCheckable(true);
-    toChildrenModeAction->setActionGroup(modeActionGroup);
-    toolbar->addSeparator();
-    toPacketModeAction = toolbar->addAction(QIcon(":/tools/treemode_packet"), "Packet", this, SLOT(toPacketMode()));
-    toPacketModeAction->setCheckable(true);
-    toPacketModeAction->setActionGroup(modeActionGroup);
-
-    toolbar->addSeparator();
     sortByNameAction = toolbar->addAction(QIcon(":/tools/sort"), "Sort by Name", [this]() {
         setSortByName(!sortByName);
     });
@@ -154,28 +131,30 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     copyLineAction = new QAction("Copy &Line", this);
     copyLineAction->setShortcut(QKeySequence::Copy);
     copyLineAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    // lambda because it is easier than binding the parameter value
     connect(copyLineAction, &QAction::triggered, [this]() { copySelectedLineToClipboard(false); });
     addAction(copyLineAction);
 
     copyLineHighlightedAction = new QAction("&Copy Value", this);
     copyLineHighlightedAction->setShortcut((int)Qt::CTRL | (int)Qt::SHIFT | Qt::Key_C);
     copyLineHighlightedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    // lambda because it is easier than binding the parameter value
     connect(copyLineHighlightedAction, &QAction::triggered, [this]() { copySelectedLineToClipboard(true); });
     addAction(copyLineHighlightedAction);
 
-    QAction *cycleSubtreeModeAction = new QAction("Cycle Subtree Mode", this);
-    cycleSubtreeModeAction->setShortcut((int)Qt::CTRL | Qt::Key_B);
-    cycleSubtreeModeAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    connect(cycleSubtreeModeAction, &QAction::triggered, this, &GenericObjectInspector::cycleSelectedSubtreeMode);
-    addAction(cycleSubtreeModeAction);
+    QAction *toggleDetailsAction = new QAction("Toggle Details", this);
+    toggleDetailsAction->setShortcut((int)Qt::CTRL | Qt::Key_T);
+    toggleDetailsAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(toggleDetailsAction, &QAction::triggered, this, &GenericObjectInspector::toggleSelectedNodeDetails);
+    addAction(toggleDetailsAction);
 
-    mode = (Mode)getPref(PREF_MODE, QVariant::fromValue(0), false).toInt();
+    QAction *cycleDetailsModeAction = new QAction("Cycle Details Mode", this);
+    cycleDetailsModeAction->setShortcut((int)Qt::CTRL | Qt::Key_D);
+    cycleDetailsModeAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(cycleDetailsModeAction, &QAction::triggered, this, &GenericObjectInspector::cycleSelectedNodeDetailsMode);
+    addAction(cycleDetailsModeAction);
+
     sortByName = getPref(PREF_SORT_BY_NAME, true, false).toBool();
     sortByNameAction->setChecked(sortByName);
 
-    doSetMode(mode);
     recreateModel();
 
     treeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -187,16 +166,139 @@ GenericObjectInspector::GenericObjectInspector(QWidget *parent, bool isTopLevel,
     connect(treeView, SIGNAL(collapsed(QModelIndex)), this, SLOT(gatherVisibleDataIfSafe()));
     connect(treeView->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(gatherVisibleDataIfSafe()));
     connect(treeView->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(gatherVisibleDataIfSafe()));
+
+    // --- subtree mode overlay: single toggle button ---
+    treeView->viewport()->setMouseTracking(true);
+    treeView->viewport()->installEventFilter(this);
+
+    subtreeModeOverlay = new QWidget(treeView->viewport());
+    subtreeModeOverlay->setAttribute(Qt::WA_NoSystemBackground);
+    subtreeModeOverlay->hide();
+    subtreeModeOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    QHBoxLayout *overlayLayout = new QHBoxLayout(subtreeModeOverlay);
+    overlayLayout->setContentsMargins(4, 0, 2, 0);
+    overlayLayout->setSpacing(1);
+
+    detailsToggleButton = new QToolButton(subtreeModeOverlay);
+    detailsToggleButton->setIconSize(QSize(16, 16));
+    detailsToggleButton->setFixedSize(22, 22);
+    overlayLayout->addWidget(detailsToggleButton);
+
+    connect(detailsToggleButton, &QToolButton::clicked, [this](bool) {
+        if (!getQtenv()->inspectorsAreFresh())
+            return;
+        QPoint viewportPos = treeView->viewport()->mapFromGlobal(QCursor::pos());
+        QModelIndex index = treeView->indexAt(viewportPos);
+        if (index.isValid())
+            toggleNodeDetails(index);
+    });
+
+    subtreeModeOverlay->adjustSize();
+
+    // Hide overlay when scrolling (row positions change)
+    connect(treeView->verticalScrollBar(), &QScrollBar::valueChanged, [this](int) { subtreeModeOverlay->hide(); });
+    connect(treeView->horizontalScrollBar(), &QScrollBar::valueChanged, [this](int) { subtreeModeOverlay->hide(); });
+}
+
+bool GenericObjectInspector::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == treeView->viewport()) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+            if (me->button() == Qt::LeftButton && (me->modifiers() & Qt::ControlModifier)) {
+                if (!getQtenv()->inspectorsAreFresh())
+                    return true;
+                QModelIndex proxyIndex = treeView->indexAt(me->pos());
+                if (proxyIndex.isValid()) {
+                    // Defer the toggle to avoid model changes (row insertions/removals)
+                    // while Qt is still processing the mouse event.
+                    QPersistentModelIndex persistent(proxyIndex);
+                    QTimer::singleShot(0, this, [this, persistent]() {
+                        if (persistent.isValid())
+                            toggleNodeDetails(QModelIndex(persistent));
+                    });
+                    return true; // consume the event
+                }
+            }
+        }
+        else if (event->type() == QEvent::MouseMove) {
+            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+            updateSubtreeModeOverlay(me->pos());
+        }
+        else if (event->type() == QEvent::Resize) {
+            if (subtreeModeOverlay->isVisible()) {
+                QPoint viewportPos = treeView->viewport()->mapFromGlobal(QCursor::pos());
+                updateSubtreeModeOverlay(viewportPos);
+            }
+        }
+        else if (event->type() == QEvent::Leave) {
+            subtreeModeOverlay->hide();
+        }
+    }
+    return false; // don't consume
+}
+
+void GenericObjectInspector::updateSubtreeModeOverlay(const QPoint &viewportPos)
+{
+    // Between simulation events and the next inspector refresh, tree nodes
+    // may reference simulation objects that have already been deleted.
+    // Avoid accessing node data in that window.
+    if (!getQtenv()->inspectorsAreFresh()) {
+        subtreeModeOverlay->hide();
+        return;
+    }
+
+    QModelIndex sourceIndex = treeView->indexAt(viewportPos);
+    if (!sourceIndex.isValid()) {
+        subtreeModeOverlay->hide();
+        return;
+    }
+
+    TreeNode *node = static_cast<TreeNode *>(sourceIndex.internalPointer());
+
+    // Only show on nodes that have a class descriptor with fields and are
+    // not opaque — toggling mode on a FieldGroupNode, SuperClassNode,
+    // TextNode, opaque leaf, or a node with no fields doesn't make sense.
+    cClassDescriptor *desc = node->getNodeClassDescriptor();
+    if (!desc || desc->getFieldCount() == 0 || node->getMode() == Mode::OPAQUE) {
+        subtreeModeOverlay->hide();
+        return;
+    }
+
+    // Icon reflects current state: Details icon if in Details mode, Children icon if in Children mode
+    bool inDetails = node->getMode() == Mode::DETAILS;
+    detailsToggleButton->setIcon(QIcon(inDetails ? ":/tools/treemode_grouped" : ":/tools/treemode_children"));
+    detailsToggleButton->setToolTip(inDetails
+        ? "Details mode, click to switch to Children mode\n(Shortcuts: Ctrl+T, Ctrl+Click)"
+        : "Children mode, click to switch to Details mode\n(Shortcuts: Ctrl+T, Ctrl+Click)");
+
+    subtreeModeOverlay->adjustSize();
+
+    // Position overlay flush-right in the row rect
+    QRect rowRect = treeView->visualRect(sourceIndex);
+    int overlayWidth = subtreeModeOverlay->sizeHint().width();
+    int overlayHeight = rowRect.height();
+    int x = treeView->viewport()->width() - overlayWidth;
+    int y = rowRect.top();
+    subtreeModeOverlay->setGeometry(x, y, overlayWidth, overlayHeight);
+    subtreeModeOverlay->raise();
+    subtreeModeOverlay->show();
 }
 
 void GenericObjectInspector::recreateModel(bool keepNodeModeOverrides)
 {
     GenericObjectTreeModel *newSourceModel;
 
+    // Hide the hover overlay; its index will be stale after the model is replaced.
+    if (subtreeModeOverlay) {
+        subtreeModeOverlay->hide();
+    }
+
     GenericObjectTreeModel::NodeModeOverrideMap newNodeModeOverrides = sourceModel != nullptr && keepNodeModeOverrides
         ? sourceModel->getNodeModeOverrides() : GenericObjectTreeModel::NodeModeOverrideMap{};
 
-    newSourceModel = new GenericObjectTreeModel(object, mode, sortByName, newNodeModeOverrides, this);
+    newSourceModel = new GenericObjectTreeModel(object, sortByName, newNodeModeOverrides, true, this);
 
     treeView->setModel(newSourceModel);
 
@@ -227,20 +329,6 @@ void GenericObjectInspector::setSortByName(bool sorted)
     }
 }
 
-void GenericObjectInspector::doSetMode(Mode mode)
-{
-    if (this->mode != mode) {
-        this->mode = mode;
-        setPref(PREF_MODE, (int)mode, false);
-    }
-
-    toGroupedModeAction->setChecked(mode == Mode::GROUPED);
-    toFlatModeAction->setChecked(mode == Mode::FLAT);
-    toInheritanceModeAction->setChecked(mode == Mode::INHERITANCE);
-    toChildrenModeAction->setChecked(mode == Mode::CHILDREN);
-    toPacketModeAction->setChecked(mode == Mode::PACKET);
-}
-
 void GenericObjectInspector::mousePressEvent(QMouseEvent *event)
 {
     switch (event->button()) {
@@ -258,7 +346,6 @@ void GenericObjectInspector::resizeEvent(QResizeEvent *event)
 
 void GenericObjectInspector::closeEvent(QCloseEvent *event)
 {
-    setPref(PREF_MODE, (int)mode);
     setPref(PREF_SORT_BY_NAME, sortByName);
     Inspector::closeEvent(event);
 }
@@ -320,7 +407,7 @@ void GenericObjectInspector::createContextMenu(QPoint pos)
             menu = new QMenu(this);
         }
 
-        // finding the first separator, so we can insert the submenu where we want it
+        // finding the first separator, so we can insert items where we want them
         auto actions = menu->actions();
         QAction *firstSep = nullptr;
         for (auto action : actions) {
@@ -330,40 +417,66 @@ void GenericObjectInspector::createContextMenu(QPoint pos)
             }
         }
 
-        QMenu *subtreeModeSubmenu = menu->addMenu("Switch Subtree Mode...");
+        bool isOpaque = node->getMode() == Mode::OPAQUE;
+        cClassDescriptor *nodeDesc = node->getNodeClassDescriptor();
+        bool hasNoFields = nodeDesc && nodeDesc->getFieldCount() == 0;
+        bool detailsUnavailable = isOpaque || hasNoFields;
+
+        // "Show Details" toggle item
+        bool inDetails = node->getMode() == Mode::DETAILS;
+        QAction *showDetailsAction = new QAction("Show Details\tCtrl+Click", menu);
+        showDetailsAction->setCheckable(true);
+        showDetailsAction->setChecked(inDetails);
+        showDetailsAction->setEnabled(!detailsUnavailable);
+        connect(showDetailsAction, &QAction::triggered, [this, sourceIndex](bool) {
+            toggleNodeDetails(sourceIndex);
+        });
 
         if (firstSep)
-            menu->insertMenu(firstSep, subtreeModeSubmenu);
+            menu->insertAction(firstSep, showDetailsAction);
         else
-            menu->addSeparator(); // this one will be _after_ the submenu
+            menu->addAction(showDetailsAction);
 
-        menu->insertSeparator(subtreeModeSubmenu->menuAction()); // this one will be _before_ the submenu
+        menu->insertSeparator(showDetailsAction); // separator before "Show Details"
 
         std::string nodeId = node->getNodeIdentifier().toStdString();
-        const auto& overrides = sourceModel->getNodeModeOverrides();
-        int nodeModeOverride = containsKey(overrides, nodeId) ? (int)overrides.at(nodeId) : -1;
         bool nodeIsCPacket = dynamic_cast<cPacket *>(sourceModel->getCObjectPointer(sourceIndex)) != nullptr;
-        for (auto p : std::vector<std::pair<const char *, Mode>>{
-            {"Grouped", Mode::GROUPED}, {"Flat", Mode::FLAT},
-            {"Inheritance", Mode::INHERITANCE}, {"Children", Mode::CHILDREN},
-            {"Packet", Mode::PACKET}
+
+        // "Details Mode" radio submenu (only meaningful when in Details mode)
+        QMenu *detailsModeSubmenu = new QMenu("Details Mode\tCtrl+D", menu);
+
+        if (firstSep)
+            menu->insertMenu(firstSep, detailsModeSubmenu);
+        else
+            menu->addMenu(detailsModeSubmenu);
+
+        DetailsMode nodeDetailsMode = node->getDetailsMode();
+        QActionGroup *detailsModeGroup = new QActionGroup(detailsModeSubmenu);
+        for (auto p : std::vector<std::pair<const char *, DetailsMode>>{
+            {"Grouped", DetailsMode::GROUPED}, {"Flat", DetailsMode::FLAT},
+            {"Inheritance", DetailsMode::INHERITANCE}, {"Packet", DetailsMode::PACKET}
         }) {
-            QAction *action = subtreeModeSubmenu->addAction(p.first, [this, sourceIndex, p](bool checked) {
-                sourceModel->setData(sourceIndex, checked ? (int)p.second : -1, (int)GenericObjectTreeModel::DataRole::NODE_MODE_OVERRIDE);
-                gatherVisibleDataIfSafe();
+            QAction *action = detailsModeSubmenu->addAction(p.first, [this, sourceIndex, p](bool checked) {
+                if (checked) {
+                    sourceModel->setNodeMode(sourceIndex, Mode::DETAILS, p.second);
+                    gatherVisibleDataIfSafe();
+                }
             });
             action->setCheckable(true);
-            action->setChecked(nodeModeOverride == (int)p.second);
-            if (p.second == Mode::PACKET && !nodeIsCPacket)
+            action->setActionGroup(detailsModeGroup);
+            action->setChecked(nodeDetailsMode == p.second);
+            if (p.second == DetailsMode::PACKET && !nodeIsCPacket)
                 action->setEnabled(false);
         }
 
-        subtreeModeSubmenu->addSeparator();
-        subtreeModeSubmenu->addAction("Reset All", [this]{
+        detailsModeSubmenu->addSeparator();
+        detailsModeSubmenu->addAction("Reset All Overrides", [this]{
             QSet<QString> expanded = getExpandedNodes();
             recreateModel(false);
             expandNodes(expanded);
         });
+
+        detailsModeSubmenu->setEnabled(inDetails && !detailsUnavailable);
 
         menu->addAction(copyLineAction);
         menu->addAction(copyLineHighlightedAction);
@@ -391,31 +504,80 @@ void GenericObjectInspector::copySelectedLineToClipboard(bool onlyHighlightedPar
     }
 }
 
-void GenericObjectInspector::cycleSelectedSubtreeMode()
+void GenericObjectInspector::toggleSelectedNodeDetails()
 {
     QModelIndexList selection = treeView->selectionModel()->selectedIndexes();
-    if (!selection.isEmpty()) {
-        QModelIndex sourceIndex = selection.first();
-        TreeNode *node = static_cast<TreeNode*>(sourceIndex.internalPointer());
+    if (!selection.isEmpty())
+        toggleNodeDetails(selection.first());
+}
 
-        Mode currMode = node->getMode();
-        Mode nextMode;
-        bool nodeIsCPacket = dynamic_cast<cPacket *>(sourceModel->getCObjectPointer(sourceIndex)) != nullptr;
+void GenericObjectInspector::cycleSelectedNodeDetailsMode()
+{
+    QModelIndexList selection = treeView->selectionModel()->selectedIndexes();
+    if (selection.isEmpty())
+        return;
 
-        switch (currMode) {
-            case Mode::GROUPED:     nextMode = Mode::FLAT;        break;
-            case Mode::FLAT:        nextMode = Mode::INHERITANCE; break;
-            case Mode::INHERITANCE: nextMode = Mode::CHILDREN;    break;
-            case Mode::CHILDREN:    nextMode = nodeIsCPacket ? Mode::PACKET : Mode::GROUPED; break;
-            case Mode::PACKET:      nextMode = Mode::GROUPED;     break;
-        };
+    QModelIndex sourceIndex = selection.first();
+    if (!sourceIndex.isValid())
+        return;
 
-        sourceModel->setData(sourceIndex, (int)nextMode, (int)GenericObjectTreeModel::DataRole::NODE_MODE_OVERRIDE);
+    TreeNode *node = static_cast<TreeNode*>(sourceIndex.internalPointer());
 
-        // have to get the selection again, it was invalidated
-        treeView->expand(treeView->selectionModel()->selectedIndexes().first());
-        gatherVisibleDataIfSafe();
+    if (node->getMode() != Mode::DETAILS)
+        return;
+
+    bool isCPacket = dynamic_cast<cPacket *>(node->getCObjectPointer()) != nullptr;
+
+    // Cycle: GROUPED -> FLAT -> INHERITANCE -> PACKET -> GROUPED
+    // (skip PACKET for non-cPacket nodes)
+    DetailsMode currentDetailsMode = node->getDetailsMode();
+    DetailsMode newDetailsMode;
+    switch (currentDetailsMode) {
+        case DetailsMode::GROUPED:     newDetailsMode = DetailsMode::FLAT; break;
+        case DetailsMode::FLAT:        newDetailsMode = DetailsMode::INHERITANCE; break;
+        case DetailsMode::INHERITANCE: newDetailsMode = isCPacket ? DetailsMode::PACKET : DetailsMode::GROUPED; break;
+        case DetailsMode::PACKET:      newDetailsMode = DetailsMode::GROUPED; break;
+        default:                       newDetailsMode = DetailsMode::GROUPED; break;
     }
+
+    subtreeModeOverlay->hide();
+
+    sourceModel->setNodeMode(sourceIndex, Mode::DETAILS, newDetailsMode);
+
+    if (sourceIndex.isValid())
+        treeView->expand(sourceIndex);
+    gatherVisibleDataIfSafe();
+
+    QPoint viewportPos = treeView->viewport()->mapFromGlobal(QCursor::pos());
+    updateSubtreeModeOverlay(viewportPos);
+}
+
+void GenericObjectInspector::toggleNodeDetails(const QModelIndex &sourceIndex)
+{
+    if (!sourceIndex.isValid())
+        return;
+
+    TreeNode *node = static_cast<TreeNode*>(sourceIndex.internalPointer());
+
+    bool inDetails = node->getMode() == Mode::DETAILS;
+    if (inDetails) {
+        sourceModel->setNodeMode(sourceIndex, Mode::CHILDREN);
+    }
+    else {
+        DetailsMode dm = dynamic_cast<cPacket *>(node->getCObjectPointer()) ? DetailsMode::PACKET : DetailsMode::GROUPED;
+        sourceModel->setNodeMode(sourceIndex, Mode::DETAILS, dm);
+    }
+
+    subtreeModeOverlay->hide();
+
+    // Expand the node so the effect of the new mode is immediately visible.
+    if (sourceIndex.isValid())
+        treeView->expand(sourceIndex);
+    gatherVisibleDataIfSafe();
+
+    // Re-show the overlay at the current cursor position.
+    QPoint viewportPos = treeView->viewport()->mapFromGlobal(QCursor::pos());
+    updateSubtreeModeOverlay(viewportPos);
 }
 
 bool GenericObjectInspector::gatherMissingDataIfSafe()
@@ -540,14 +702,6 @@ bool GenericObjectInspector::gatherMissingData()
     return changed;
 }
 
-void GenericObjectInspector::setMode(Mode mode)
-{
-    if (this->mode != mode) {
-        doSetMode(mode);
-        recreateModel();
-    }
-}
-
 void GenericObjectInspector::doSetObject(cObject *obj)
 {
     Inspector::doSetObject(obj);
@@ -558,14 +712,6 @@ void GenericObjectInspector::doSetObject(cObject *obj)
     }
 
     QSet<QString> expanded = getExpandedNodes();
-
-    bool isPacket = dynamic_cast<cPacket *>(obj);
-    toPacketModeAction->setEnabled(isPacket);
-
-    if (!isPacket && mode == Mode::PACKET) {
-        bool isContainerLike = contains(containerTypes, std::string(getObjectBaseClass(obj)));
-        doSetMode(isContainerLike ? Mode::CHILDREN : Mode::GROUPED);
-    }
 
     recreateModel();
 
@@ -590,6 +736,11 @@ void GenericObjectInspector::refresh()
         // this is a hack, proper item-wise datachanged is super slow
         treeView->dataChanged(QModelIndex(), QModelIndex());
         treeView->resizeColumnToContents(0);
+    }
+
+    if (subtreeModeOverlay->isVisible()) {
+        QPoint viewportPos = treeView->viewport()->mapFromGlobal(QCursor::pos());
+        updateSubtreeModeOverlay(viewportPos);
     }
 }
 
