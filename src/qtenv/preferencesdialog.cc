@@ -27,6 +27,14 @@
 namespace omnetpp {
 namespace qtenv {
 
+static const char* logPrefixPresets[] = {
+    "Brief: \u200B%l %C%< %K%<: ",
+    "Timed: \u200B%l #%e t=%t %C%< %K%<: ",
+    "Events: \u200B%l #%e t=%t %C%< %K%< on %E: ",
+    "C++: \u200B%l #%e t=%t %C%< %K%< %>%u() %f:%i: ",
+    "Full: \u200B%l #%e t=%t %>%u() %f:%i %C%< %K%< on %E: ",
+};
+
 PreferencesDialog::PreferencesDialog(eTab defaultPage, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PreferencesDialog)
@@ -84,7 +92,18 @@ void PreferencesDialog::init()
     ui->eventBanners->setChecked(getQtenv()->opt->printEventBanners);
     ui->shortBanners->setChecked(getQtenv()->opt->shortBanners);
     ui->noLoggingRefreshDisplay->setChecked(getQtenv()->opt->noLoggingRefreshDisplay);
-    ui->logPrefix->setText(getQtenv()->opt->logFormat.c_str());
+
+    for (const char* preset : logPrefixPresets)
+        ui->logPrefix->addItem(preset);
+    ui->logPrefix->setEditText(getQtenv()->opt->logFormat.c_str());
+    connect(ui->logPrefix, QOverload<int>::of(&QComboBox::activated),
+            this, [this](int index) {
+        QString text = ui->logPrefix->itemText(index);
+        int sep = text.indexOf(QChar(0x200B));
+        if (sep != -1)
+            text = text.mid(sep + 1);
+        ui->logPrefix->setEditText(text);
+    });
     ui->overall->setText(QString::number(getQtenv()->getLogBuffer()->getMaxNumEntries()));
 
     for (int i = 0; i < ui->logLevel->count(); ++i)
@@ -180,7 +199,7 @@ void PreferencesDialog::accept()
     getQtenv()->opt->shortBanners = ui->shortBanners->isChecked();
     getQtenv()->opt->noLoggingRefreshDisplay = ui->noLoggingRefreshDisplay->isChecked();
 
-    std::string logFormat = ui->logPrefix->text().toStdString();
+    std::string logFormat = ui->logPrefix->currentText().toStdString();
     try {
         getQtenv()->setLogFormat(logFormat.c_str());
         getQtenv()->opt->logFormat = logFormat.c_str();

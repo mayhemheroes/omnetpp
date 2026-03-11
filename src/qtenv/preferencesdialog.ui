@@ -261,7 +261,10 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="logPrefix">
+             <widget class="QComboBox" name="logPrefix">
+              <property name="editable">
+               <bool>true</bool>
+              </property>
               <property name="toolTip">
                <string>Here are some of the format characters that you can use in the log prefix.
 See the manual or the LogFormatter class for the complete list.
