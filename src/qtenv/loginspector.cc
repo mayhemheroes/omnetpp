@@ -163,6 +163,7 @@ LogInspector::LogInspector(QWidget *parent, bool isTopLevel, InspectorFactory *f
     goToSimTimeAction = new QAction("Go to Simulation &Time...");
     connect(goToSimTimeAction, SIGNAL(triggered()), this, SLOT(onGoToSimTimeAction()));
     goToSimTimeAction->setShortcut((int)Qt::CTRL | Qt::Key_T);
+    goToSimTimeAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(goToSimTimeAction);
 
     goToEventAction = new QAction("Go to &Event...");

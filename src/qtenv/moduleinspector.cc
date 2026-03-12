@@ -121,7 +121,7 @@ ModuleInspector::ModuleInspector(QWidget *parent, bool isTopLevel, InspectorFact
 
     distributeArrowsAction = new QAction("Distribute Connection Arrows", this);
     connect(distributeArrowsAction, SIGNAL(triggered(bool)), this, SLOT(distributeArrows(bool)));
-    distributeArrowsAction->setShortcut((int)Qt::CTRL | Qt::Key_B);
+    distributeArrowsAction->setShortcut((int)Qt::CTRL | Qt::Key_T);
     distributeArrowsAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     distributeArrowsAction->setCheckable(true);
     addAction(distributeArrowsAction);
