@@ -434,7 +434,9 @@ public class GraphicalNedEditor
         // register global actions to the keybinding service otherwise the CTRL-Z CTRL-Y and DEL
         // will be captured by the text editor after switching there
         ActionRegistry registry = getActionRegistry();
-        String id = ActionFactory.UNDO.getId();
+        String id = ToggleConnectionBundlingAction.ID;
+        getEditorSite().getKeyBindingService().registerAction(registry.getAction(id));
+        id = ActionFactory.UNDO.getId();
         getEditorSite().getKeyBindingService().registerAction(registry.getAction(id));
         id = ActionFactory.REDO.getId();
         getEditorSite().getKeyBindingService().registerAction(registry.getAction(id));
@@ -501,6 +503,7 @@ public class GraphicalNedEditor
             sharedKeyHandler.put(KeyStroke.getPressed('-', SWT.KEYPAD_SUBTRACT, SWT.CTRL), getActionRegistry().getAction(ZoomOutAction.ID));
             sharedKeyHandler.put(KeyStroke.getPressed((char)('I'-64), 'i', SWT.CTRL), getActionRegistry().getAction(ScaleUpIconsAction.ID));
             sharedKeyHandler.put(KeyStroke.getPressed((char)('O'-64), 'o', SWT.CTRL), getActionRegistry().getAction(ScaleDownIconsAction.ID));
+            sharedKeyHandler.put(KeyStroke.getPressed((char)('T'-64), 't', SWT.CTRL), getActionRegistry().getAction(ToggleConnectionBundlingAction.ID));
         }
         return sharedKeyHandler;
     }

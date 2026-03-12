@@ -8,6 +8,7 @@
 package org.omnetpp.ned.editor.graph.actions;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPart;
 import org.omnetpp.ned.editor.NedEditorPlugin;
 import org.omnetpp.ned.editor.graph.parts.CompoundModuleEditPart;
@@ -30,6 +31,8 @@ public class ToggleConnectionBundlingAction extends CompoundModuleAction {
         setId(ID);
         setToolTipText(TOOLTIP);
         setImageDescriptor(IMAGE);
+        setActionDefinitionId("org.omnetpp.ned.editor.graph.ToggleConnectionBundling");
+        setAccelerator(SWT.CTRL | 'T');
         setChecked(getSelectionCompoundModule() != null && getSelectionCompoundModule().isConnectionBundlingEnabled());
     }
 

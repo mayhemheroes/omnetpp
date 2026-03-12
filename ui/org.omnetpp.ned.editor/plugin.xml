@@ -190,6 +190,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+T">
       </key>
+      <key
+            commandId="org.omnetpp.ned.editor.graph.ToggleConnectionBundling"
+            contextId="org.omnetpp.context.nedGraphEditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+T">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -246,6 +252,11 @@
             description="Show the type hierarchy of the NED type at cursor"
             id="org.omnetpp.ned.editor.text.OpenTypeHierarchy"
             name="Open Type Hierarchy">
+      </command>
+      <command
+            description="Toggle connection bundling in graphical NED editor"
+            id="org.omnetpp.ned.editor.graph.ToggleConnectionBundling"
+            name="Toggle Connection Bundling">
       </command>
    </extension>
    <extension
