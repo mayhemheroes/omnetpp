@@ -2,7 +2,6 @@ FROM ghcr.io/omnetpp/distrobuild-base:ubuntu22.04-macos12.3-251029
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
 
 # during docker image builds, the 'tools' directory in the context dir should contain the Windows and macOS toolchains (i.e. ./tools/170717/...)
-SHELL ["/bin/bash", "-c"]
 ENV TOOLS_DIR /root/tools
 ENV TOOLS_VERSION 250612
 ENV OMNETPP_DIR /root/omnetpp
@@ -29,13 +28,13 @@ RUN git config --global --add safe.directory /root/omnetpp-repo/.git
 #RUN git checkout master && (cd $OMNETPP_DIR/ui && (mvn dependency:go-offline -Dwhat=omnetpp -fn || true)) ; rm -rf $OMNETPP_DIR
 
 # we dummy build the IDE and then delete the whole OMNeT++ source, so as a side effect the maven cache will be updated
-RUN git checkout topic/buildimage && \
+RUN /bin/bash -c 'git checkout topic/buildimage && \
     cp configure.user.dist configure.user && \
     source ./setenv -f && \
     ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no && \
     make MODE=release ui -j$(nproc) && \
     OFFLINE=no releng/ide/java/build-ide-java && \
-    rm -rf $OMNETPP_DIR
+    rm -rf $OMNETPP_DIR'
 
 # while running this image you should either map a local OMNeT++ repo from the host to the /root/omnetpp-repo dir
 # or specify a remote OMNeT++ repo URL in the OMNETPP_REPO environment variable.
