@@ -197,7 +197,7 @@ cValue nedf_pyeval(cComponent *contextComponent, cValue argv[], int argc)
         return pyObjectToValue(result);
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error evaluating Python expression");
+        e.prependMessage("Error evaluating Python expression: ");
         throw;
     }
     catch (std::exception& e) {
@@ -258,7 +258,7 @@ cValue nedf_pycode(cComponent *contextComponent, cValue argv[], int argc)
         return pyObjectToValue(result);
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error executing Python code");
+        e.prependMessage("Error executing Python code: ");
         throw;
     }
     catch (std::exception& e) {

@@ -160,7 +160,8 @@ std::string cStringParImpl::stdstringValue(cComponent *context, const cPar *targ
             return s;
         }
         catch (cRuntimeError& e) {
-            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            if (!expr->getSourceLocation().empty())
+                e.appendMessage(" at %s", expr->getSourceLocation().c_str());
             throw;
         }
         catch (std::exception& e) {

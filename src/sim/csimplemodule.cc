@@ -322,7 +322,7 @@ void cSimpleModule::scheduleStart(simtime_t t)
     cModule::scheduleStart(t);
 }
 
-#define TRY(code, msgprefix)    try { code; } catch (cRuntimeError& e) { e.prependMessage(msgprefix); throw; }
+#define TRY(code, msgprefix)    try { code; } catch (cRuntimeError& e) { e.prependMessage("%s: ", msgprefix); throw; }
 
 void cSimpleModule::send(cMessage *msg, const SendOptions& options, cGate *outGate)
 {

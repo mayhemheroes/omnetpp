@@ -2749,7 +2749,7 @@ void cPathFigure::setPath(const char *pathString)
         }
     }
     catch (cRuntimeError& e) {
-        e.appendMessage("in path near column %td", s - pathString);
+        e.appendMessage(" in path near column %td", s - pathString);
         throw;
     }
     catch (std::exception& e) {
@@ -3990,7 +3990,7 @@ cFigure *cCanvas::parseFigure(cProperty *property) const
         return figure;
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Cannot create figure from NED property @%s", property->getFullName());
+        e.prependMessage("Cannot create figure from NED property @%s: ", property->getFullName());
         throw;
     }
     catch (std::exception& e) {

@@ -127,7 +127,7 @@ std::string cConfiguration::adjustPath(const char *s, const char *baseDir, const
 
 //---
 
-#define TRY(CODE)    try { CODE; } catch (cRuntimeError& e) { e.prependMessage("Could not read option %s= from the configuration", option->getName()); throw; } \
+#define TRY(CODE)    try { CODE; } catch (cRuntimeError& e) { e.prependMessage("Could not read option %s= from the configuration: ", option->getName()); throw; } \
                                    catch (std::exception& e) { throw cRuntimeError("Could not read option %s= from the configuration: %s", option->getName(), e.what()); }
 
 inline const char *fallback(const char *s, const char *defaultValue, const char *fallbackValue)

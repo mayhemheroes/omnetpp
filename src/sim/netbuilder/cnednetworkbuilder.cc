@@ -78,7 +78,7 @@ static void updateOrRethrowException(std::exception& e, NedElement *context)
     if (!loc.empty()) {
         cException *ce = dynamic_cast<cException *>(&e);
         if (ce)
-            ce->appendMessage("at %s", loc.c_str());
+            ce->appendMessage(", at %s", loc.c_str());
         else
             throw cRuntimeError("%s, at %s", e.what(), loc.c_str());  // cannot modify existing exception object, throw new one
     }
@@ -275,7 +275,7 @@ void cNedNetworkBuilder::doParam(cComponent *component, ParamElement *paramNode,
                 impl->setSourceLocation(loc);
             }
             catch (cRuntimeError& e) {
-                e.prependMessage("Error setting up parameter '%s'", paramName);
+                e.prependMessage("Error setting up parameter '%s': ", paramName);
                 throw;
             }
             catch (std::exception& e) {

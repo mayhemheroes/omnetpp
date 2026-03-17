@@ -241,7 +241,8 @@ cObject *cObjectParImpl::objectValue(cComponent *context, const cPar *targetPar)
             return obj;
         }
         catch (cRuntimeError& e) {
-            e.appendMessage("at %s", expr->getSourceLocation().c_str());
+            if (!expr->getSourceLocation().empty())
+                e.appendMessage(" at %s", expr->getSourceLocation().c_str());
             throw;
         }
         catch (std::exception& e) {

@@ -310,7 +310,7 @@ void SectionBasedConfiguration::activateConfig(const char *configName, int runNu
         runId = variables[CFGVAR_RUNID];
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Scenario generator");
+        e.prependMessage("Scenario generator: ");
         throw;
     }
     catch (std::exception& e) {
@@ -423,7 +423,7 @@ std::string SectionBasedConfiguration::internalGetConfigAsString(cConfigOption *
         return str;
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        e.prependMessage("Error getting value of config option '%s': ", option->getName());
         throw;
     }
     catch (std::exception& e) {
@@ -440,7 +440,7 @@ intval_t SectionBasedConfiguration::internalGetConfigAsInt(cConfigOption *option
         return Expression().parse(str.c_str()).intValue();
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        e.prependMessage("Error getting value of config option '%s': ", option->getName());
         throw;
     }
     catch (std::exception& e) {
@@ -457,7 +457,7 @@ bool SectionBasedConfiguration::internalGetConfigAsBool(cConfigOption *option, c
         return Expression().parse(str.c_str()).boolValue();
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error getting value of config option '%s'", option->getName());
+        e.prependMessage("Error getting value of config option '%s': ", option->getName());
         throw;
     }
     catch (std::exception& e) {
@@ -480,7 +480,7 @@ int SectionBasedConfiguration::getNumRunsInConfig(const char *configName) const
         return Scenario(v, constraint, "").getNumRuns();
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Could not compute number of runs in config %s", configName);
+        e.prependMessage("Could not compute number of runs in config %s: ", configName);
         throw;
     }
     catch (std::exception& e) {
@@ -532,7 +532,7 @@ std::vector<cConfiguration::RunInfo> SectionBasedConfiguration::unrollConfig(con
         return result;
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Scenario generator");
+        e.prependMessage("Scenario generator: ");
         throw;
     }
     catch (std::exception& e) {
@@ -556,8 +556,8 @@ std::vector<Scenario::IterationVariable> SectionBasedConfiguration::collectItera
                     parseVariable(pos, iterVar.varName, iterVar.value, iterVar.parvar, pos);
                 }
                 catch (cRuntimeError& e) {
-                    e.prependMessage("Scenario generator");
-                    e.appendMessage("at %s=%s", entry.getKey(), entry.getValue());
+                    e.prependMessage("Scenario generator: ");
+                    e.appendMessage(" at %s=%s", entry.getKey(), entry.getValue());
                     throw;
                 }
                 catch (std::exception& e) {

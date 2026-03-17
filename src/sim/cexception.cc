@@ -145,7 +145,7 @@ void cException::prependMessage(const char *fmt, ...)
     va_start(va, fmt);
     std::string text = opp_vstringf(fmt, va);
     va_end(va);
-    msg = text + ": " + msg;
+    msg = text + msg;
 }
 
 void cException::appendMessage(const char *fmt, ...)
@@ -154,7 +154,7 @@ void cException::appendMessage(const char *fmt, ...)
     va_start(va, fmt);
     std::string text = opp_vstringf(fmt, va);
     va_end(va);
-    msg = msg + ": " + text;
+    msg = msg + text;
 }
 
 static const char *getKindStr(cComponent::ComponentKind kind, bool capitalized)

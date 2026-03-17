@@ -912,7 +912,7 @@ static cValue opp_eval(const char *txt, cExpression::Context *context) //TOOD si
         return expr.evaluate(context);
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error evaluating expression \"%s\"", txt);
+        e.prependMessage("Error evaluating expression \"%s\": ", txt);
         throw;
     }
     catch (std::exception& e) {

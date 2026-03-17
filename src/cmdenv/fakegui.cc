@@ -79,7 +79,7 @@ void FakeGUI::parseExpression(cConfiguration *cfg, cConfigOption *configOption, 
         expression.parse(text, &translator);
     }
     catch (cRuntimeError& e) {
-        e.prependMessage("Error in config option '%s'", configOption->getName());
+        e.prependMessage("Error in config option '%s': ", configOption->getName());
         throw;
     }
     catch (std::exception& e) {
