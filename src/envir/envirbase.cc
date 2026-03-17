@@ -29,6 +29,7 @@
 #include "common/fileglobber.h"
 #include "common/unitconversion.h"
 #include "common/commonutil.h"
+#include "common/backwardutil.h"
 #include "common/ver.h"
 #include "common/fileutil.h"  // splitFileName
 #include "omnetpp/ccoroutine.h"

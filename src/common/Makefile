@@ -43,19 +43,20 @@ OBJS= $O/lcgrandom.o $O/filelock.o $O/filereader.o $O/linetokenizer.o \
       $O/exprnode.o $O/exprnodes.o $O/exprvalue.o $O/intutil.o $O/any_ptr.o \
       $O/saxparser_default.o $O/saxparser_libxml.o $O/saxparser_yxml.o $O/yxml.o
 
-ifeq ($(WITH_BACKTRACE),yes)
-  OBJS+= $O/backward.o
-  LDFLAGS+= $(BACKWARD_LDFLAGS)
-  COPTS+= -DWITH_BACKTRACE
-endif
-
 GENERATED_SOURCES= expression.tab.h expression.tab.cc expression.lex.cc expression.lex.h \
                    matchexpression.tab.h matchexpression.tab.cc
 
 ifeq ("$(BUILDING_UILIBS)","yes")
-OBJS+= $O/rwlock.o
-COPTS+= -DTHREADED $(PTHREAD_CFLAGS)
-IMPLIBS+= $(PTHREAD_LIBS)
+  OBJS+= $O/rwlock.o
+  COPTS+= -DTHREADED $(PTHREAD_CFLAGS)
+  IMPLIBS+= $(PTHREAD_LIBS)
+else
+  OBJS+= $O/backwardutil.o
+  ifeq ($(WITH_BACKTRACE),yes)
+    OBJS+= $O/backward.o
+    LDFLAGS+= $(BACKWARD_LDFLAGS)
+    COPTS+= -DWITH_BACKTRACE
+  endif
 endif
 
 # macro is used in $(EXPORT_DEFINES) with clang-msabi when building a shared lib
