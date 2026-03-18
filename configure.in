@@ -1126,6 +1126,8 @@ if test $WITH_BACKTRACE = "yes"; then
       AC_MSG_WARN([for 'libdw' (i.e. libdw-dev, libdw-devel or elfutils).])
     fi
   fi
+
+  SYS_LIBS="$SYS_LIBS $BACKWARD_LDFLAGS"
 fi
 
 #----------------------

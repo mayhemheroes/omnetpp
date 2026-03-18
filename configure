@@ -6676,6 +6676,8 @@ printf "%s\n" "$as_me: WARNING: To get better stack traces on exceptions, please
 printf "%s\n" "$as_me: WARNING: for 'libdw' (i.e. libdw-dev, libdw-devel or elfutils)." >&2;}
     fi
   fi
+
+  SYS_LIBS="$SYS_LIBS $BACKWARD_LDFLAGS"
 fi
 
 #----------------------
