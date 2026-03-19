@@ -55,6 +55,11 @@ class SIM_API cWatchBase : public cNoncopyableOwnedObject
      * supportsAssignment() returns true.
      */
     virtual void assign(const char *s) {}
+
+    /**
+     * Returns a pointer to the watched variable or object as an any_ptr.
+     */
+    virtual any_ptr getValuePointer() const = 0;
     //@}
 };
 
@@ -78,6 +83,7 @@ class cGenericReadonlyWatch : public cWatchBase
         out << r;
         return out.str();
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 
@@ -106,6 +112,7 @@ class cGenericAssignableWatch : public cWatchBase
         std::stringstream in(s);
         in >> r;
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -128,6 +135,7 @@ class SIM_API cWatch_bool : public cWatchBase
     {
         r = *s!='0' && *s!='n' && *s!='N' && *s!='f' && *s!='F';
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -155,6 +163,7 @@ class SIM_API cWatch_char : public cWatchBase
         else
             r = atoi(s);
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -182,6 +191,7 @@ class SIM_API cWatch_uchar : public cWatchBase
         else
             r = atoi(s);
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -198,6 +208,7 @@ class SIM_API cWatch_stdstring : public cWatchBase
     virtual bool supportsAssignment() const override {return true;}
     virtual std::string str() const override;
     virtual void assign(const char *s) override;
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -220,6 +231,7 @@ class SIM_API cWatch_cObject : public cWatchBase
     virtual cClassDescriptor *getDescriptor() const override {return desc;}
     virtual void forEachChild(cVisitor *visitor) override;
     cObject *getObjectPtr() const {return &r;}
+    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
 /**
@@ -242,6 +254,7 @@ class SIM_API cWatch_cObjectPtr : public cWatchBase
     virtual cClassDescriptor *getDescriptor() const override {return desc;}
     virtual void forEachChild(cVisitor *visitor) override;
     cObject *getObjectPtr() const {return rp;}
+    virtual any_ptr getValuePointer() const override {return any_ptr(rp);}
 };
 
 /**
@@ -259,6 +272,7 @@ class cComputedExpressionWatch : public cWatchBase
     virtual const char *getClassName() const override {return omnetpp::opp_typename(typeid(T));}
     virtual bool supportsAssignment() const override {return false;}
     virtual std::string str() const override { std::stringstream out; out << f(); return out.str(); }
+    virtual any_ptr getValuePointer() const override {return any_ptr(nullptr);}
 };
 
 inline cWatchBase *createWatch(const char *varname, short& d) {

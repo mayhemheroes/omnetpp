@@ -107,6 +107,7 @@ class cStdVectorWatcher : public cStlContainerWatcherBase
     cStdVectorWatcher(const char *name, std::vector<T>& var) :
         cStlContainerWatcherBase(name, std::string("std::vector<")+opp_typename(typeid(T))+">"), v(var) {
     }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&v);}
     virtual const char *getElemTypeName() const override {
         if constexpr (std::is_pointer_v<T>)
             return opp_typename(typeid(std::remove_pointer_t<T>));
@@ -284,6 +285,7 @@ class cStdListWatcher : public cIteratorBasedContainerWatcherBase<T, I>
         cIteratorBasedContainerWatcherBase<T, I>(name, std::string("std::list<")+opp_typename(typeid(T))+">"),
         v(var)
     { }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&v);}
 };
 
 template <class T>
@@ -314,6 +316,7 @@ class cStdSetWatcher : public cIteratorBasedContainerWatcherBase<T, I>
         cIteratorBasedContainerWatcherBase<T, I>(name, std::string("std::set<")+opp_typename(typeid(T))+">"),
         v(var)
     { }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&v);}
 
     std::string getArrayIndexString(int arrayIndex) const override {
         // For sets, return empty string (no index prefix)
@@ -349,6 +352,7 @@ class cStdMapWatcher : public cIteratorBasedContainerWatcherBase<ValueT, I>
         cIteratorBasedContainerWatcherBase<ValueT, I>(name, std::string("std::map<")+opp_typename(typeid(KeyT))+","+opp_typename(typeid(ValueT))+">"),
         m(var)
     { }
+    virtual any_ptr getValuePointer() const override {return any_ptr(&m);}
 
     virtual std::string atIt() const {
         std::stringstream out;
