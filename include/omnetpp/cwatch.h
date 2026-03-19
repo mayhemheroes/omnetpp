@@ -34,14 +34,20 @@ namespace omnetpp {
  */
 class SIM_API cWatchBase : public cNoncopyableOwnedObject
 {
+  protected:
+    mutable cClassDescriptor *proxyDesc = nullptr;
+
   public:
     /** @name Constructors, destructor, assignment */
     //@{
     /**
      * Initialize the shell to hold the given variable.
      */
-    cWatchBase(const char *name)  : cNoncopyableOwnedObject(name) {}
+    cWatchBase(const char *name) : cNoncopyableOwnedObject(name) {}
+    ~cWatchBase();
     //@}
+
+    virtual cClassDescriptor *getDescriptor() const override;
 
     /** @name New methods */
     //@{
@@ -217,18 +223,14 @@ class SIM_API cWatch_stdstring : public cWatchBase
  */
 class SIM_API cWatch_cObject : public cWatchBase
 {
-    friend class cWatchProxyDescriptor;
   private:
     cObject& r;
-    cClassDescriptor *desc; // for this watch object, not the one being watched
     std::string typeName;
   public:
     cWatch_cObject(const char *name, const char *typeName, cObject& ref);
-    ~cWatch_cObject() { dropAndDelete(desc); }
     virtual const char *getClassName() const override {return typeName.c_str();}
     virtual std::string str() const override {return std::string("-> ") + r.getClassName() + ")" + r.getFullName() + " " + r.str();}
     virtual bool supportsAssignment() const override {return false;}
-    virtual cClassDescriptor *getDescriptor() const override {return desc;}
     virtual void forEachChild(cVisitor *visitor) override;
     cObject *getObjectPtr() const {return &r;}
     virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
@@ -240,18 +242,14 @@ class SIM_API cWatch_cObject : public cWatchBase
  */
 class SIM_API cWatch_cObjectPtr : public cWatchBase
 {
-    friend class cWatchProxyDescriptor;
   private:
     cObject *&rp;
-    cClassDescriptor *desc; // for this watch object, not the one being watched
     std::string typeName;
   public:
     cWatch_cObjectPtr(const char *name, const char* typeName, cObject *&ptr);
-    ~cWatch_cObjectPtr() { dropAndDelete(desc); }
     virtual const char *getClassName() const override {return typeName.c_str();}
     virtual std::string str() const override {return rp ? ( std::string("-> (") + rp->getClassName() + ")" + rp->getFullName() + " " + rp->str()) : "<null>";}
     virtual bool supportsAssignment() const override {return false;}
-    virtual cClassDescriptor *getDescriptor() const override {return desc;}
     virtual void forEachChild(cVisitor *visitor) override;
     cObject *getObjectPtr() const {return rp;}
     virtual any_ptr getValuePointer() const override {return any_ptr(rp);}
