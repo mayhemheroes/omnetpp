@@ -69,12 +69,15 @@ cStlContainerWatcherDescriptor::cStlContainerWatcherDescriptor(const char *vecTy
 
 const char **cStlContainerWatcherDescriptor::getPropertyNames() const
 {
-    return getBaseClassDescriptor()->getPropertyNames();
+    auto base = getBaseClassDescriptor();
+    static const char *empty[] = {nullptr};
+    return base ? base->getPropertyNames() : empty;
 }
 
 const char *cStlContainerWatcherDescriptor::getProperty(const char *propertyname) const
 {
-    return getBaseClassDescriptor()->getProperty(propertyname);
+    auto base = getBaseClassDescriptor();
+    return base ? base->getProperty(propertyname) : nullptr;
 }
 
 int cStlContainerWatcherDescriptor::getFieldCount() const
