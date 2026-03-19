@@ -254,9 +254,12 @@ void EventlogFileManager::close()
     fileLock = nullptr;
 }
 
+
+
 void EventlogFileManager::remove()
 {
-    removeFile(filename.c_str(), "old eventlog file");
+    if (fileExists(filename.c_str()))
+        removeFile(filename.c_str(), "old eventlog file");
     entryIndex = -1;
 }
 

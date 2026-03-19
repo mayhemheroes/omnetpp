@@ -63,7 +63,8 @@ void OmnetppOutputVectorManager::startRun()
 
     fname = getEnvir()->getConfig()->getAsFilename(CFGID_OUTPUT_VECTOR_FILE).c_str();
     dynamic_cast<EnvirBase *>(getEnvir())->processFileName(fname);
-    removeFile(fname.c_str(), "old output vector file");
+    if (fileExists(fname.c_str()))
+        removeFile(fname.c_str(), "old output vector file");
 
     int prec = getEnvir()->getConfig()->getAsInt(CFGID_OUTPUT_VECTOR_PRECISION);
     writer.setPrecision(prec);

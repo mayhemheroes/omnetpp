@@ -62,7 +62,7 @@ void OmnetppOutputScalarManager::startRun()
     dynamic_cast<EnvirBase *>(getEnvir())->processFileName(fname);
 
     bool shouldAppend = getEnvir()->getConfig()->getAsBool(CFGID_OUTPUT_SCALAR_FILE_APPEND);
-    if (!shouldAppend)
+    if (!shouldAppend && fileExists(fname.c_str()))
         removeFile(fname.c_str(), "old output scalar file");
 
     // read configuration
