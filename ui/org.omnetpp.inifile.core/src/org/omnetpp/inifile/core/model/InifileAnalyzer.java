@@ -121,6 +121,7 @@ public final class InifileAnalyzer {
     // parameters of the analyzer
     final private IInifileDocument doc;
     private boolean paramResolutionEnabled = true; // enables the slow part of the analysis, can be disabled from the GUI
+    private final boolean transientMode; // when true, skip listeners and marker synchronization
 
     // state of the analyzer
     private boolean changed = true;  // true if the document has changed since last validate()
@@ -187,20 +188,32 @@ public final class InifileAnalyzer {
      * Constructor.
      */
     public InifileAnalyzer(IInifileDocument doc) {
+        this(doc, false);
+    }
+
+    /**
+     * Constructor. When {@code transientMode} is true, the analyzer will not
+     * hook change listeners and will not synchronize problem markers.
+     * Use this for short-lived read-only instances (e.g. during refactoring).
+     */
+    public InifileAnalyzer(IInifileDocument doc, boolean transientMode) {
         this.doc = doc;
+        this.transientMode = transientMode;
         this.paramResolutionJob = new ParamResolutionJob(doc);
 
-        // hook on inifile changes
-        inifileChangeListener = () -> modelChanged();
-        doc.addInifileChangeListener(inifileChangeListener);
+        if (!transientMode) {
+            // hook on inifile changes
+            inifileChangeListener = () -> modelChanged();
+            doc.addInifileChangeListener(inifileChangeListener);
 
-        // listen on NED changes as well
-        nedChangeListener = (e) -> modelChanged();
-        NedResourcesPlugin.getNedResources().addNedModelChangeListener(nedChangeListener);
+            // listen on NED changes as well
+            nedChangeListener = (e) -> modelChanged();
+            NedResourcesPlugin.getNedResources().addNedModelChangeListener(nedChangeListener);
 
-        // listen on preferences
-        preferenceChangeListener = (e) -> {modelChanged(); startAnalysisIfChanged();};
-        InifileCorePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(preferenceChangeListener);
+            // listen on preferences
+            preferenceChangeListener = (e) -> {modelChanged(); startAnalysisIfChanged();};
+            InifileCorePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(preferenceChangeListener);
+        }
 
         paramResolutionJob.addJobChangeListener(new JobChangeAdapter() {
             public void done(IJobChangeEvent event) {
@@ -210,6 +223,8 @@ public final class InifileAnalyzer {
     }
 
     public void dispose() {
+        if (transientMode)
+            return;
         doc.removeInifileChangeListener(inifileChangeListener);
         NedResourcesPlugin.getNedResources().removeNedModelChangeListener(nedChangeListener);
         InifileCorePlugin.getDefault().getPreferenceStore().removePropertyChangeListener(preferenceChangeListener);
@@ -366,7 +381,8 @@ public final class InifileAnalyzer {
                 Debug.println("Inifile validated in "+(System.currentTimeMillis()-startTime)+"ms");
 
                 // synchronize detected problems with the file's existing markers
-                markers.synchronize();
+                if (!transientMode)
+                    markers.synchronize();
                 markers = null;
             }
             finally {
@@ -782,7 +798,8 @@ public final class InifileAnalyzer {
             }
         }
 
-        markers.synchronize();
+        if (!transientMode)
+            markers.synchronize();
     }
 
     private void validateParamKey(String section, String key, InifileProblemMarkerSynchronizer markers) {

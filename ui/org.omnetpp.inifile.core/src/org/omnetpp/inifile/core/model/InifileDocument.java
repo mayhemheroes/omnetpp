@@ -57,6 +57,7 @@ public class InifileDocument implements IInifileDocument {
     IFile documentFile; // the file of the document
     private boolean changed; // whether changed since last parsed
     private IReadonlyInifileDocument docCopy; // cached instance of last immutable copy
+    private final boolean transientMode; // when true, skip listeners and marker synchronization
 
     // InifileDocument, InifileAnalyzer, and NEDResources are all accessed from
     // background threads (must be synchronized), and the analyze procedure needs
@@ -134,12 +135,23 @@ public class InifileDocument implements IInifileDocument {
     private InifileChangeListenerList listeners = new InifileChangeListenerList(); // clients that listen on us
 
     public InifileDocument(IDocument document, IFile documentFile) {
+        this(document, documentFile, false);
+    }
+
+    /**
+     * Constructor. When {@code transientMode} is true, the document will not
+     * hook workspace/document listeners and will not synchronize problem markers.
+     * Use this for short-lived read-only instances (e.g. during refactoring).
+     */
+    public InifileDocument(IDocument document, IFile documentFile, boolean transientMode) {
         this.document = document;
         this.documentFile = documentFile;
         this.changed = true;
+        this.transientMode = transientMode;
 
         // listen on changes so we know when we need to re-parse
-        hookListeners();
+        if (!transientMode)
+            hookListeners();
     }
 
     public IReadonlyInifileDocument getImmutableCopy() {
@@ -217,6 +229,8 @@ public class InifileDocument implements IInifileDocument {
      * To be called from the editor!
      */
     public void dispose() {
+        if (transientMode)
+            return;
         unhookListeners();
         new InifileProblemMarkerSynchronizer(this, BASE_INIFILEPROBLEM_MARKER_ID).synchronize();
     }
@@ -390,7 +404,8 @@ public class InifileDocument implements IInifileDocument {
             docCopy = null;
 
             // synchronize detected problems with the file's existing markers
-            markers.synchronize();
+            if (!transientMode)
+                markers.synchronize();
 
             // NOTE: notify listeners (fireModelChanged()) is NOT done here! It is done
             // when the underlying text document (IDocument) changes, just after we set
