@@ -41,6 +41,8 @@ import org.omnetpp.ned.editor.NedEditor;
 import org.omnetpp.ned.editor.graph.actions.GNedContextMenuProvider;
 import org.omnetpp.ned.editor.graph.parts.outline.NedTreeEditPartFactory;
 import org.omnetpp.ned.model.notification.INedChangeListener;
+import org.omnetpp.ned.model.notification.NedBeginModelChangeEvent;
+import org.omnetpp.ned.model.notification.NedEndModelChangeEvent;
 import org.omnetpp.ned.model.notification.NedModelEvent;
 
 /**
@@ -49,6 +51,7 @@ import org.omnetpp.ned.model.notification.NedModelEvent;
 class NedOutlinePage extends ContentOutlinePage implements INedChangeListener, ISelectionListener {
     private final GraphicalNedEditor graphicalNedEditor;
     private boolean linkWithEditor = false;
+    private int nedBeginChangeCount = 0;
 
     public NedOutlinePage(GraphicalNedEditor graphicalNedEditor, EditPartViewer viewer) {
         super(viewer);
@@ -129,12 +132,22 @@ class NedOutlinePage extends ContentOutlinePage implements INedChangeListener, I
 
     public void modelChanged(NedModelEvent event) {
         if (Display.getCurrent() != null) {
-            refresh();
+            if (event instanceof NedBeginModelChangeEvent)
+                nedBeginChangeCount++;
+            else if (event instanceof NedEndModelChangeEvent)
+                nedBeginChangeCount--;
+            if (nedBeginChangeCount == 0)
+                refresh();
         }
         else {
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
-                    refresh();
+                    if (event instanceof NedBeginModelChangeEvent)
+                        nedBeginChangeCount++;
+                    else if (event instanceof NedEndModelChangeEvent)
+                        nedBeginChangeCount--;
+                    if (nedBeginChangeCount == 0)
+                        refresh();
                 }
             });
         }
