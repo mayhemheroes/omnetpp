@@ -89,6 +89,49 @@ public class TextDifferenceUtils {
     }
 
     /**
+     * Returns a version of oldSource where only non-whitespace-only diff chunks from
+     * newSource are applied. Chunks where old and new lines differ only in whitespace are
+     * left unchanged (oldSource lines are kept), preserving the user's original formatting.
+     * Chunks with real content changes (e.g. renamed identifiers) are taken from newSource.
+     */
+    public static String filterWhitespaceOnlyDiffs(String oldSource, String newSource) {
+        LineRangeComparator comparatorOld = new LineRangeComparator(oldSource);
+        LineRangeComparator comparatorNew = new LineRangeComparator(newSource);
+        RangeDifference[] differences = RangeDifferencer.findDifferences(comparatorOld, comparatorNew);
+
+        Arrays.sort(differences, 0, differences.length, new Comparator<RangeDifference>() {
+            public int compare(RangeDifference o1, RangeDifference o2) {
+                return o1.leftStart() - o2.leftStart();
+            }}
+        );
+
+        StringBuilder result = new StringBuilder();
+        int oldPos = 0;  // next line index in oldSource to copy
+        for (RangeDifference diff : differences) {
+            int leftStart = diff.leftStart();
+            int leftEnd   = diff.leftEnd();
+            int rightStart = diff.rightStart();
+            int rightEnd   = diff.rightEnd();
+
+            // copy unchanged lines before this chunk
+            result.append(comparatorOld.getLineRange(oldPos, leftStart));
+
+            String oldChunk = comparatorOld.getLineRange(leftStart, leftEnd);
+            String newChunk = comparatorNew.getLineRange(rightStart, rightEnd);
+
+            if (oldChunk.replaceAll("\\s", "").equals(newChunk.replaceAll("\\s", "")))
+                result.append(oldChunk);  // whitespace-only difference: keep old
+            else
+                result.append(newChunk);  // real change: take new
+
+            oldPos = leftEnd;
+        }
+        // copy remaining unchanged lines
+        result.append(comparatorOld.getLineRange(oldPos, comparatorOld.getRangeCount()));
+        return result.toString();
+    }
+
+    /**
      * Returns a patch-like string for turning leftText into rightText.
      * Lines to be removed are prefixed with "-", lines to be added are prefixed with "+".
      */

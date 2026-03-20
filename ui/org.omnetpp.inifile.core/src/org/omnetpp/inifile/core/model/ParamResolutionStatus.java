@@ -15,9 +15,9 @@ import org.omnetpp.ned.model.interfaces.INedTypeResolver;
 public class ParamResolutionStatus extends Status {
 
     public static class Entry {
-        String section;
-        List<ParamResolution> paramResolutions;
-        List<PropertyResolution> propertyResolutions;
+        public String section;
+        public List<ParamResolution> paramResolutions;
+        public List<PropertyResolution> propertyResolutions;
     }
 
     public final IReadonlyInifileDocument docCopy;

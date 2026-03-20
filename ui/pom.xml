@@ -58,10 +58,10 @@
             <version>${tycho-version}</version>
             <configuration>
 
-               <!-- This magic is required because JustJ has an explicit negative requirement on 
+               <!-- This magic is required because JustJ has an explicit negative requirement on
                   execution environments while the rest of the build need an execution environment.
-                  In a perfect world, 'executionEnvironment' would be set to 'none' 
-                  and everything would work, but we are not living on that branch of the multiverse. -->    
+                  In a perfect world, 'executionEnvironment' would be set to 'none'
+                  and everything would work, but we are not living on that branch of the multiverse. -->
                <!-- force JavaSE-21 environment. -->
                <executionEnvironment>JavaSE-21</executionEnvironment>
                <!-- disable the negative requirement of an exeutionEnvoronment on JustJ -->
@@ -228,6 +228,7 @@
       <module>org.omnetpp.main.${what}</module>
       <module>org.omnetpp.msg.editor</module>
       <module>org.omnetpp.ned.core</module>
+      <module>org.omnetpp.ned.refactoring</module>
       <module>org.omnetpp.ned.editor</module>
       <module>org.omnetpp.ned.model</module>
       <module>org.omnetpp.neddoc</module>
