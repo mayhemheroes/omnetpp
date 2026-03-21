@@ -162,6 +162,17 @@ class SIM_API cClassDescriptor : public cNoncopyableOwnedObject
     virtual const char *getProperty(const char *propertyname) const = 0;
 
     /**
+     * Returns the value of the given object as a string.
+     */
+    virtual std::string getValueAsString(any_ptr object) const {return "";}
+
+    /**
+     * Sets the value of the given object by parsing the given value string.
+     * If the operation is not successful, an exception is thrown.
+     */
+    virtual void setValueAsString(any_ptr object, const char *value) const;
+
+    /**
      * Returns the number of fields in the described class.
      */
     virtual int getFieldCount() const = 0;

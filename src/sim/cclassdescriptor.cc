@@ -303,6 +303,11 @@ int cClassDescriptor::findField(const char *fieldName) const
     return -1;
 }
 
+void cClassDescriptor::setValueAsString(any_ptr object, const char *value) const
+{
+    throw cRuntimeError(this, "setValueAsString(): Unsupported operation");
+}
+
 std::string cClassDescriptor::getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const
 {
     char buf[32];
