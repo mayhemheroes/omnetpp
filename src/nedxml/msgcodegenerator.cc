@@ -297,6 +297,38 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
 
     CC << PARSIMPACK_BOILERPLATE;
 
+    CC << "\n// SFINAE helpers for detecting operator<< and operator>>\n";
+    CC << "template<typename T, typename = void>\n";
+    CC << "struct is_printable : std::false_type {};\n";
+    CC << "template<typename T>\n";
+    CC << "struct is_printable<T, std::void_t<decltype(std::declval<std::ostream&>() << std::declval<const T&>())>> : std::true_type {};\n";
+    CC << "\n";
+    CC << "template<typename T, typename = void>\n";
+    CC << "struct is_extractable : std::false_type {};\n";
+    CC << "template<typename T>\n";
+    CC << "struct is_extractable<T, std::void_t<decltype(std::declval<std::istream&>() >> std::declval<T&>())>> : std::true_type {};\n";
+    CC << "\n";
+    CC << "template<typename T>\n";
+    CC << "std::string toStringIfPrintable(const T& t) {\n";
+    CC << "    if constexpr (is_printable<T>::value) {\n";
+    CC << "        std::ostringstream os;\n";
+    CC << "        os << t;\n";
+    CC << "        return os.str();\n";
+    CC << "    }\n";
+    CC << "    return \"\";\n";
+    CC << "}\n";
+    CC << "\n";
+    CC << "template<typename T>\n";
+    CC << "bool fromStringIfExtractable(T& t, const char *s) {\n";
+    CC << "    if constexpr (is_extractable<T>::value) {\n";
+    CC << "        std::istringstream is(s);\n";
+    CC << "        is >> t;\n";
+    CC << "        return true;\n";
+    CC << "    }\n";
+    CC << "    return false;\n";
+    CC << "}\n";
+    CC << "\n";
+
 }
 
 void MsgCodeGenerator::generateEpilog()
@@ -1118,6 +1150,8 @@ void MsgCodeGenerator::generateDescriptorClass(const ClassInfo& classInfo)
     CC << "    virtual bool doesSupport(omnetpp::cObject *obj) const override;\n";
     CC << "    virtual const char **getPropertyNames() const override;\n";
     CC << "    virtual const char *getProperty(const char *propertyName) const override;\n";
+    CC << "    virtual std::string getValueAsString(omnetpp::any_ptr object) const override;\n";
+    CC << "    virtual void setValueAsString(omnetpp::any_ptr object, const char *value) const override;\n";
     CC << "    virtual int getFieldCount() const override;\n";
     CC << "    virtual const char *getFieldName(int field) const override;\n";
     CC << "    virtual int findField(const char *fieldName) const override;\n";
@@ -1194,6 +1228,44 @@ void MsgCodeGenerator::generateDescriptorClass(const ClassInfo& classInfo)
     }
     CC << "    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();\n";
     CC << "    return base ? base->getProperty(propertyName) : nullptr;\n";
+    CC << "}\n";
+    CC << "\n";
+
+    // getValueAsString()
+    CC << "std::string " << classInfo.descriptorClass << "::getValueAsString(omnetpp::any_ptr object) const\n";
+    CC << "{\n";
+    CC << "    " << classInfo.className << " *pp = omnetpp::fromAnyPtr<" << classInfo.className << ">(object); (void)pp;\n";
+    if (!classInfo.toString.empty()) {
+        CC << "    return " << makeFuncall("(*pp)", false, classInfo.toString) << ";\n";
+    }
+    else if (classInfo.iscObject || !classInfo.str.empty()) {
+        CC << "    return pp->str();\n";
+    }
+    else {
+        CC << "    return toStringIfPrintable(*pp);\n";
+    }
+    CC << "}\n";
+    CC << "\n";
+
+    // setValueAsString()
+    CC << "void " << classInfo.descriptorClass << "::setValueAsString(omnetpp::any_ptr object, const char *value) const\n";
+    CC << "{\n";
+    if (!classInfo.fromString.empty()) {
+        CC << "    " << classInfo.className << " *pp = omnetpp::fromAnyPtr<" << classInfo.className << ">(object); (void)pp;\n";
+        if (classInfo.fromString.find('$') != std::string::npos) {
+            // e.g. @fromString(string2simtime($)) -> *pp = string2simtime(value)
+            CC << "    *pp = " << makeFuncall("value", false, classInfo.fromString) << ";\n";
+        }
+        else {
+            // e.g. @fromString(parse) -> pp->parse(value)
+            CC << "    " << makeFuncall("pp", true, classInfo.fromString, false, "value") << ";\n";
+        }
+    }
+    else {
+        CC << "    " << classInfo.className << " *pp = omnetpp::fromAnyPtr<" << classInfo.className << ">(object); (void)pp;\n";
+        CC << "    if (!fromStringIfExtractable(*pp, value))\n";
+        CC << "        cClassDescriptor::setValueAsString(object, value);\n";
+    }
     CC << "}\n";
     CC << "\n";
 
