@@ -52,6 +52,9 @@ class SIM_API cClassDescriptor : public cNoncopyableOwnedObject
         FD_NONE = 0x0
     };
 
+    /// Returned by getValueAsString() and getFieldValueAsString() for types that have no text representation.
+    static constexpr const char *UNPRINTABLE = "(unprintable)";
+
   private:
     std::string baseClassName;
     cClassDescriptor *baseClassDesc = nullptr;

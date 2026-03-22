@@ -315,7 +315,7 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
     CC << "        os << t;\n";
     CC << "        return os.str();\n";
     CC << "    }\n";
-    CC << "    return \"\";\n";
+    CC << "    return omnetpp::cClassDescriptor::UNPRINTABLE;\n";
     CC << "}\n";
     CC << "\n";
     CC << "template<typename T>\n";

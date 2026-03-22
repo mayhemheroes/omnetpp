@@ -45,6 +45,7 @@
 #include "omnetpp/cdelaychannel.h"
 #include "omnetpp/cdisplaystring.h"
 #include "omnetpp/cdoubleparimpl.h"
+#include "omnetpp/cdynamicdescriptor.h"
 #include "omnetpp/cdynamicexpression.h"
 #include "omnetpp/cenum.h"
 #include "omnetpp/cenvir.h"
