@@ -1,0 +1,492 @@
+%description:
+Test ensureDescriptor<T>() with dynamic descriptors for primitive types and std::vector
+
+%file: test.ned
+
+simple Tester
+{
+}
+
+network Test
+{
+    submodules:
+        tester: Tester;
+}
+
+%file: test.msg
+namespace @TESTNAME@;
+
+struct Point {
+    double x;
+    double y;
+}
+
+%file: test.cc
+
+#include <omnetpp.h>
+#include <list>
+#include <set>
+#include <map>
+#include <unordered_map>
+#include "../lib/descriptortest.h"
+#include "test_m.h"
+
+using namespace omnetpp;
+
+namespace @TESTNAME@ {
+
+class Tester : public cSimpleModule
+{
+  public:
+    Tester() : cSimpleModule(32768) { }
+    virtual void activity() override;
+};
+
+Define_Module(Tester);
+
+void Tester::activity()
+{
+    // --- Primitive types ---
+    int intVal = 42;
+    cClassDescriptor *intDesc = omnetpp::ensureDescriptor<int>();
+    EV << "=== int ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intVal), intDesc);
+
+    double dblVal = 3.14;
+    cClassDescriptor *dblDesc = omnetpp::ensureDescriptor<double>();
+    EV << "=== double ===\n";
+    testlib::printDescriptor(EV, any_ptr(&dblVal), dblDesc);
+
+    bool boolVal = true;
+    cClassDescriptor *boolDesc = omnetpp::ensureDescriptor<bool>();
+    EV << "=== bool ===\n";
+    testlib::printDescriptor(EV, any_ptr(&boolVal), boolDesc);
+
+    std::string strVal = "hello world";
+    cClassDescriptor *strDesc = omnetpp::ensureDescriptor<std::string>();
+    EV << "=== std::string ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strVal), strDesc);
+
+    long longVal = 123456789L;
+    cClassDescriptor *longDesc = omnetpp::ensureDescriptor<long>();
+    EV << "=== long ===\n";
+    testlib::printDescriptor(EV, any_ptr(&longVal), longDesc);
+
+    char charVal = 'A';
+    cClassDescriptor *charDesc = omnetpp::ensureDescriptor<char>();
+    EV << "=== char ===\n";
+    testlib::printDescriptor(EV, any_ptr(&charVal), charDesc);
+
+    short shortVal = 1234;
+    cClassDescriptor *shortDesc = omnetpp::ensureDescriptor<short>();
+    EV << "=== short ===\n";
+    testlib::printDescriptor(EV, any_ptr(&shortVal), shortDesc);
+
+    // --- cMessage (already has a registered descriptor) ---
+    cMessage msg("hello");
+    cClassDescriptor *msgDesc = omnetpp::ensureDescriptor<cMessage>();
+    EV << "=== cMessage ===\n";
+    testlib::printDescriptor(EV, toAnyPtr(&msg), msgDesc);
+
+    // --- msg-file defined struct ---
+    Point pt;
+    pt.x = 1.5;
+    pt.y = 2.5;
+    cClassDescriptor *ptDesc = omnetpp::ensureDescriptor<Point>();
+    EV << "=== Point ===\n";
+    testlib::printDescriptor(EV, toAnyPtr(&pt), ptDesc);
+
+    // --- Test setValueAsString on primitive ---
+    EV << "=== int: setValueAsString ===\n";
+    intDesc->setValueAsString(any_ptr(&intVal), "99");
+    EV << "after set: " << intVal << "\n\n";
+
+    dblDesc->setValueAsString(any_ptr(&dblVal), "2.718");
+    EV << "=== double: setValueAsString ===\n";
+    EV << "after set: " << dblVal << "\n\n";
+
+    // --- Test that looking up same type returns same descriptor ---
+    EV << "=== descriptor identity ===\n";
+    EV << "same int desc: " << (omnetpp::ensureDescriptor<int>() == intDesc ? "true" : "false") << "\n\n";
+
+    // --- std::vector<int> ---
+    std::vector<int> intVec = {10, 20, 30};
+    cClassDescriptor *intVecDesc = omnetpp::ensureDescriptor<std::vector<int>>();
+    EV << "=== std::vector<int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intVec), intVecDesc);
+
+    // --- std::vector<double> ---
+    std::vector<double> dblVec = {1.1, 2.2, 3.3};
+    cClassDescriptor *dblVecDesc = omnetpp::ensureDescriptor<std::vector<double>>();
+    EV << "=== std::vector<double> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&dblVec), dblVecDesc);
+
+    // --- std::vector<std::string> ---
+    std::vector<std::string> strVec = {"alpha", "beta", "gamma"};
+    cClassDescriptor *strVecDesc = omnetpp::ensureDescriptor<std::vector<std::string>>();
+    EV << "=== std::vector<std::string> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strVec), strVecDesc);
+
+    // --- empty vector ---
+    std::vector<int> emptyVec;
+    EV << "=== empty std::vector<int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&emptyVec), intVecDesc);
+
+    // --- nested std::vector<std::vector<int>> ---
+    std::vector<std::vector<int>> nestedVec = {{1, 2}, {3, 4, 5}};
+    cClassDescriptor *nestedVecDesc = omnetpp::ensureDescriptor<std::vector<std::vector<int>>>();
+    EV << "=== std::vector<std::vector<int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&nestedVec), nestedVecDesc);
+
+    // --- setFieldValueAsString on vector element ---
+    EV << "=== std::vector<int>: setFieldValueAsString ===\n";
+    intVecDesc->setFieldValueAsString(any_ptr(&intVec), 0, 1, "77");
+    EV << "after set [1]: ";
+    for (int x : intVec) EV << x << " ";
+    EV << "\n\n";
+
+    // --- std::list<int> ---
+    std::list<int> intList = {100, 200, 300};
+    cClassDescriptor *intListDesc = omnetpp::ensureDescriptor<std::list<int>>();
+    EV << "=== std::list<int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intList), intListDesc);
+
+    // --- std::set<int> ---
+    std::set<int> intSet = {5, 10, 15, 20};
+    cClassDescriptor *intSetDesc = omnetpp::ensureDescriptor<std::set<int>>();
+    EV << "=== std::set<int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intSet), intSetDesc);
+
+    // --- std::set<std::string> ---
+    std::set<std::string> strSet = {"apple", "banana", "cherry"};
+    cClassDescriptor *strSetDesc = omnetpp::ensureDescriptor<std::set<std::string>>();
+    EV << "=== std::set<std::string> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strSet), strSetDesc);
+
+    // --- std::map<std::string, int> ---
+    std::map<std::string, int> strIntMap = {{"one", 1}, {"two", 2}, {"three", 3}};
+    cClassDescriptor *strIntMapDesc = omnetpp::ensureDescriptor<std::map<std::string, int>>();
+    EV << "=== std::map<std::string,int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strIntMap), strIntMapDesc);
+
+    // --- std::map<int, std::string> ---
+    std::map<int, std::string> intStrMap = {{1, "one"}, {2, "two"}};
+    cClassDescriptor *intStrMapDesc = omnetpp::ensureDescriptor<std::map<int, std::string>>();
+    EV << "=== std::map<int,std::string> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intStrMap), intStrMapDesc);
+
+    // --- std::unordered_map<std::string, double> ---
+    std::unordered_map<std::string, double> strDblUMap;
+    strDblUMap["pi"] = 3.14;
+    cClassDescriptor *strDblUMapDesc = omnetpp::ensureDescriptor<std::unordered_map<std::string, double>>();
+    EV << "=== std::unordered_map<std::string,double> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strDblUMap), strDblUMapDesc);
+
+    // --- nested: std::map<std::string, std::vector<int>> ---
+    std::map<std::string, std::vector<int>> mapOfVec;
+    mapOfVec["alpha"] = {10, 20};
+    mapOfVec["beta"] = {30, 40, 50};
+    cClassDescriptor *mapOfVecDesc = omnetpp::ensureDescriptor<std::map<std::string, std::vector<int>>>();
+    EV << "=== std::map<std::string,std::vector<int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&mapOfVec), mapOfVecDesc);
+
+    // --- nested: std::vector<std::map<std::string, int>> ---
+    std::vector<std::map<std::string, int>> vecOfMap;
+    vecOfMap.push_back({{"x", 1}, {"y", 2}});
+    vecOfMap.push_back({{"z", 3}});
+    cClassDescriptor *vecOfMapDesc = omnetpp::ensureDescriptor<std::vector<std::map<std::string, int>>>();
+    EV << "=== std::vector<std::map<std::string,int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&vecOfMap), vecOfMapDesc);
+
+    // --- nested: std::map<std::string, std::map<std::string, int>> ---
+    std::map<std::string, std::map<std::string, int>> mapOfMap;
+    mapOfMap["outer1"] = {{"a", 1}, {"b", 2}};
+    mapOfMap["outer2"] = {{"c", 3}};
+    cClassDescriptor *mapOfMapDesc = omnetpp::ensureDescriptor<std::map<std::string, std::map<std::string, int>>>();
+    EV << "=== std::map<std::string,std::map<std::string,int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&mapOfMap), mapOfMapDesc);
+
+    // --- std::pair<std::string, int> ---
+    std::pair<std::string, int> strIntPair = {"hello", 42};
+    cClassDescriptor *strIntPairDesc = omnetpp::ensureDescriptor<std::pair<std::string, int>>();
+    EV << "=== std::pair<std::string,int> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&strIntPair), strIntPairDesc);
+
+    // --- std::pair<int, std::vector<int>> ---
+    std::pair<int, std::vector<int>> intVecPair = {99, {1, 2, 3}};
+    cClassDescriptor *intVecPairDesc = omnetpp::ensureDescriptor<std::pair<int, std::vector<int>>>();
+    EV << "=== std::pair<int,std::vector<int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&intVecPair), intVecPairDesc);
+
+    // --- std::vector<std::pair<std::string, int>> ---
+    std::vector<std::pair<std::string, int>> vecOfPair = {{"x", 10}, {"y", 20}};
+    cClassDescriptor *vecOfPairDesc = omnetpp::ensureDescriptor<std::vector<std::pair<std::string, int>>>();
+    EV << "=== std::vector<std::pair<std::string,int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&vecOfPair), vecOfPairDesc);
+
+    // --- nested: std::list<std::set<int>> ---
+    std::list<std::set<int>> listOfSet;
+    listOfSet.push_back({1, 2, 3});
+    listOfSet.push_back({4, 5});
+    cClassDescriptor *listOfSetDesc = omnetpp::ensureDescriptor<std::list<std::set<int>>>();
+    EV << "=== std::list<std::set<int>> ===\n";
+    testlib::printDescriptor(EV, any_ptr(&listOfSet), listOfSetDesc);
+
+    EV << ".\n";
+}
+
+} // namespace
+
+%contains: stdout
+=== int ===
+descriptor: int
+valueAsString: 42
+
+=== double ===
+descriptor: double
+valueAsString: 3.14
+
+=== bool ===
+descriptor: bool
+valueAsString: 1
+
+=== std::string ===
+descriptor: std::string
+valueAsString: "hello world"
+
+=== long ===
+descriptor: long
+valueAsString: 123456789
+
+=== char ===
+descriptor: char
+valueAsString: 'A' (65)
+
+=== short ===
+descriptor: short
+valueAsString: 1234
+
+=== cMessage ===
+descriptor: omnetpp::cMessage
+valueAsString: (new msg)
+string className = omnetpp::cMessage
+string name = hello
+string fullName = hello
+string fullPath = Test.tester.hello
+string info = (new msg)
+omnetpp::cObject owner = id=2
+    string className = descriptor_dynamic_1::Tester
+    string name = tester
+    string fullName = tester
+    string fullPath = Test.tester
+    string info = id=2
+short schedulingPriority = 0
+omnetpp::cObject targetObject =
+bool isScheduled = false
+omnetpp::simtime_t arrivalTime = 0s
+omnetpp::msgid_t id = 1
+omnetpp::msgid_t treeId = 1
+short kind = 0
+string displayString =
+omnetpp::cObject controlInfo =
+omnetpp::cArray parList =
+bool isSelfMessage = true
+omnetpp::simtime_t creationTime = 0s
+omnetpp::simtime_t sendingTime = 0s
+omnetpp::simtime_t timestamp = 0s
+int senderModuleId = -1
+int senderGateId = -1
+omnetpp::cModule senderModule =
+omnetpp::cGate senderGate =
+int arrivalModuleId = -1
+int arrivalGateId = -1
+omnetpp::cModule arrivalModule =
+omnetpp::cGate arrivalGate =
+
+=== Point ===
+descriptor: descriptor_dynamic_1::Point
+valueAsString: (unprintable)
+double x = 1.5
+double y = 2.5
+
+=== int: setValueAsString ===
+after set: 99
+
+=== double: setValueAsString ===
+after set: 2.718
+
+=== descriptor identity ===
+same int desc: true
+
+=== std::vector<int> ===
+descriptor: std::vector<int>
+valueAsString: size=3
+int elements[3]:
+    [0] 10
+    [1] 20
+    [2] 30
+
+=== std::vector<double> ===
+descriptor: std::vector<double>
+valueAsString: size=3
+double elements[3]:
+    [0] 1.1
+    [1] 2.2
+    [2] 3.3
+
+=== std::vector<std::string> ===
+descriptor: std::vector<std::string>
+valueAsString: size=3
+std::string elements[3]:
+    [0] "alpha"
+    [1] "beta"
+    [2] "gamma"
+
+=== empty std::vector<int> ===
+descriptor: std::vector<int>
+valueAsString: empty
+int elements[0]:
+
+=== std::vector<std::vector<int>> ===
+descriptor: std::vector<std::vector<int>>
+valueAsString: size=2
+std::vector<int> elements[2]:
+    [0] size=2
+        int elements[2]:
+            [0] 1
+            [1] 2
+    [1] size=3
+        int elements[3]:
+            [0] 3
+            [1] 4
+            [2] 5
+
+=== std::vector<int>: setFieldValueAsString ===
+after set [1]: 10 77 30
+
+=== std::list<int> ===
+descriptor: std::list<int>
+valueAsString: size=3
+int elements[3]:
+    [0] 100
+    [1] 200
+    [2] 300
+
+=== std::set<int> ===
+descriptor: std::set<int>
+valueAsString: size=4
+int elements[4]:
+    [0] 5
+    [1] 10
+    [2] 15
+    [3] 20
+
+=== std::set<std::string> ===
+descriptor: std::set<std::string>
+valueAsString: size=3
+std::string elements[3]:
+    [0] "apple"
+    [1] "banana"
+    [2] "cherry"
+
+=== std::map<std::string,int> ===
+descriptor: std::map<std::string,int>
+valueAsString: size=3
+int elements[3]:
+    [0] "one" => 1
+    [1] "three" => 3
+    [2] "two" => 2
+
+=== std::map<int,std::string> ===
+descriptor: std::map<int,std::string>
+valueAsString: size=2
+std::string elements[2]:
+    [0] 1 => "one"
+    [1] 2 => "two"
+
+=== std::unordered_map<std::string,double> ===
+descriptor: std::unordered_map<std::string,double>
+valueAsString: size=1
+double elements[1]:
+    [0] "pi" => 3.14
+
+=== std::map<std::string,std::vector<int>> ===
+descriptor: std::map<std::string,std::vector<int>>
+valueAsString: size=2
+std::vector<int> elements[2]:
+    [0] "alpha" => size=2
+        int elements[2]:
+            [0] 10
+            [1] 20
+    [1] "beta" => size=3
+        int elements[3]:
+            [0] 30
+            [1] 40
+            [2] 50
+
+=== std::vector<std::map<std::string,int>> ===
+descriptor: std::vector<std::map<std::string,int>>
+valueAsString: size=2
+std::map<std::string,int> elements[2]:
+    [0] size=2
+        int elements[2]:
+            [0] "x" => 1
+            [1] "y" => 2
+    [1] size=1
+        int elements[1]:
+            [0] "z" => 3
+
+=== std::map<std::string,std::map<std::string,int>> ===
+descriptor: std::map<std::string,std::map<std::string,int>>
+valueAsString: size=2
+std::map<std::string,int> elements[2]:
+    [0] "outer1" => size=2
+        int elements[2]:
+            [0] "a" => 1
+            [1] "b" => 2
+    [1] "outer2" => size=1
+        int elements[1]:
+            [0] "c" => 3
+
+=== std::pair<std::string,int> ===
+descriptor: std::pair<std::string,int>
+valueAsString: "hello" => 42
+std::string first = "hello"
+int second = 42
+
+=== std::pair<int,std::vector<int>> ===
+descriptor: std::pair<int,std::vector<int>>
+valueAsString: 99 => size=3
+int first = 99
+std::vector<int> second = size=3
+    int elements[3]:
+        [0] 1
+        [1] 2
+        [2] 3
+
+=== std::vector<std::pair<std::string,int>> ===
+descriptor: std::vector<std::pair<std::string,int>>
+valueAsString: size=2
+std::pair<std::string,int> elements[2]:
+    [0] "x" => 10
+        std::string first = "x"
+        int second = 10
+    [1] "y" => 20
+        std::string first = "y"
+        int second = 20
+
+=== std::list<std::set<int>> ===
+descriptor: std::list<std::set<int>>
+valueAsString: size=2
+std::set<int> elements[2]:
+    [0] size=3
+        int elements[3]:
+            [0] 1
+            [1] 2
+            [2] 3
+    [1] size=2
+        int elements[2]:
+            [0] 4
+            [1] 5
+
+.
