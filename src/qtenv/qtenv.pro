@@ -116,8 +116,7 @@ SOURCES += animationcontrollerdialog.cc \
     timelinegraphicsview.cc \
     timelineinspector.cc \
     vectorplotitem.cc \
-    videorecordingdialog.cc \
-    watchinspector.cc
+    videorecordingdialog.cc
 
 
 HEADERS += animationcontrollerdialog.h \
@@ -189,8 +188,7 @@ HEADERS += animationcontrollerdialog.h \
     timelinegraphicsview.h \
     timelineinspector.h \
     vectorplotitem.h \
-    videorecordingdialog.h \
-    watchinspector.h
+    videorecordingdialog.h
 
 
 # include path is relative to the current build directory (e.g. out/src/gcc-debug/qtenv)

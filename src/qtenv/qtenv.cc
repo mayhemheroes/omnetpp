@@ -35,6 +35,8 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtGui/QFontDatabase>
 #include <QtGui/QImageReader>
 #include <QtGui/QStyleHints>
@@ -75,7 +77,6 @@
 #include "genericobjectinspector.h"
 #include "figurerenderers.h"
 #include "fileeditor.h"
-#include "watchinspector.h"
 #include "mainwindow.h"
 #include "timelineinspector.h"
 #include "objecttreeinspector.h"
@@ -3099,7 +3100,6 @@ void Qtenv::updateQtFonts()
 // dummy function to force Unix linkers collect all symbols needed
 
 void _dummy_for_genericobjectinspector();
-void _dummy_for_watchinspector();
 void _dummy_for_moduleinspector();
 void _dummy_for_loginspector();
 void _dummy_for_histograminspector();
@@ -3109,7 +3109,6 @@ void _dummy_for_objecttreeinspector();
 void _dummy_func()
 {
     _dummy_for_genericobjectinspector();
-    _dummy_for_watchinspector();
     _dummy_for_moduleinspector();
     _dummy_for_loginspector();
     _dummy_for_histograminspector();
