@@ -51,6 +51,7 @@ public final class NedCompletionHelper {
         makeShortTemplate("@signal[${name}](type=\"${type}\");", "property"),
         makeShortTemplate("@statistic[${name}];", "property"),
         makeShortTemplate("@statistic[${name}](title=\"${title}\";record=${expression1},${expression2});", "property"),
+        makeShortTemplate("@figure[${name}](type=${type});", "property"),
     }; // XXX check what gets actually supported! also: "recordstats", "kernel", ...
 
     public final static Template[] proposedNedComponentDisplayStringTempl;
@@ -136,16 +137,22 @@ public final class NedCompletionHelper {
     public final static Template[] proposedNedSubmodulePropertyTempl = {
         makeShortTemplate("@display(\"i=${icon}\");", "property"),
         makeShortTemplate("@dynamic()", "property"),
+        makeShortTemplate("@omittedTypename(${typeName})", "property"),
     }; //XXX check this list before release
 
     public final static Template[] proposedNedConnectionPropertyTempl = {
         makeShortTemplate("@display(\"i=${icon}\");", "property"),
+        makeShortTemplate("@reconnect", "property"),
+        makeShortTemplate("@omittedTypename(${typeName})", "property"),
+        makeShortTemplate("@defaultname(${name});", "property"),
     };
 
     public final static Template[] proposedNedParamPropertyTempl = {
         makeShortTemplate("@prompt(\"${message}\")", "property"),
         makeShortTemplate("@enum(${value1}, ${value2})", "property"),
         makeShortTemplate("@unit(${unitName})", "property"),
+        makeShortTemplate("@mutable", "property"),
+        makeShortTemplate("@class(${className})", "property"),
     }; //XXX check this list before release
 
     public final static Template[] proposedNedUnitTempl;
@@ -199,6 +206,8 @@ public final class NedCompletionHelper {
         makeShortTemplate("@labels(${label1})", "property"),
         makeShortTemplate("@inlabels(${inLabel1})", "property"),
         makeShortTemplate("@outlabels(${outLabel1})", "property"),
+        makeShortTemplate("@loose", "property"),
+        makeShortTemplate("@directIn", "property"),
     }; //XXX check this list before release
 
     // MSG specific completions - not used currently
