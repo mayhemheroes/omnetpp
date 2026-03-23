@@ -45,7 +45,7 @@ OBJS_STD=\
     $O/cpar.o $O/cparimpl.o $O/cownedobject.o $O/cproperties.o $O/cproperty.o $O/crandom.o \
     $O/cresultfilter.o $O/cresultlistener.o $O/cresultrecorder.o $O/clifecyclelistener.o \
     $O/cprecolldensityest.o $O/cpsquare.o $O/cqueue.o $O/cpacketqueue.o $O/cscheduler.o $O/csimplemodule.o \
-    $O/csimulation.o $O/cstatistic.o $O/cstddev.o $O/cstlwatch.o $O/cstringparimpl.o \
+    $O/csimulation.o $O/cstatistic.o $O/cstddev.o $O/cstringparimpl.o \
     $O/cstringtokenizer.o $O/cclassdescriptor.o $O/ctemporaryowner.o $O/ctopology.o \
     $O/cvisitor.o $O/cwatch.o $O/cdynamicdescriptor.o $O/cxmlelement.o $O/cxmlparimpl.o $O/any_ptr.o $O/distrib.o $O/nedfunctions.o $O/nedpythonfunctions.o \
     $O/errmsg.o $O/globals.o $O/cregistrationlist.o $O/minixpath.o $O/onstartup.o $O/opp_pooledstring.o \

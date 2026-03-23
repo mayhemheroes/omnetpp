@@ -106,7 +106,6 @@
 #include "omnetpp/cstatistic.h"
 #include "omnetpp/cstatisticbuilder.h"
 #include "omnetpp/cstddev.h"
-#include "omnetpp/cstlwatch.h"
 #include "omnetpp/cstringparimpl.h"
 #include "omnetpp/cstringtokenizer.h"
 #include "omnetpp/ctimestampedvalue.h"

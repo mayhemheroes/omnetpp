@@ -328,10 +328,10 @@ cObject *GenericObjectTreeModel::getCObjectPointerToInspect(const QModelIndex &i
 {
     ASSERT(index.model() == this);
     cObject *object = getCObjectPointer(index);
-    if (auto w = dynamic_cast<cWatch_cObject *>(object))
-        return w->getObjectPtr();
-    if (auto w = dynamic_cast<cWatch_cObjectPtr *>(object))
-        return w->getObjectPtr();
+    // if (auto w = dynamic_cast<cWatch_cObject *>(object))
+    //     return w->getObjectPtr();
+    // if (auto w = dynamic_cast<cWatch_cObjectPtr *>(object))
+    //     return w->getObjectPtr();
     return object;
 }
 

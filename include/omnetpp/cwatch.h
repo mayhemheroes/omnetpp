@@ -21,9 +21,51 @@
 #include <functional>
 #include "cownedobject.h"
 #include "cclassdescriptor.h"
+#include "cdynamicdescriptor.h"
 
 namespace omnetpp {
 
+class cWatchBase;
+
+/**
+ * Internal helper for cWatchBase (for objects and object pointers).
+ * Necessary only to translate the object argument of instance-related
+ * methods from the cWatchBase (or subclass) pointer to a pointer to
+ * the actually watched object.
+ */
+class cWatchProxyDescriptor : public cClassDescriptor {
+  protected:
+    cWatchBase *watch;
+    cClassDescriptor *targetDesc;
+
+  public:
+    cWatchProxyDescriptor(cWatchBase *watch, cClassDescriptor *targetDesc) :
+      cClassDescriptor(targetDesc ? targetDesc->getName() : "none"),
+      watch(watch), targetDesc(targetDesc) { }
+
+    void setTargetDescriptor(cClassDescriptor *desc) { targetDesc = desc; setName(desc ? desc->getName() : "none"); }
+
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyname) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char *getFieldStructName(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyname) const override;
+    virtual std::string getValueAsString(any_ptr object) const override;
+    virtual void setValueAsString(any_ptr object, const char *value) const override;
+    virtual std::string getFieldValueAsString(any_ptr object, int field, int i) const override;
+    virtual void setFieldValueAsString(any_ptr object, int field, int i, const char *value) const override;
+    virtual cValue getFieldValue(any_ptr object, int field, int i) const override;
+    virtual void setFieldValue(any_ptr object, int field, int i, const cValue& value) const override;
+    virtual any_ptr getFieldStructValuePointer(any_ptr object, int field, int i) const override;
+    virtual void setFieldStructValuePointer(any_ptr object, int field, int i, any_ptr ptr) const override;
+    virtual int getFieldArraySize(any_ptr object, int field) const override;
+    virtual void setFieldArraySize(any_ptr object, int field, int size) const override;
+    virtual std::string getFieldArrayIndexString(any_ptr object, int field, int arrayIndex) const override;
+};
 
 /**
  * @brief Helper class to make primitive types and non-cOwnedObject objects
@@ -35,7 +77,10 @@ namespace omnetpp {
 class SIM_API cWatchBase : public cNoncopyableOwnedObject
 {
   protected:
-    mutable cClassDescriptor *proxyDesc = nullptr;
+    mutable cWatchProxyDescriptor *proxyDesc = nullptr;
+
+  protected:
+    void forEachChildOf(cObject *obj, cVisitor *visitor);
 
   public:
     /** @name Constructors, destructor, assignment */
@@ -47,21 +92,10 @@ class SIM_API cWatchBase : public cNoncopyableOwnedObject
     ~cWatchBase();
     //@}
 
-    virtual cClassDescriptor *getDescriptor() const override;
+    virtual std::string str() const override;
 
     /** @name New methods */
     //@{
-    /**
-     * Tells if changing the variable's value via assign() is supported.
-     */
-    virtual bool supportsAssignment() const = 0;
-
-    /**
-     * Changes the watched variable's value. May only be called if
-     * supportsAssignment() returns true.
-     */
-    virtual void assign(const char *s) {}
-
     /**
      * Returns a pointer to the watched variable or object as an any_ptr.
      */
@@ -71,294 +105,106 @@ class SIM_API cWatchBase : public cNoncopyableOwnedObject
 
 
 /**
- * @brief Template Watch class, for any type that supports operator<<.
+ * @brief Template Watch class that delegates to the type's cClassDescriptor
+ * for string conversion and inspection.
  * @ingroup Internals
  */
 template<typename T>
-class cGenericReadonlyWatch : public cWatchBase
+class cWatch : public cWatchBase
 {
   private:
     const T& r;
+
   public:
-    cGenericReadonlyWatch(const char *name, const T& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return omnetpp::opp_typename(typeid(T));}
-    virtual bool supportsAssignment() const override {return false;}
-    virtual std::string str() const override
-    {
-        std::stringstream out;
-        out << r;
-        return out.str();
+    cWatch(const char *name, const T& x) : cWatchBase(name), r(x) {}
+    virtual const char *getClassName() const override {return getDescriptor()->getFullName();}
+
+    virtual void forEachChild(cVisitor *visitor) override {
+        if constexpr (std::is_base_of_v<cObject, T>)
+            forEachChildOf(const_cast<T*>(&r), visitor);
     }
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
+
+    virtual any_ptr getValuePointer() const override {
+        if constexpr (std::is_base_of_v<cObject, T>)
+            return toAnyPtr(&r);
+        else
+            return any_ptr(&r);
+    }
+
+    virtual cClassDescriptor *getDescriptor() const override {
+        if (proxyDesc == nullptr) {
+            cClassDescriptor *targetDesc;
+            if constexpr (std::is_base_of_v<cObject, T>)
+                targetDesc = r.getDescriptor();
+            else
+                targetDesc = omnetpp::ensureDescriptor<T>();
+            auto *nonconst_this = const_cast<cWatch*>(this);
+            proxyDesc = new cWatchProxyDescriptor(nonconst_this, targetDesc);
+            nonconst_this->take(proxyDesc);
+        }
+        return proxyDesc;
+    }
 };
 
-
 /**
- * @brief Template Watch class, for any type that supports operator<<,
- * and operator>> for assignment.
+ * @brief Template Watch class that delegates to the type's cClassDescriptor
+ * for string conversion and inspection.
  * @ingroup Internals
  */
 template<typename T>
-class cGenericAssignableWatch : public cWatchBase
+class cPointerWatch : public cWatchBase
 {
   private:
-    T& r;
-  public:
-    cGenericAssignableWatch(const char *name, T& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return omnetpp::opp_typename(typeid(T));}
-    virtual bool supportsAssignment() const override {return true;}
-    virtual std::string str() const override
-    {
-        std::stringstream out;
-        out << r;
-        return out.str();
-    }
-    virtual void assign(const char *s) override
-    {
-        std::stringstream in(s);
-        in >> r;
-    }
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
-};
+    T *& p;
+    std::string declTypeName;
 
-/**
- * @brief Watch class, specifically for bool.
- * @ingroup Internals
- */
-class SIM_API cWatch_bool : public cWatchBase
-{
-  private:
-    bool& r;
   public:
-    cWatch_bool(const char *name, bool& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return "bool";}
-    virtual bool supportsAssignment() const override {return true;}
-    virtual std::string str() const override
-    {
-        return r ? "true" : "false";
-    }
-    virtual void assign(const char *s) override
-    {
-        r = *s!='0' && *s!='n' && *s!='N' && *s!='f' && *s!='F';
-    }
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
-};
+    cPointerWatch(const char *name, T *& x) : cWatchBase(name), p(x),
+        declTypeName(std::string(opp_typename(typeid(T))) + " *") {}
 
-/**
- * @brief Watch class, specifically for char.
- * @ingroup Internals
- */
-class SIM_API cWatch_char : public cWatchBase
-{
-  private:
-    char& r;
-  public:
-    cWatch_char(const char *name, char& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return "char";}
-    virtual bool supportsAssignment() const override {return true;}
-    virtual std::string str() const override
-    {
-        std::stringstream out;
-        out << "'" << ((unsigned char)r<32 ? ' ' : r) << "' (" << int(r) << ")";
-        return out.str();
+    virtual const char *getClassName() const override {return declTypeName.c_str();}
+
+    virtual void forEachChild(cVisitor *visitor) override {
+        if constexpr (std::is_base_of_v<cObject, T>)
+            if (p) forEachChildOf(p, visitor);
     }
-    virtual void assign(const char *s) override
-    {
-        if (s[0]=='\'')
-            r = s[1];
+
+    virtual any_ptr getValuePointer() const override {
+        if constexpr (std::is_base_of_v<cObject, T>)
+            return toAnyPtr(p);
         else
-            r = atoi(s);
+            return any_ptr(p);
     }
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
-};
 
-/**
- * @brief Watch class, specifically for unsigned char.
- * @ingroup Internals
- */
-class SIM_API cWatch_uchar : public cWatchBase
-{
-  private:
-    unsigned char& r;
-  public:
-    cWatch_uchar(const char *name, unsigned char& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return "unsigned char";}
-    virtual bool supportsAssignment() const override {return true;}
-    virtual std::string str() const override
-    {
-        std::stringstream out;
-        out << "'" << (char)(r<' ' ? ' ' : r) << "' (" << int(r) << ")";
-        return out.str();
+    virtual cClassDescriptor *getDescriptor() const override {
+        if (proxyDesc == nullptr) {
+            cClassDescriptor *targetDesc;
+            if constexpr (std::is_base_of_v<cObject, T>)
+                targetDesc = p ? p->getDescriptor() : nullptr;
+            else
+                targetDesc = omnetpp::ensureDescriptor<T>();
+            auto *nonconst_this = const_cast<cPointerWatch*>(this);
+            proxyDesc = new cWatchProxyDescriptor(nonconst_this, targetDesc);
+            nonconst_this->take(proxyDesc);
+        }
+        else if constexpr (std::is_base_of_v<cObject, T>) {
+            // watched pointer may now point to a different object, update descriptor
+            proxyDesc->setTargetDescriptor(p ? p->getDescriptor() : nullptr);
+        }
+        return proxyDesc;
     }
-    virtual void assign(const char *s) override
-    {
-        if (s[0]=='\'')
-            r = s[1];
-        else
-            r = atoi(s);
-    }
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
 };
 
-/**
- * @brief Watch class, specifically for std::string.
- * @ingroup Internals
- */
-class SIM_API cWatch_stdstring : public cWatchBase
-{
-  private:
-    std::string& r;
-  public:
-    cWatch_stdstring(const char *name, std::string& x) : cWatchBase(name), r(x) {}
-    virtual const char *getClassName() const override {return "std::string";}
-    virtual bool supportsAssignment() const override {return true;}
-    virtual std::string str() const override;
-    virtual void assign(const char *s) override;
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
-};
 
-/**
- * @brief Watch class, specifically for objects subclassed from cObject.
- * @ingroup Internals
- */
-class SIM_API cWatch_cObject : public cWatchBase
-{
-  private:
-    cObject& r;
-    std::string typeName;
-  public:
-    cWatch_cObject(const char *name, const char *typeName, cObject& ref);
-    virtual const char *getClassName() const override {return typeName.c_str();}
-    virtual std::string str() const override {return std::string("-> ") + r.getClassName() + ")" + r.getFullName() + " " + r.str();}
-    virtual bool supportsAssignment() const override {return false;}
-    virtual void forEachChild(cVisitor *visitor) override;
-    cObject *getObjectPtr() const {return &r;}
-    virtual any_ptr getValuePointer() const override {return any_ptr(&r);}
-};
-
-/**
- * @brief Watch class, specifically for pointers to objects subclassed from cObject.
- * @ingroup Internals
- */
-class SIM_API cWatch_cObjectPtr : public cWatchBase
-{
-  private:
-    cObject *&rp;
-    std::string typeName;
-  public:
-    cWatch_cObjectPtr(const char *name, const char* typeName, cObject *&ptr);
-    virtual const char *getClassName() const override {return typeName.c_str();}
-    virtual std::string str() const override {return rp ? ( std::string("-> (") + rp->getClassName() + ")" + rp->getFullName() + " " + rp->str()) : "<null>";}
-    virtual bool supportsAssignment() const override {return false;}
-    virtual void forEachChild(cVisitor *visitor) override;
-    cObject *getObjectPtr() const {return rp;}
-    virtual any_ptr getValuePointer() const override {return any_ptr(rp);}
-};
-
-/**
- * @brief Watch class for computed expressions. The watch will display the result of
- * calling an encapsulated function.
- * @ingroup Internals
- */
-template<typename T>
-class cComputedExpressionWatch : public cWatchBase
-{
-  private:
-    std::function<T()> f;
-  public:
-    cComputedExpressionWatch(const char *name, std::function<T()> f) : cWatchBase(name), f(f) {}
-    virtual const char *getClassName() const override {return omnetpp::opp_typename(typeid(T));}
-    virtual bool supportsAssignment() const override {return false;}
-    virtual std::string str() const override { std::stringstream out; out << f(); return out.str(); }
-    virtual any_ptr getValuePointer() const override {return any_ptr(nullptr);}
-};
-
-inline cWatchBase *createWatch(const char *varname, short& d) {
-    return new cGenericAssignableWatch<short>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, unsigned short& d) {
-    return new cGenericAssignableWatch<unsigned short>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, int& d) {
-    return new cGenericAssignableWatch<int>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, unsigned int& d) {
-    return new cGenericAssignableWatch<unsigned int>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, long& d) {
-    return new cGenericAssignableWatch<long>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, unsigned long& d) {
-    return new cGenericAssignableWatch<unsigned long>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, float& d) {
-    return new cGenericAssignableWatch<float>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, double& d) {
-    return new cGenericAssignableWatch<double>(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, bool& d) {
-    return new cWatch_bool(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, char& d) {
-    return new cWatch_char(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, unsigned char& d) {
-    return new cWatch_uchar(varname, d);
-}
-
-inline cWatchBase *createWatch(const char *varname, signed char& d) {
-    return new cWatch_char(varname, *(char *)&d);
-}
-
-inline cWatchBase *createWatch(const char *varname, std::string& v) {
-    return new cWatch_stdstring(varname, v);
-}
-
-// this is the fallback, if none of the above match
 template<typename T>
 inline cWatchBase *createWatch(const char *varname, T& d) {
-    return new cGenericReadonlyWatch<T>(varname, d);
-}
-
-// to be used if T also has op>> defined
-template<typename T>
-inline cWatchBase *createWatch_genericAssignable(const char *varname, T& d) {
-    return new cGenericAssignableWatch<T>(varname, d);
-}
-
-// for objects
-inline cWatchBase *createWatch_cObject(const char *varname, const char *typeName, cObject& obj) {
-    return new cWatch_cObject(varname, typeName, obj);
+    return new cWatch<T>(varname, d);
 }
 
 template<typename T>
-inline cWatchBase *createComputedExpressionWatch(const char *name, std::function<T()> f) {
-    return new cComputedExpressionWatch<T>(name, f);
+inline cWatchBase *createWatch(const char *varname, T *& p) {
+    return new cPointerWatch<T>(varname, p);
 }
-
-// for pointers to objects.
-// NOTE: this is a bit tricky. C++ thinks that (cObject*&) and
-// (SomeDerivedType*&) are unrelated, so we have to force the cast
-// in the WATCH_PTR() macro. But to stay type-safe, we include a 3rd arg
-// of type cObject*: the compiler has to be able to cast that
-// implicitly from SomeDerivedType* -- this way we do not accept pointers
-// that are REALLY unrelated.
-inline cWatchBase *createWatch_cObjectPtr(const char *varname, const char *typeName, cObject *&refp, cObject *p) {
-    ASSERT(refp==p);
-    return new cWatch_cObjectPtr(varname, typeName, refp);
-}
-
 
 /**
  * @ingroup WatchMacros
@@ -366,37 +212,27 @@ inline cWatchBase *createWatch_cObjectPtr(const char *varname, const char *typeN
  */
 
 /**
- * @brief Makes primitive types and types with operator<< inspectable in Qtenv.
- * See also WATCH_RW(), WATCH_PTR(), WATCH_OBJ(), WATCH_VECTOR(),
- * WATCH_PTRVECTOR(), etc. macros.
+ * @brief Makes variables inspectable in Qtenv. String representation is
+ * produced using str() for cObject descendants, and the stream write operator
+ * (operator<<) for other types. For compound types, fields are queried using
+ * the associated class descriptor of the type (see cClassDescriptor).
  *
  * @hideinitializer
  */
 #define WATCH(variable)  omnetpp::createWatch(#variable,(variable))
 
-/**
- * @brief Makes types with operator\<\< and operator\>\> inspectable in Qtenv.
- * operator\>\> is used to enable changing the variable's value interactively.
- *
- * @hideinitializer
- */
-#define WATCH_RW(variable)  omnetpp::createWatch_genericAssignable(#variable,(variable))
-
-/**
- * @brief Makes classes derived from cObject inspectable in Qtenv.
- * See also WATCH_PTR().
- *
- * @hideinitializer
- */
-#define WATCH_OBJ(variable)  omnetpp::createWatch_cObject(#variable, omnetpp::opp_typename(typeid(variable)), (variable))
-
-/**
- * @brief Makes pointers to objects derived from cObject inspectable in Qtenv.
- * See also WATCH_OBJ().
- *
- * @hideinitializer
- */
-#define WATCH_PTR(variable)  omnetpp::createWatch_cObjectPtr(#variable, omnetpp::opp_typename(typeid(variable)), (cObject*&)(variable),(variable))
+// Obsolete aliases to WATCH()
+#define WATCH_RW(variable)         WATCH(variable)
+#define WATCH_OBJ(variable)        WATCH(variable)
+#define WATCH_PTR(variable)        WATCH(variable)
+#define WATCH_VECTOR(variable)     WATCH(variable)
+#define WATCH_PTRVECTOR(variable)  WATCH(variable)
+#define WATCH_LIST(variable)       WATCH(variable)
+#define WATCH_PTRLIST(variable)    WATCH(variable)
+#define WATCH_SET(variable)        WATCH(variable)
+#define WATCH_PTRSET(variable)     WATCH(variable)
+#define WATCH_MAP(variable)        WATCH(variable)
+#define WATCH_PTRMAP(variable)     WATCH(variable)
 
 /**
  * @brief Makes the result of a formula or calculation inspectable in Qtenv
@@ -414,7 +250,7 @@ inline cWatchBase *createWatch_cObjectPtr(const char *varname, const char *typeN
  *
  * @hideinitializer
  */
-#define WATCH_EXPR(name, expression)  omnetpp::createComputedExpressionWatch(name, std::function([=]() {return (expression);}))
+#define WATCH_EXPR(name, expression)  //TODO omnetpp::createComputedExpressionWatch(name, std::function([=]() {return (expression);}))
 
 /**
  * @brief Makes the result of a lambda function inspectable in Qtenv. This is a
@@ -424,7 +260,7 @@ inline cWatchBase *createWatch_cObjectPtr(const char *varname, const char *typeN
  *
  * @hideinitializer
  */
-#define WATCH_LAMBDA(name, lambdaFunction)  omnetpp::createComputedExpressionWatch(name, std::function(lambdaFunction))
+#define WATCH_LAMBDA(name, lambdaFunction) //TODO omnetpp::createComputedExpressionWatch(name, std::function(lambdaFunction))
 
 /** @} */
 

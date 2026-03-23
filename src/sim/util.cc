@@ -60,7 +60,6 @@ const char *opp_typename(const std::type_info& t)
 // in the library
 
 #include "omnetpp/cwatch.h"
-#include "omnetpp/cstlwatch.h"
 #include "omnetpp/clcg32.h"
 #include "omnetpp/cmersennetwister.h"
 #include "omnetpp/chistogram.h"
@@ -89,12 +88,9 @@ void nedfunctions_dummy();
 void nedpythonfunctions_dummy();
 void _sim_dummy_func()
 {
-    bool bb = false;
     cRNG *rng = nullptr;
-    cWatch_bool w(nullptr, bb);
     std::vector<int> v;
     WATCH_VECTOR(v);
-    w.supportsAssignment();
     exponential(rng, 1.0);
     cSequentialScheduler sch;
     (void)sch;
