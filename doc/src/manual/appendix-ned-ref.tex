@@ -611,7 +611,7 @@ are not currently supported.
 \end{note}
 
 The following properties are recognized for parameters: \fprop{@unit},
-\fprop{@prompt}, \fprop{@mutable}.
+\fprop{@prompt}, \fprop{@mutable}, \fprop{@enum}, \fprop{@class}.
 
 
 \subsubsection{The @prompt Property}
@@ -670,6 +670,40 @@ simple B extends A {
 When a parameter is annotated with \fprop{@mutable}, the parameter's value is
 allowed to be changed at runtime, i.e. after its module has been set up.
 Parameters without the \fprop{@mutable} property cannot be changed at runtime.
+
+
+\subsubsection{The @enum Property}
+\label{sec:ned-ref:enum-property}
+
+The \fprop{@enum} property is only recognized for \fkeyword{string} parameters.
+It defines a list of accepted values for the parameter. The values are specified
+as a comma-separated list.
+
+\begin{ned}
+string protocol @enum("udp","tcp");
+\end{ned}
+
+At runtime, the simulation kernel will raise an error if the parameter is
+assigned a value not in the list.
+
+
+\subsubsection{The @class Property on Parameters}
+\label{sec:ned-ref:class-param-property}
+
+The \fprop{@class} property on an \fkeyword{object} parameter specifies the
+expected C++ class of the parameter's value. When set, the simulation kernel
+verifies that objects assigned to the parameter are instances of the given
+class (or a subclass thereof).
+
+\begin{ned}
+object route @class(inet::L3Address);
+\end{ned}
+
+\begin{note}
+    This use of \fprop{@class} is unrelated to the component-level \fprop{@class}
+    property that specifies the C++ implementation class of a module or channel
+    (see \ref{sec:ned-ref:resolving-cpp-class}).
+\end{note}
 
 
 \subsection{Pattern Assignments}
@@ -891,6 +925,41 @@ A module created this way will pick up parameter values from the submodule
 declaration in the NED file as well as from the ini file. Dynamic submodules
 may be displayed in the graphical NED editor as semi-transparent, allowing them
 to be edited and configured like other submodules.
+
+\subsubsection{The @omittedTypename Property}
+\label{sec:ned-ref:omittedtypename-property}
+
+The \fprop{@omittedTypename} property is recognized on module interfaces,
+channel interfaces, parametric submodules (\fkeyword{like}), and parametric
+connections.  It simplifies the construction of highly configurable compound
+modules where many submodules are optional, by reducing the need for complex
+conditional connections.
+
+When a parametric submodule's type name is configured as an empty string
+(\ttt{""}), the network builder would normally raise an error. If the submodule
+has an \fprop{@omittedTypename} property (which typically comes from the
+interface), the specified type is instantiated instead. By convention, this type
+is a lightweight \textit{self-destructing} module (e.g.\ \ttt{OmittedTcp}) that
+shortcuts its input and output gates during initialization and then removes
+itself from the compound module. This way, the surrounding connections remain
+valid even though the submodule is effectively absent, without the compound
+module needing complicated conditional connection logic.
+
+\fprop{@omittedTypename} is typically specified on the module interface, so that
+all submodules using that interface inherit the behavior:
+
+\begin{ned}
+moduleinterface ITCP {
+    @omittedTypename(OmittedTcp);
+}
+\end{ned}
+
+It may also be specified directly on a submodule or connection, which takes
+precedence over the interface. If \fprop{@omittedTypename} is present but its
+value is empty, the submodule will simply not be created (equivalent to being
+conditionally omitted). For connections with parametric channel types, an empty
+value means no channel object will be created for the connection.
+
 
 \subsubsection{Conditional Submodules}
 \label{sec:ned-ref:conditional-submodules}
@@ -1153,6 +1222,27 @@ A channel body cannot define new parameters. It is only
 allowed to assign existing parameters.
 
 It is also allowed to add or modify properties and parameter properties.
+
+
+\subsubsection{The @reconnect Property}
+\label{sec:ned-ref:reconnect-property}
+
+The \fprop{@reconnect} property is recognized for connections. Normally, it is
+an error for a NED connection to refer to a gate that is already connected.
+When \fprop{@reconnect} is present on a connection, the network builder first
+disconnects any existing connections on the involved gates before creating the
+new connection.
+
+\begin{ned}
+a.out --> {@reconnect;} --> b.in;
+\end{ned}
+
+The primary use of \fprop{@reconnect} is in combination with inheritance,
+where it allows a derived compound module to modify the connections established
+by the base type, e.g., to insert a new submodule in the path between two
+already connected submodules.
+
+See also \ref{sec:ned-lang:reconnecting-gates}.
 
 
 \subsection{Conditional and Loop Connections, Connection Groups}

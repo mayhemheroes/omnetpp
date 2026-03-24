@@ -2663,6 +2663,13 @@ Module, channel, submodule, and connection properties:
   \item \fprop{@dynamic}: Submodules declared dynamic will not be instantiated
     automatically; it is expected that they will be created at runtime by other
     modules. See \ref{sec:ned-ref:dynamic-property}.
+  \item \fprop{@omittedTypename}: For submodules and connections with parametric
+    type (\fkeyword{like}), specifies the type name to use (or suppresses
+    creation) when the type name expression evaluates to an empty string. See
+    \ref{sec:ned-ref:omittedtypename-property}.
+  \item \fprop{@reconnect}: On a connection, allows reconnecting gates that
+    are already connected, by first disconnecting them. See
+    \ref{sec:ned-lang:reconnecting-gates}, \ref{sec:ned-ref:reconnect-property}.
   \item \fprop{@signal[<signalname>](...)}: Declares a signal that can be
     emitted by modules of this type. See
     \ref{sec:simple-modules:signal-declarations}.
@@ -2691,7 +2698,10 @@ Parameter properties:
     during the simulation, supporting dynamic behavior in models. See
     \ref{sec:ned-lang:mutable}, \ref{sec:ned-ref:mutable-property}.
   \item \fprop{@enum(<strings>)}: Defines a list of valid values for the
-    parameter.
+    parameter. See \ref{sec:ned-ref:enum-property}.
+  \item \fprop{@class(<classname>)}: For \fkeyword{object} parameters, specifies
+    the expected C++ class of the parameter's value. See
+    \ref{sec:ned-ref:class-param-property}.
 \end{itemize}
 
 Gate properties:

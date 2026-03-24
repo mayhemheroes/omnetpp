@@ -4896,6 +4896,16 @@ The following keys are understood in \fprop{@statistic} properties:
       The property value must be a string containing \textit{name=value} pairs
       separated by commas. For example: \ttt{"IDLE=1,BUSY=2,DOWN=3"}.
 %XXX TODO implement:  \item[enumName]: xxx
+  \item[checkSignals]: Controls whether signal declarations (\fprop{@signal})
+      are checked for the signals used by this statistic. Accepted values are
+      \ttt{true} and \ttt{false}. When not specified, the global setting
+      (the \fconfig{check-signals} configuration option) is used.
+  \item[autoWarmupFilter]: Controls whether a warmup period filter is
+      automatically inserted at the front of the result filter chain.
+      Accepted values are \ttt{true} and \ttt{false}. When not specified
+      (or set to \ttt{true}), the warmup filter is added if the configured
+      warmup period is nonzero. Setting it to \ttt{false} disables the
+      automatic warmup filter for this statistic.
 \end{description}
 
 
