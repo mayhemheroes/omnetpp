@@ -142,6 +142,9 @@ class NedOutlinePage extends ContentOutlinePage implements INedChangeListener, I
         else {
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
+                    // re-check: file may have been removed between posting and execution (e.g. due to nested event loop)
+                    if (!NedResourcesPlugin.getNedResources().containsNedFileElement(graphicalNedEditor.getFile()))
+                        return;
                     if (event instanceof NedBeginModelChangeEvent)
                         nedBeginChangeCount++;
                     else if (event instanceof NedEndModelChangeEvent)
