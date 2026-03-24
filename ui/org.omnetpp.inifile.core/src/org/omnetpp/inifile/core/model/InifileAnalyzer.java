@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,6 +133,7 @@ public final class InifileAnalyzer {
     private INedTypeResolver analysisNedResolverCopy; // copy of the ned resources belong to the last analysis
     private ParamResolutionJob paramResolutionJob;
     private ReentrantLock paramResolutionLock = new ReentrantLock(); // for threads that are waiting for the param resolution job
+    private Condition paramResolutionDone = paramResolutionLock.newCondition();
 
     // infrastructure
     private INedChangeListener nedChangeListener; // we listen on NED changes
@@ -448,7 +451,7 @@ public final class InifileAnalyzer {
 
                 try {
                     // wait for the job to finish
-                    paramResolutionLock.wait(timeLeft);
+                    paramResolutionDone.await(timeLeft, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     // loop and keep trying
                 }
@@ -483,7 +486,7 @@ public final class InifileAnalyzer {
             finally {
                 // wake up threads that are waiting for the result of the analysis in executeParamResolutionJob()
                 try (var unused = new LockGuard(paramResolutionLock)) {
-                    paramResolutionLock.notifyAll();
+                    paramResolutionDone.signalAll();
                 }
             }
         }
