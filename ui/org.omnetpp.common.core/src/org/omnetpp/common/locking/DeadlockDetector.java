@@ -69,6 +69,7 @@ public class DeadlockDetector implements Runnable {
     private final ThreadMXBean threadMxBean;
     private final ILog log;
     private boolean dialogVisible = false;
+    private long uiBlockedSinceMs = -1; // wall-clock time when UI thread was first seen blocked
 
     public DeadlockDetector() {
         this.threadMxBean = ManagementFactory.getThreadMXBean();
@@ -142,23 +143,23 @@ public class DeadlockDetector implements Runnable {
                 Debug.println("UI thread state: " + uiThreadState);
 
             if (uiThreadState == Thread.State.BLOCKED || uiThreadState == Thread.State.WAITING) {
-                ThreadInfo info = threadMxBean.getThreadInfo(uiThread.getId(), 100);
+                long now = System.currentTimeMillis();
+                if (uiBlockedSinceMs < 0)
+                    uiBlockedSinceMs = now;
+                long elapsedMs = now - uiBlockedSinceMs;
 
-                // Get blocked and waited times if contention monitoring is enabled
-                long blockedTime = threadMxBean.isThreadContentionMonitoringEnabled() ? info.getBlockedTime() : -1;
-                long waitedTime = threadMxBean.isThreadContentionMonitoringEnabled() ? info.getWaitedTime() : -1;
+                ThreadInfo info = threadMxBean.getThreadInfo(uiThread.getId(), 100);
 
                 // Log the current state for diagnostic purposes if requested
                 if (debug)
                     Debug.println("UI thread state: " + uiThreadState +
-                                 ", blocked time: " + (blockedTime >= 0 ? blockedTime + "ms" : "unknown") +
-                                 ", waited time: " + (waitedTime >= 0 ? waitedTime + "ms" : "unknown"));
+                                 ", blocked for: " + elapsedMs + "ms");
 
                 // Only consider it a deadlock if the thread has been blocked/waiting for longer than the threshold
-                if (blockedTime > UI_THREAD_BLOCKING_THRESHOLD_MS || waitedTime > UI_THREAD_BLOCKING_THRESHOLD_MS) {
+                if (elapsedMs > UI_THREAD_BLOCKING_THRESHOLD_MS) {
                     StringBuilder logMessage = new StringBuilder("=== LASTING UI THREAD BLOCKING DETECTED, POTENTIAL DEADLOCK ===\n");
                     logMessage.append("UI thread state: ").append(uiThreadState).append("\n");
-                    logMessage.append("Blocked time: ").append(blockedTime).append("ms, Waited time: ").append(waitedTime).append("ms\n");
+                    logMessage.append("Blocked for: ").append(elapsedMs).append("ms\n");
                     logMessage.append(buildThreadInfoString(info));
                     log.error(logMessage.toString());
 
@@ -178,7 +179,11 @@ public class DeadlockDetector implements Runnable {
                     }
 
                     handleUiDeadlock(info);
+                    uiBlockedSinceMs = -1; // reset so we re-detect after interrupt
                 }
+            }
+            else {
+                uiBlockedSinceMs = -1; // UI thread is not blocked, reset
             }
         }
     }
