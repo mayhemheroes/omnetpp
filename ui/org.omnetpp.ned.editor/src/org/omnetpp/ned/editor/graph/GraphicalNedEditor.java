@@ -707,6 +707,10 @@ public class GraphicalNedEditor
         // if we are in a background thread, refresh later when UI thread is active
         DisplayUtils.runNowOrAsyncInUIThread(new Runnable() {
             public void run() {
+                // re-check: file may have been removed between posting and execution (e.g. due to nested event loop)
+                if (!NedResourcesPlugin.getNedResources().containsNedFileElement(getFile()))
+                    return;
+
                 // count begin/end nesting
                 if (event instanceof NedBeginModelChangeEvent)
                     nedBeginChangeCount++;
