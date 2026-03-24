@@ -199,6 +199,8 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
 
         // warn about files with syntax errors that may not be fully updated
         for (IFile file : resolver.getNedFiles()) {
+            if (pm.isCanceled())
+                throw new OperationCanceledException();
             NedFileElementEx nedFileElement = resolver.getNedFileElement(file);
             if (nedFileElement.hasSyntaxError())
                 status.addWarning("File '" + file.getFullPath() + "' has syntax errors and will not be updated.");
@@ -223,6 +225,8 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
         // For files without a connected editor, the on-disk content is authoritative.
         Map<IFile, String> oldSources = new HashMap<>();
         for (IFile file : resolver.getNedFiles()) {
+            if (pm.isCanceled())
+                throw new OperationCanceledException();
             NedFileElementEx nedFileElement = resolver.getNedFileElement(file);
             if (!nedFileElement.hasSyntaxError()) {
                 String content;
@@ -246,6 +250,9 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
         Map<IFile, List<NedRefactoringUtils.Match>> iniMatches = findIniMatches(project, oldName);
         Map<IFile, List<NedRefactoringUtils.Match>> cppMatches = findCppMatches(project, oldName);
         pm.worked(1);
+
+        if (pm.isCanceled())
+            throw new OperationCanceledException();
 
         // Step 3: perform the rename on the NED trees
         try {
@@ -276,6 +283,8 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
             // Add NED file changes (from NED engine) as a group
             CompositeChange nedChangesGroup = new CompositeChange("NED file changes");
             for (Map.Entry<IFile, String> entry : newSources.entrySet()) {
+                if (pm.isCanceled())
+                    throw new OperationCanceledException();
                 IFile file = entry.getKey();
                 String oldSource = oldSources.get(file);
                 if (oldSource == null)
@@ -295,6 +304,8 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
             // Add INI file changes (from text search) as a separate group
             CompositeChange iniChangesGroup = new CompositeChange("Text matches in INI files");
             for (Map.Entry<IFile, List<NedRefactoringUtils.Match>> entry : iniMatches.entrySet()) {
+                if (pm.isCanceled())
+                    throw new OperationCanceledException();
                 IFile file = entry.getKey();
                 List<NedRefactoringUtils.Match> matches = entry.getValue();
                 if (!matches.isEmpty())
@@ -306,6 +317,8 @@ public abstract class AbstractNedMemberRenameRefactoring extends Refactoring {
             // Add C++ file changes (from text search) as a separate group
             CompositeChange cppChangesGroup = new CompositeChange("Text matches in C++ files");
             for (Map.Entry<IFile, List<NedRefactoringUtils.Match>> entry : cppMatches.entrySet()) {
+                if (pm.isCanceled())
+                    throw new OperationCanceledException();
                 IFile file = entry.getKey();
                 List<NedRefactoringUtils.Match> matches = entry.getValue();
                 if (!matches.isEmpty())
