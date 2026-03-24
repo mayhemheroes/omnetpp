@@ -207,6 +207,48 @@ inline cWatchBase *createWatch(const char *varname, T *& p) {
 }
 
 /**
+ * @brief Template Watch class for computed values (lambdas, expressions).
+ * Stores a std::function that is re-evaluated on each inspector refresh.
+ * @ingroup Internals
+ */
+template<typename T>
+class cComputedWatch : public cWatchBase
+{
+  private:
+    std::function<T()> fn;
+    mutable T cachedValue;
+
+  public:
+    cComputedWatch(const char *name, std::function<T()> f)
+        : cWatchBase(name), fn(f), cachedValue(f()) {}
+
+    virtual const char *getClassName() const override {
+        return getDescriptor()->getFullName();
+    }
+
+    virtual any_ptr getValuePointer() const override {
+        cachedValue = fn();
+        return any_ptr(&cachedValue);
+    }
+
+    virtual cClassDescriptor *getDescriptor() const override {
+        if (proxyDesc == nullptr) {
+            cClassDescriptor *targetDesc = omnetpp::ensureDescriptor<T>();
+            auto *nonconst_this = const_cast<cComputedWatch*>(this);
+            proxyDesc = new cWatchProxyDescriptor(nonconst_this, targetDesc);
+            nonconst_this->take(proxyDesc);
+        }
+        return proxyDesc;
+    }
+};
+
+template<typename F>
+inline cWatchBase *createLambdaWatch(const char *name, F&& fn) {
+    using T = std::invoke_result_t<F>;
+    return new cComputedWatch<T>(name, std::function<T()>(std::forward<F>(fn)));
+}
+
+/**
  * @ingroup WatchMacros
  * @{
  */
@@ -242,25 +284,32 @@ inline cWatchBase *createWatch(const char *varname, T *& p) {
  * operations combining multiple variables, function calls, or any valid
  * expression.
  *
- * The macro works by creating a lambda function. Note that local variables will
- * be captured by value (i.e. their current values will be used.) See also
- * WATCH_LAMBDA() which gives you more flexibility.
+ * The macro works by creating a lambda that captures `this`, so only member
+ * variables and member functions of the enclosing class can be used in the
+ * expression. To use local variables, use WATCH_LAMBDA() with an explicit
+ * capture list instead.
  *
  * Example: WATCH_EXPR("totalPks", numTransmitted + queue.length() + numDropped)
  *
  * @hideinitializer
  */
-#define WATCH_EXPR(name, expression)  //TODO omnetpp::createComputedExpressionWatch(name, std::function([=]() {return (expression);}))
+#define WATCH_EXPR(name, expression)  omnetpp::createLambdaWatch(name, [this]() { return (expression); })
 
 /**
  * @brief Makes the result of a lambda function inspectable in Qtenv. This is a
  * more flexible (but also more verbose) version of WATCH_EXPR().
  *
+ * Unlike WATCH_EXPR which only captures `this`, WATCH_LAMBDA allows you to
+ * specify an arbitrary capture list. Local variables may be captured by value
+ * or by reference; however, note that the watch object typically outlives the
+ * local scope, so capturing locals by reference may result in dangling
+ * references.
+ *
  * Example: WATCH_LAMBDA("totalPks", [this]() { return numTransmitted + queue.length() + numDropped; })
  *
  * @hideinitializer
  */
-#define WATCH_LAMBDA(name, lambdaFunction) //TODO omnetpp::createComputedExpressionWatch(name, std::function(lambdaFunction))
+#define WATCH_LAMBDA(name, lambdaFunction)  omnetpp::createLambdaWatch(name, lambdaFunction)
 
 /** @} */
 
