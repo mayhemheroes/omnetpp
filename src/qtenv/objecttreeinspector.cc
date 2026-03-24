@@ -107,6 +107,12 @@ void ObjectTreeInspector::refresh()
         roots.push_back(simulation->getFES());
     }
 
+    // Save current selection and expanded state before model reset
+    QModelIndex currentIndex = view->currentIndex();
+    cObject *selectedObj = currentIndex.isValid() ? model->getCObjectPointer(currentIndex) : nullptr;
+    std::set<cObject *> expandedObjects;
+    collectExpandedObjects(QModelIndex(), expandedObjects);
+
     if (roots != model->getRootObjects()) {
         // the FES and Network are recreated on run restart or config change
         delete model;
@@ -117,11 +123,74 @@ void ObjectTreeInspector::refresh()
 
     model->refreshTreeStructure();
 
+    // Restore expanded state
+    restoreExpandedObjects(QModelIndex(), expandedObjects);
+
     gatherVisibleData();
 
     // because properly doing it is super slow
     view->dataChanged(QModelIndex(), QModelIndex());
     view->resizeColumnToContents(0); // and this is needed because of it
+
+    // Restore selection (without emitting selectionChanged which would affect other inspectors)
+    if (selectedObj) {
+        QModelIndex found = findObjectInTree(selectedObj, QModelIndex());
+        if (found.isValid()) {
+            QSignalBlocker blocker(view->selectionModel());
+            view->setCurrentIndex(found);
+            view->scrollTo(found, QAbstractItemView::EnsureVisible);
+        }
+    }
+}
+
+QModelIndex ObjectTreeInspector::findObjectInTree(cObject *obj, const QModelIndex &root)
+{
+    int rows = model->rowCount(root);
+    for (int row = 0; row < rows; ++row) {
+        QModelIndex idx = model->index(row, 0, root);
+        if (!idx.isValid())
+            continue;
+        if (model->getCObjectPointer(idx) == obj)
+            return idx;
+        // recurse into filled children only (don't trigger lazy loading)
+        if (model->hasChildren(idx)) {
+            QModelIndex found = findObjectInTree(obj, idx);
+            if (found.isValid())
+                return found;
+        }
+    }
+    return QModelIndex();
+}
+
+void ObjectTreeInspector::collectExpandedObjects(const QModelIndex &root, std::set<cObject *> &result)
+{
+    int rows = model->rowCount(root);
+    for (int row = 0; row < rows; ++row) {
+        QModelIndex idx = model->index(row, 0, root);
+        if (!idx.isValid())
+            continue;
+        if (view->isExpanded(idx)) {
+            cObject *obj = model->getCObjectPointer(idx);
+            if (obj)
+                result.insert(obj);
+            collectExpandedObjects(idx, result);
+        }
+    }
+}
+
+void ObjectTreeInspector::restoreExpandedObjects(const QModelIndex &root, const std::set<cObject *> &objects)
+{
+    int rows = model->rowCount(root);
+    for (int row = 0; row < rows; ++row) {
+        QModelIndex idx = model->index(row, 0, root);
+        if (!idx.isValid())
+            continue;
+        cObject *obj = model->getCObjectPointer(idx);
+        if (obj && objects.count(obj)) {
+            view->expand(idx);
+            restoreExpandedObjects(idx, objects);
+        }
+    }
 }
 
 void ObjectTreeInspector::createContextMenu(QPoint pos)

@@ -17,6 +17,7 @@
 #ifndef __OMNETPP_QTENV_OBJECTTREEINSPECTOR_H
 #define __OMNETPP_QTENV_OBJECTTREEINSPECTOR_H
 
+#include <set>
 #include <QtCore/QModelIndex>
 #include "qtenvdefs.h"
 #include "inspector.h"
@@ -38,6 +39,9 @@ private:
     void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void connectSelectionSignals();
+    QModelIndex findObjectInTree(cObject *obj, const QModelIndex &root);
+    void collectExpandedObjects(const QModelIndex &root, std::set<cObject *> &result);
+    void restoreExpandedObjects(const QModelIndex &root, const std::set<cObject *> &objects);
 
 private Q_SLOTS:
     void onClick(QModelIndex index);
