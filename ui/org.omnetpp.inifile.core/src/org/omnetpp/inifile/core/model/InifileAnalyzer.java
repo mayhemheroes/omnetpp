@@ -217,7 +217,12 @@ public final class InifileAnalyzer {
 
         paramResolutionJob.addJobChangeListener(new JobChangeAdapter() {
             public void done(IJobChangeEvent event) {
-                paramResolutionJobDone(event.getResult());
+                // Run outside the JobManager write lock to avoid deadlock:
+                // paramResolutionJobDone() acquires globalLock and paramResolutionLock,
+                // which would invert the lock ordering with executeParamResolution()
+                // that holds paramResolutionLock while calling Job.schedule().
+                IStatus result = event.getResult();
+                new Thread(() -> paramResolutionJobDone(result), "ParamResolution done handler").start();
             }
         });
     }
@@ -451,7 +456,8 @@ public final class InifileAnalyzer {
         }
     }
 
-    // this is called from the job's worker thread
+    // this is called from a separate thread spawned by the done() callback
+    // (must NOT run inside the JobManager write lock, see the callback above)
     private void paramResolutionJobDone(IStatus status) {
         if (status.getSeverity() == IStatus.CANCEL && status.getCode() == ParamResolutionJob.DOC_CHANGED) {
             // resheduled from job, waiting for next notification
