@@ -22,14 +22,13 @@ Define_Module(Module);
 void Module::activity()
 {
     cObject *watch;
-    int localInt = 10;
 
-    watch = WATCH_EXPR("expr", intMember + localInt);
+    watch = WATCH_EXPR("expr", intMember + 10);  // note: WATCH_EXPR will not capture local vars
 
     PRINT_WATCH_AFTER(intMember = 1;)
     PRINT_WATCH_AFTER(intMember = 2;)
-    PRINT_WATCH_AFTER(localInt = 333;)  // should be ineffective
 
+    int localInt = 10;
     watch = WATCH_LAMBDA("lambda", [&]() {return intMember + localInt;});
 
     PRINT_WATCH_AFTER(intMember = 1;localInt = 100;)
@@ -41,7 +40,6 @@ void Module::activity()
 %contains: stdout
 intMember = 1; --> expr=11
 intMember = 2; --> expr=12
-localInt = 333; --> expr=12
 intMember = 1;localInt = 100; --> lambda=101
 intMember = 5;localInt = 300; --> lambda=305
 .
