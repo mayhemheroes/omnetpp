@@ -10,6 +10,7 @@ package org.omnetpp.ned.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -35,6 +36,7 @@ import org.omnetpp.ned.model.ex.SimpleModuleElementEx;
 import org.omnetpp.ned.model.ex.SubmoduleElementEx;
 import org.omnetpp.ned.model.interfaces.IHasGates;
 import org.omnetpp.ned.model.interfaces.IHasName;
+import org.omnetpp.ned.model.interfaces.IInterfaceTypeElement;
 import org.omnetpp.ned.model.interfaces.IModuleTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeInfo;
@@ -86,7 +88,6 @@ import org.omnetpp.ned.model.pojo.UnknownElement;
  *
  * @author andras
  */
-//FIXME check that a module/channel satisfies the interfaces it implements!
 //FIXME finish validator functions! e.g. turn on expression parsing
 //FIXME todo: validation of embedded types!!!!
 //FIXME should be re-though -- it very much under-uses INedTypeInfo!!!
@@ -274,17 +275,6 @@ public class NedValidator extends AbstractNedValidatorEx {
             return;
         }
 
-//TODO
-//        // if all OK, add inherited members to our member list
-//        for (String memberName : e.getMembers().keySet()) {
-//            if (members.containsKey(memberName))
-//                errors.addError(node, "conflict: '"+memberName+"' occurs in multiple base interfaces");
-//            else
-//                members.put(memberName, e.getMembers().get(memberName));
-//        }
-
-        //TODO check compliance to interface (somewhere, not necessarily in the function)
-
         // then process children
         validateChildren(node);
 
@@ -325,12 +315,106 @@ public class NedValidator extends AbstractNedValidatorEx {
 
         // do the work
         validateChildren(node);
-        //XXX check compliance to "like" interfaces
+
+        // check compliance to "like" interfaces (only for concrete types, not interfaces themselves)
+        if (!(node instanceof IInterfaceTypeElement)) {
+            INedTypeInfo typeInfo = node.getNedTypeInfo();
+            if (typeInfo != null) {
+                for (INedTypeElement interfaceElement : typeInfo.getInterfaces()) {
+                    INedTypeInfo interfaceTypeInfo = interfaceElement.getNedTypeInfo();
+                    if (interfaceTypeInfo != null) {
+                        // find the InterfaceNameElement node for error reporting
+                        INedElement errorNode = node;
+                        for (INedElement child : node)
+                            if (child instanceof InterfaceNameElement) {
+                                String ifName = ((InterfaceNameElement)child).getName();
+                                INedTypeInfo resolved = resolver.lookupNedType(ifName, node.getParentLookupContext());
+                                if (resolved != null && resolved.getNedElement() == interfaceElement) {
+                                    errorNode = child;
+                                    break;
+                                }
+                            }
+                        checkComplianceToInterface(typeInfo, interfaceTypeInfo, errorNode);
+                    }
+                }
+            }
+        }
 
         // clean up
         componentNode = null;
         members.clear();
         innerTypes.clear();
+    }
+
+    /**
+     * Checks that a component type fulfills the contract of an interface it implements.
+     * Checks parameters (existence, type, volatile flag) and gates (existence, type, vector, size).
+     */
+    protected void checkComplianceToInterface(INedTypeInfo typeInfo, INedTypeInfo interfaceTypeInfo, INedElement errorNode) {
+        String typeKind = typeInfo.getNedElement() instanceof IModuleTypeElement ? "Module" : "Channel";
+        String interfaceName = interfaceTypeInfo.getName();
+
+        // check parameters
+        for (Map.Entry<String, ParamElementEx> entry : interfaceTypeInfo.getParamDeclarations().entrySet()) {
+            String paramName = entry.getKey();
+            ParamElementEx iParam = entry.getValue();
+
+            ParamElementEx param = typeInfo.getParamDeclarations().get(paramName);
+            if (param == null) {
+                errors.addError(errorNode, typeKind + " type has no parameter '" + paramName + "', required by interface '" + interfaceName + "'");
+                continue;
+            }
+
+            // check parameter type
+            if (param.getType() != iParam.getType())
+                errors.addError(errorNode, "Type of parameter '" + paramName + "' must be " + iParam.getAttribute(ParamElement.ATT_TYPE) + ", as required by interface '" + interfaceName + "'");
+
+            // check volatile flag
+            if (param.getIsVolatile() && !iParam.getIsVolatile())
+                errors.addError(errorNode, "Parameter '" + paramName + "' must not be volatile, as required by interface '" + interfaceName + "'");
+            if (!param.getIsVolatile() && iParam.getIsVolatile())
+                errors.addError(errorNode, "Parameter '" + paramName + "' must be volatile, as required by interface '" + interfaceName + "'");
+        }
+
+        // check gates (only for module types)
+        if (typeInfo.getNedElement() instanceof IModuleTypeElement) {
+            for (Map.Entry<String, GateElementEx> entry : interfaceTypeInfo.getGateDeclarations().entrySet()) {
+                String gateName = entry.getKey();
+                GateElementEx iGate = entry.getValue();
+
+                GateElementEx gate = typeInfo.getGateDeclarations().get(gateName);
+                if (gate == null) {
+                    errors.addError(errorNode, typeKind + " type has no gate '" + gateName + "', required by interface '" + interfaceName + "'");
+                    continue;
+                }
+
+                // check gate type
+                if (gate.getType() != iGate.getType())
+                    errors.addError(errorNode, "Type of gate '" + gateName + "' must be " + iGate.getAttribute(GateElement.ATT_TYPE) + ", as required by interface '" + interfaceName + "'");
+
+                // check vector/non-vector
+                if (!iGate.getIsVector() && gate.getIsVector())
+                    errors.addError(errorNode, "Gate '" + gateName + "' must not be a vector gate, as required by interface '" + interfaceName + "'");
+                if (iGate.getIsVector() && !gate.getIsVector())
+                    errors.addError(errorNode, "Gate '" + gateName + "' must be a vector gate, as required by interface '" + interfaceName + "'");
+
+                // if both are vectors, check vector size specs are compatible
+                if (iGate.getIsVector() && gate.getIsVector()) {
+                    boolean hasGateSize = StringUtils.isNotEmpty(gate.getVectorSize());
+                    boolean iHasGateSize = StringUtils.isNotEmpty(iGate.getVectorSize());
+
+                    if (hasGateSize && !iHasGateSize)
+                        errors.addError(errorNode, "Size of gate vector '" + gateName + "' must be left unspecified, as required by interface '" + interfaceName + "'");
+                    if (!hasGateSize && iHasGateSize)
+                        errors.addError(errorNode, "Size of gate vector '" + gateName + "' must be specified as in interface '" + interfaceName + "'");
+
+                    if (hasGateSize && iHasGateSize) {
+                        if (!gate.getVectorSize().equals(iGate.getVectorSize()))
+                            errors.addError(errorNode, "Size of gate vector '" + gateName + "' must be specified as in interface '" + interfaceName + "'");
+                    }
+                }
+            }
+        }
     }
 
     @Override
