@@ -162,20 +162,20 @@ public class DeadlockDetector implements Runnable {
                     logMessage.append(buildThreadInfoString(info));
                     log.error(logMessage.toString());
 
+                    if (deadlockedThreadIds != null && deadlockedThreadIds.length > 0) {
+                        ThreadInfo[] infos = threadMxBean.getThreadInfo(deadlockedThreadIds, true, true);
 
-                    ThreadInfo[] infos = threadMxBean.getThreadInfo(deadlockedThreadIds, true, true);
+                        // Add deadlock cycle analysis
+                        String deadlockCycle = analyzeDeadlockCycle(infos);
+                        if (deadlockCycle != null) {
+                            logMessage.append(deadlockCycle).append("\n");
+                        }
 
-                    // Add deadlock cycle analysis
-                    String deadlockCycle = analyzeDeadlockCycle(infos);
-                    if (deadlockCycle != null) {
-                        logMessage.append(deadlockCycle).append("\n");
+                        // Add detailed thread information
+                        for (ThreadInfo ti : infos)
+                            logMessage.append(buildThreadInfoString(ti)).append("\n");
+                        log.error(logMessage.toString());
                     }
-
-                    // Add detailed thread information
-                    for (ThreadInfo ti : infos)
-                        logMessage.append(buildThreadInfoString(ti)).append("\n");
-                    log.error(logMessage.toString());
-
 
                     handleUiDeadlock(info);
                 }
