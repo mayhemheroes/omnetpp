@@ -1,5 +1,11 @@
+
+cplusplus {{
+    std::string printGeneratedStruct(const GeneratedStruct& gs);
+}}
+
 struct GeneratedStruct
 {
+    @toString(printGeneratedStruct($));
     int foo;
     double bar;
     string baz;

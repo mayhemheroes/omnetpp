@@ -42,7 +42,7 @@ bool operator<(const Point& lhs, const Point& rhs)
 
 std::ostream& operator<<(std::ostream& os, const GeneratedStruct& gs)
 {
-    return os << "(" << gs.foo << "," << gs.bar << "," << gs.baz << ")";
+    return os << "GeneratedStruct (" << gs.foo << "," << gs.bar << "," << gs.baz << ")";
 }
 
 bool operator<(const GeneratedStruct& lhs, const GeneratedStruct& rhs)
@@ -90,6 +90,10 @@ class AStar : public APolygon
 
 std::ostream& operator<<(std::ostream& os, const AStar& s) {
     return os << "Star: n=" << s.n << ", edgeLen=" << s.edgeLen << ", pointy=" << s.pointy << " (printed by op<<)";
+}
+
+std::string printGeneratedStruct(const GeneratedStruct& gs) {
+    return "printed GeneratedStruct (" + std::to_string(gs.foo) + "," + std::to_string(gs.bar) + "," + gs.baz.c_str() + ")";
 }
 
 // no descriptor, no way to get base struct descriptor
