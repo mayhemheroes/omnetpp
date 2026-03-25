@@ -297,20 +297,10 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
 
     CC << PARSIMPACK_BOILERPLATE;
 
-    CC << "\n// SFINAE helpers for detecting operator<< and operator>>\n";
-    CC << "template<typename T, typename = void>\n";
-    CC << "struct is_printable : std::false_type {};\n";
-    CC << "template<typename T>\n";
-    CC << "struct is_printable<T, std::void_t<decltype(std::declval<std::ostream&>() << std::declval<const T&>())>> : std::true_type {};\n";
-    CC << "\n";
-    CC << "template<typename T, typename = void>\n";
-    CC << "struct is_extractable : std::false_type {};\n";
-    CC << "template<typename T>\n";
-    CC << "struct is_extractable<T, std::void_t<decltype(std::declval<std::istream&>() >> std::declval<T&>())>> : std::true_type {};\n";
     CC << "\n";
     CC << "template<typename T>\n";
     CC << "std::string toStringIfPrintable(const T& t) {\n";
-    CC << "    if constexpr (is_printable<T>::value) {\n";
+    CC << "    if constexpr (omnetpp::is_printable<T>::value) {\n";
     CC << "        std::ostringstream os;\n";
     CC << "        os << t;\n";
     CC << "        return os.str();\n";
@@ -320,7 +310,7 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
     CC << "\n";
     CC << "template<typename T>\n";
     CC << "bool fromStringIfExtractable(T& t, const char *s) {\n";
-    CC << "    if constexpr (is_extractable<T>::value) {\n";
+    CC << "    if constexpr (omnetpp::is_extractable<T>::value) {\n";
     CC << "        std::istringstream is(s);\n";
     CC << "        is >> t;\n";
     CC << "        return true;\n";
@@ -1239,7 +1229,7 @@ void MsgCodeGenerator::generateDescriptorClass(const ClassInfo& classInfo)
         CC << "    return " << makeFuncall("(*pp)", false, classInfo.toString) << ";\n";
     }
     else if (classInfo.iscObject || !classInfo.str.empty()) {
-        CC << "    return pp->str();\n";
+        CC << "    return ((cObject*)pp)->str();\n";  // The cast is there to avoid name clash with a potential field called "str"
     }
     else {
         CC << "    return toStringIfPrintable(*pp);\n";
