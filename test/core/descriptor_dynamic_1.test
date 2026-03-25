@@ -376,49 +376,49 @@ int elements[3]:
 descriptor: std::set<int>
 valueAsString: size=4
 int elements[4]:
-    [0] 5
-    [1] 10
-    [2] 15
-    [3] 20
+    5
+    10
+    15
+    20
 
 === std::set<std::string> ===
 descriptor: std::set<std::string>
 valueAsString: size=3
 std::string elements[3]:
-    [0] "apple"
-    [1] "banana"
-    [2] "cherry"
+    "apple"
+    "banana"
+    "cherry"
 
 === std::map<std::string,int> ===
 descriptor: std::map<std::string,int>
 valueAsString: size=3
 int elements[3]:
-    [0] "one" => 1
-    [1] "three" => 3
-    [2] "two" => 2
+    "one" => 1
+    "three" => 3
+    "two" => 2
 
 === std::map<int,std::string> ===
 descriptor: std::map<int,std::string>
 valueAsString: size=2
 std::string elements[2]:
-    [0] 1 => "one"
-    [1] 2 => "two"
+    1 => "one"
+    2 => "two"
 
 === std::unordered_map<std::string,double> ===
 descriptor: std::unordered_map<std::string,double>
 valueAsString: size=1
 double elements[1]:
-    [0] "pi" => 3.14
+    "pi" => 3.14
 
 === std::map<std::string,std::vector<int>> ===
 descriptor: std::map<std::string,std::vector<int>>
 valueAsString: size=2
 std::vector<int> elements[2]:
-    [0] "alpha" => size=2
+    "alpha" => size=2
         int elements[2]:
             [0] 10
             [1] 20
-    [1] "beta" => size=3
+    "beta" => size=3
         int elements[3]:
             [0] 30
             [1] 40
@@ -430,23 +430,23 @@ valueAsString: size=2
 std::map<std::string,int> elements[2]:
     [0] size=2
         int elements[2]:
-            [0] "x" => 1
-            [1] "y" => 2
+            "x" => 1
+            "y" => 2
     [1] size=1
         int elements[1]:
-            [0] "z" => 3
+            "z" => 3
 
 === std::map<std::string,std::map<std::string,int>> ===
 descriptor: std::map<std::string,std::map<std::string,int>>
 valueAsString: size=2
 std::map<std::string,int> elements[2]:
-    [0] "outer1" => size=2
+    "outer1" => size=2
         int elements[2]:
-            [0] "a" => 1
-            [1] "b" => 2
-    [1] "outer2" => size=1
+            "a" => 1
+            "b" => 2
+    "outer2" => size=1
         int elements[1]:
-            [0] "c" => 3
+            "c" => 3
 
 === std::pair<std::string,int> ===
 descriptor: std::pair<std::string,int>
@@ -481,12 +481,12 @@ valueAsString: size=2
 std::set<int> elements[2]:
     [0] size=3
         int elements[3]:
-            [0] 1
-            [1] 2
-            [2] 3
+            1
+            2
+            3
     [1] size=2
         int elements[2]:
-            [0] 4
-            [1] 5
+            4
+            5
 
 .

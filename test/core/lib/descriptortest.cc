@@ -36,7 +36,7 @@ static void printFields(std::ostream& out, any_ptr object, cClassDescriptor *des
             int size = desc->getFieldArraySize(object, field);
             out << ind << fieldType << " " << fieldName << "[" << size << "]:\n";
             for (int i = 0; i < size; i++) {
-                out << ind << "    [" << i << "] ";
+                out << ind << "    " << desc->getFieldArrayIndexString(object, field, i);
                 try { out << desc->getFieldValueAsString(object, field, i); }
                 catch (std::exception& e) { out << "ERROR: " << e.what(); }
                 out << "\n";
