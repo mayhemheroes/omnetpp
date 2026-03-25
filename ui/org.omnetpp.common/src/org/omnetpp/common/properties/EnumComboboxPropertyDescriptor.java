@@ -15,7 +15,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-import org.omnetpp.common.displaymodel.IDisplayString;
+import org.omnetpp.common.util.EnumSpec;
 import org.omnetpp.common.util.StringUtils;
 
 /**
@@ -26,13 +26,13 @@ import org.omnetpp.common.util.StringUtils;
 public class EnumComboboxPropertyDescriptor extends PropertyDescriptor {
 
     /** The list of possible values to display in the combo box. */
-    private IDisplayString.EnumSpec enumSpec;
+    private EnumSpec enumSpec;
 
     /** The control of this property descriptor. */
     private EditableComboBoxCellEditor editor;
 
 
-    public EnumComboboxPropertyDescriptor(Object id, String displayName, IDisplayString.EnumSpec enumSpec) {
+    public EnumComboboxPropertyDescriptor(Object id, String displayName, EnumSpec enumSpec) {
         super(id, displayName);
         this.enumSpec = enumSpec;
         setLabelProvider(new LabelProvider() {

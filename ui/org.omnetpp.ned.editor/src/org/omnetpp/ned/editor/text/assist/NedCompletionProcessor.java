@@ -28,6 +28,7 @@ import org.omnetpp.common.editor.text.SyntaxHighlightHelper.NedDisplayStringTagD
 import org.omnetpp.common.editor.text.SyntaxHighlightHelper.NedPropertyTagDetector;
 import org.omnetpp.common.editor.text.SyntaxHighlightHelper.NedPropertyTagValueDetector;
 import org.omnetpp.common.image.ImageFactory;
+import org.omnetpp.common.util.EnumSpec;
 import org.omnetpp.ned.core.INedResources;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.model.DisplayString;
@@ -367,7 +368,7 @@ public class NedCompletionProcessor extends AbstractNedCompletionProcessor {
                 if (tag != null && tagPos == 0 && tag.equals(IDisplayString.Tag.bgi))
                     addImageProposals(project, viewer, documentOffset, result, "maps/.*", new SyntaxHighlightHelper.NedDisplayStringImageNameDetector());
                 else if (prop != null) {
-                    IDisplayString.EnumSpec enumSpec = prop.getEnumSpec();
+                    EnumSpec enumSpec = prop.getEnumSpec();
                     if (enumSpec != null)
                         addProposals(viewer, documentOffset, result, enumSpec.getShorthands(), enumSpec.getNames());
                     else if (prop.getType() == PropType.COLOR)
