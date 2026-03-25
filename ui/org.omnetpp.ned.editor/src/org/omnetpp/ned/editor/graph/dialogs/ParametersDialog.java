@@ -5,7 +5,7 @@
   'License' for details on this and other legal matters.
 *--------------------------------------------------------------*/
 
-package org.omnetpp.ned.editor.graph.misc;
+package org.omnetpp.ned.editor.graph.dialogs;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -11,7 +11,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.omnetpp.common.image.ImageFactory;
-import org.omnetpp.ned.editor.graph.misc.ParametersDialog;
+import org.omnetpp.ned.editor.graph.dialogs.ParametersDialog;
 import org.omnetpp.ned.editor.graph.parts.EditPartUtil;
 import org.omnetpp.ned.model.INedElement;
 import org.omnetpp.ned.model.NedElement;

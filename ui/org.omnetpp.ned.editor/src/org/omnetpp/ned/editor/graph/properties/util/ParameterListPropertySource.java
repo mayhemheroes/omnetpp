@@ -17,7 +17,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.omnetpp.ned.editor.NedEditor;
-import org.omnetpp.ned.editor.graph.misc.ParametersDialog;
+import org.omnetpp.ned.editor.graph.dialogs.ParametersDialog;
 import org.omnetpp.ned.model.ex.ParamElementEx;
 import org.omnetpp.ned.model.interfaces.IHasParameters;
 
