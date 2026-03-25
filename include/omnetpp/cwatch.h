@@ -165,13 +165,13 @@ class cPointerWatch : public cWatchBase
     virtual const char *getClassName() const override {return declTypeName.c_str();}
 
     virtual void forEachChild(cVisitor *visitor) override {
-        if constexpr (std::is_base_of_v<cObject, T>)
-            if (p) forEachChildOf(p, visitor);
+        if constexpr (std::is_base_of_v<cObject, std::remove_const_t<T>>)
+            if (p) forEachChildOf(const_cast<cObject*>(static_cast<const cObject*>(p)), visitor);
     }
 
     virtual any_ptr getValuePointer() const override {
-        if constexpr (std::is_base_of_v<cObject, T>)
-            return toAnyPtr(p);
+        if constexpr (std::is_base_of_v<cObject, std::remove_const_t<T>>)
+            return toAnyPtr(static_cast<const cObject*>(p));
         else
             return any_ptr(p);
     }
@@ -179,15 +179,15 @@ class cPointerWatch : public cWatchBase
     virtual cClassDescriptor *getDescriptor() const override {
         if (proxyDesc == nullptr) {
             cClassDescriptor *targetDesc;
-            if constexpr (std::is_base_of_v<cObject, T>)
+            if constexpr (std::is_base_of_v<cObject, std::remove_const_t<T>>)
                 targetDesc = p ? p->getDescriptor() : nullptr;
             else
-                targetDesc = omnetpp::ensureDescriptor<T>();
+                targetDesc = omnetpp::ensureDescriptor<std::remove_const_t<T>>();
             auto *nonconst_this = const_cast<cPointerWatch*>(this);
             proxyDesc = new cWatchProxyDescriptor(nonconst_this, targetDesc);
             nonconst_this->take(proxyDesc);
         }
-        else if constexpr (std::is_base_of_v<cObject, T>) {
+        else if constexpr (std::is_base_of_v<cObject, std::remove_const_t<T>>) {
             // watched pointer may now point to a different object, update descriptor
             proxyDesc->setTargetDescriptor(p ? p->getDescriptor() : nullptr);
         }

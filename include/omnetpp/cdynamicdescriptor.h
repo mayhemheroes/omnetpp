@@ -276,9 +276,9 @@ class cStdVectorDescriptor : public cDynamicDescriptor
             E ptr = (*v)[i];
             if (!ptr) return "nullptr";
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(ptr)->getDescriptor();
+                cClassDescriptor *desc = static_cast<const cObject*>(ptr)->getDescriptor();
                 if (desc)
-                    return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(ptr)));
+                    return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(ptr)));
             }
             else {
                 if (elemDesc)
@@ -310,9 +310,9 @@ class cStdVectorDescriptor : public cDynamicDescriptor
             E ptr = (*v)[i];
             if (!ptr) return;
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(ptr)->getDescriptor();
+                cClassDescriptor *desc = static_cast<const cObject*>(ptr)->getDescriptor();
                 if (desc)
-                    desc->setValueAsString(toAnyPtr(static_cast<cObject*>(ptr)), value);
+                    desc->setValueAsString(toAnyPtr(static_cast<const cObject*>(ptr)), value);
             }
             else {
                 if (elemDesc) {
@@ -347,7 +347,7 @@ class cStdVectorDescriptor : public cDynamicDescriptor
             E ptr = (*v)[i];
             if (!ptr) return any_ptr(nullptr);
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>)
-                return toAnyPtr(ptr);
+                return toAnyPtr(static_cast<const cObject*>(ptr));
             else
                 return any_ptr(ptr);
         }
@@ -422,8 +422,8 @@ class cStdListDescriptor : public cDynamicDescriptor
             E ptr = *it;
             if (!ptr) return "nullptr";
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(ptr)->getDescriptor();
-                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(ptr)));
+                cClassDescriptor *desc = static_cast<const cObject*>(ptr)->getDescriptor();
+                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(ptr)));
             }
             else {
                 if (elemDesc) return elemDesc->getValueAsString(any_ptr(ptr));
@@ -447,8 +447,8 @@ class cStdListDescriptor : public cDynamicDescriptor
             E ptr = *it;
             if (!ptr) return;
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(ptr)->getDescriptor();
-                if (desc) desc->setValueAsString(toAnyPtr(static_cast<cObject*>(ptr)), value);
+                cClassDescriptor *desc = static_cast<const cObject*>(ptr)->getDescriptor();
+                if (desc) desc->setValueAsString(toAnyPtr(static_cast<const cObject*>(ptr)), value);
             }
             else {
                 if (elemDesc) { elemDesc->setValueAsString(any_ptr(ptr), value); return; }
@@ -470,7 +470,7 @@ class cStdListDescriptor : public cDynamicDescriptor
             E ptr = *it;
             if (!ptr) return any_ptr(nullptr);
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>)
-                return toAnyPtr(static_cast<cObject*>(ptr));
+                return toAnyPtr(static_cast<const cObject*>(ptr));
             else
                 return any_ptr(ptr);
         }
@@ -548,8 +548,8 @@ class cStdSetDescriptor : public cDynamicDescriptor
             E ptr = *it;
             if (!ptr) return "nullptr";
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(ptr)->getDescriptor();
-                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(ptr)));
+                cClassDescriptor *desc = static_cast<const cObject*>(ptr)->getDescriptor();
+                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(ptr)));
             }
             else {
                 cClassDescriptor *elemDesc = cClassDescriptor::getDescriptorFor(elemTypeName.c_str());
@@ -574,7 +574,7 @@ class cStdSetDescriptor : public cDynamicDescriptor
             E ptr = *it;
             if (!ptr) return any_ptr(nullptr);
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<E>>)
-                return toAnyPtr(static_cast<cObject*>(ptr));
+                return toAnyPtr(static_cast<const cObject*>(ptr));
             else
                 return any_ptr(ptr);
         }
@@ -658,8 +658,8 @@ class cStdMapDescriptor : public cDynamicDescriptor
             V vptr = it->second;
             if (!vptr) return "nullptr";
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<V>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(vptr)->getDescriptor();
-                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(vptr)));
+                cClassDescriptor *desc = static_cast<const cObject*>(vptr)->getDescriptor();
+                if (desc) return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(vptr)));
             }
             else {
                 cClassDescriptor *valDesc = cClassDescriptor::getDescriptorFor(valueTypeName.c_str());
@@ -684,8 +684,8 @@ class cStdMapDescriptor : public cDynamicDescriptor
             V vptr = it->second;
             if (!vptr) return;
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<V>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(vptr)->getDescriptor();
-                if (desc) desc->setValueAsString(toAnyPtr(static_cast<cObject*>(vptr)), value);
+                cClassDescriptor *desc = static_cast<const cObject*>(vptr)->getDescriptor();
+                if (desc) desc->setValueAsString(toAnyPtr(static_cast<const cObject*>(vptr)), value);
             }
             else {
                 cClassDescriptor *valDesc = cClassDescriptor::getDescriptorFor(valueTypeName.c_str());
@@ -709,7 +709,7 @@ class cStdMapDescriptor : public cDynamicDescriptor
             V vptr = it->second;
             if (!vptr) return any_ptr(nullptr);
             if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<V>>)
-                return toAnyPtr(static_cast<cObject*>(vptr));
+                return toAnyPtr(static_cast<const cObject*>(vptr));
             else
                 return any_ptr(vptr);
         }
@@ -728,8 +728,8 @@ class cStdMapDescriptor : public cDynamicDescriptor
             K kptr = it->first;
             if (!kptr) os << "nullptr";
             else if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<K>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(kptr)->getDescriptor();
-                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<cObject*>(kptr)));
+                cClassDescriptor *desc = static_cast<const cObject*>(kptr)->getDescriptor();
+                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(kptr)));
                 else os << UNPRINTABLE;
             }
             else {
@@ -776,8 +776,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
             F fptr = p->first;
             if (!fptr) os << "nullptr";
             else if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<F>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(fptr)->getDescriptor();
-                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<cObject*>(fptr))); else os << UNPRINTABLE;
+                cClassDescriptor *desc = static_cast<const cObject*>(fptr)->getDescriptor();
+                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(fptr))); else os << UNPRINTABLE;
             }
             else {
                 cClassDescriptor *fDesc = cClassDescriptor::getDescriptorFor(firstTypeName.c_str());
@@ -798,8 +798,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
             S sptr = p->second;
             if (!sptr) os << "nullptr";
             else if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<S>>) {
-                cClassDescriptor *desc = static_cast<cObject*>(sptr)->getDescriptor();
-                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<cObject*>(sptr))); else os << UNPRINTABLE;
+                cClassDescriptor *desc = static_cast<const cObject*>(sptr)->getDescriptor();
+                if (desc) os << desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(sptr))); else os << UNPRINTABLE;
             }
             else {
                 cClassDescriptor *sDesc = cClassDescriptor::getDescriptorFor(secondTypeName.c_str());
@@ -863,8 +863,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 F fptr = p->first;
                 if (!fptr) return "nullptr";
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<F>>) {
-                    cClassDescriptor *desc = static_cast<cObject*>(fptr)->getDescriptor();
-                    if (desc) return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(fptr)));
+                    cClassDescriptor *desc = static_cast<const cObject*>(fptr)->getDescriptor();
+                    if (desc) return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(fptr)));
                 }
                 else {
                     cClassDescriptor *d = cClassDescriptor::getDescriptorFor(firstTypeName.c_str());
@@ -883,8 +883,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 S sptr = p->second;
                 if (!sptr) return "nullptr";
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<S>>) {
-                    cClassDescriptor *desc = static_cast<cObject*>(sptr)->getDescriptor();
-                    if (desc) return desc->getValueAsString(toAnyPtr(static_cast<cObject*>(sptr)));
+                    cClassDescriptor *desc = static_cast<const cObject*>(sptr)->getDescriptor();
+                    if (desc) return desc->getValueAsString(toAnyPtr(static_cast<const cObject*>(sptr)));
                 }
                 else {
                     cClassDescriptor *d = cClassDescriptor::getDescriptorFor(secondTypeName.c_str());
@@ -908,8 +908,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 F fptr = p->first;
                 if (!fptr) return;
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<F>>) {
-                    cClassDescriptor *desc = static_cast<cObject*>(fptr)->getDescriptor();
-                    if (desc) desc->setValueAsString(toAnyPtr(static_cast<cObject*>(fptr)), value);
+                    cClassDescriptor *desc = static_cast<const cObject*>(fptr)->getDescriptor();
+                    if (desc) desc->setValueAsString(toAnyPtr(static_cast<const cObject*>(fptr)), value);
                 }
                 else {
                     cClassDescriptor *d = cClassDescriptor::getDescriptorFor(firstTypeName.c_str());
@@ -927,8 +927,8 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 S sptr = p->second;
                 if (!sptr) return;
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<S>>) {
-                    cClassDescriptor *desc = static_cast<cObject*>(sptr)->getDescriptor();
-                    if (desc) desc->setValueAsString(toAnyPtr(static_cast<cObject*>(sptr)), value);
+                    cClassDescriptor *desc = static_cast<const cObject*>(sptr)->getDescriptor();
+                    if (desc) desc->setValueAsString(toAnyPtr(static_cast<const cObject*>(sptr)), value);
                 }
                 else {
                     cClassDescriptor *d = cClassDescriptor::getDescriptorFor(secondTypeName.c_str());
@@ -951,7 +951,7 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 F fptr = p->first;
                 if (!fptr) return any_ptr(nullptr);
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<F>>)
-                    return toAnyPtr(static_cast<cObject*>(fptr));
+                    return toAnyPtr(static_cast<const cObject*>(fptr));
                 else
                     return any_ptr(fptr);
             }
@@ -964,7 +964,7 @@ class cStdPairDescriptor : public cDynamicDescriptor
                 S sptr = p->second;
                 if (!sptr) return any_ptr(nullptr);
                 if constexpr (std::is_base_of_v<cObject, std::remove_pointer_t<S>>)
-                    return toAnyPtr(static_cast<cObject*>(sptr));
+                    return toAnyPtr(static_cast<const cObject*>(sptr));
                 else
                     return any_ptr(sptr);
             }
