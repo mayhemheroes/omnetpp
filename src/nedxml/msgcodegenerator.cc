@@ -300,7 +300,7 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
     CC << "\n";
     CC << "template<typename T>\n";
     CC << "std::string toStringIfPrintable(const T& t) {\n";
-    CC << "    if constexpr (omnetpp::is_printable<T>::value) {\n";
+    CC << "    if constexpr (omnetpp::internal::is_printable<T>::value) {\n";
     CC << "        std::ostringstream os;\n";
     CC << "        os << t;\n";
     CC << "        return os.str();\n";
@@ -310,7 +310,7 @@ void MsgCodeGenerator::generateProlog(const std::string& msgFileName, const std:
     CC << "\n";
     CC << "template<typename T>\n";
     CC << "bool fromStringIfExtractable(T& t, const char *s) {\n";
-    CC << "    if constexpr (omnetpp::is_extractable<T>::value) {\n";
+    CC << "    if constexpr (omnetpp::internal::is_extractable<T>::value) {\n";
     CC << "        std::istringstream is(s);\n";
     CC << "        is >> t;\n";
     CC << "        return true;\n";

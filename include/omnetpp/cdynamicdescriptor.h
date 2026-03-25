@@ -31,6 +31,8 @@
 
 namespace omnetpp {
 
+namespace internal {
+
 // --- Type traits ---
 
 template<typename T, typename = void>
@@ -60,8 +62,6 @@ template<typename K, typename V, typename H, typename E, typename A> struct is_s
 
 template<typename T> struct is_std_pair : std::false_type {};
 template<typename F, typename S> struct is_std_pair<std::pair<F,S>> : std::true_type {};
-
-namespace internal {
 
 // Returns a human-readable type name for T. For std::vector<E>, constructs
 // "std::vector<elemtype>" instead of relying on opp_typename which may lose
@@ -997,7 +997,7 @@ cClassDescriptor *ensureDescriptor()
     if (desc)
         return desc;
 
-    if constexpr (is_std_vector<T>::value) {
+    if constexpr (internal::is_std_vector<T>::value) {
         using E = typename T::value_type;
         if constexpr (std::is_pointer_v<E>)
             ensureDescriptor<std::remove_pointer_t<E>>();
@@ -1005,7 +1005,7 @@ cClassDescriptor *ensureDescriptor()
             ensureDescriptor<E>();
         desc = new internal::cStdVectorDescriptor<E>(typeName);
     }
-    else if constexpr (is_std_list<T>::value) {
+    else if constexpr (internal::is_std_list<T>::value) {
         using E = typename T::value_type;
         if constexpr (std::is_pointer_v<E>)
             ensureDescriptor<std::remove_pointer_t<E>>();
@@ -1013,7 +1013,7 @@ cClassDescriptor *ensureDescriptor()
             ensureDescriptor<E>();
         desc = new internal::cStdListDescriptor<E>(typeName);
     }
-    else if constexpr (is_std_set<T>::value) {
+    else if constexpr (internal::is_std_set<T>::value) {
         using E = typename T::value_type;
         if constexpr (std::is_pointer_v<E>)
             ensureDescriptor<std::remove_pointer_t<E>>();
@@ -1021,21 +1021,21 @@ cClassDescriptor *ensureDescriptor()
             ensureDescriptor<E>();
         desc = new internal::cStdSetDescriptor<E>(typeName);
     }
-    else if constexpr (is_std_map<T>::value) {
+    else if constexpr (internal::is_std_map<T>::value) {
         using K = typename T::key_type;
         using V = typename T::mapped_type;
         if constexpr (std::is_pointer_v<K>) ensureDescriptor<std::remove_pointer_t<K>>(); else ensureDescriptor<K>();
         if constexpr (std::is_pointer_v<V>) ensureDescriptor<std::remove_pointer_t<V>>(); else ensureDescriptor<V>();
         desc = new internal::cStdMapDescriptor<T>(typeName);
     }
-    else if constexpr (is_std_unordered_map<T>::value) {
+    else if constexpr (internal::is_std_unordered_map<T>::value) {
         using K = typename T::key_type;
         using V = typename T::mapped_type;
         if constexpr (std::is_pointer_v<K>) ensureDescriptor<std::remove_pointer_t<K>>(); else ensureDescriptor<K>();
         if constexpr (std::is_pointer_v<V>) ensureDescriptor<std::remove_pointer_t<V>>(); else ensureDescriptor<V>();
         desc = new internal::cStdMapDescriptor<T>(typeName);
     }
-    else if constexpr (is_std_pair<T>::value) {
+    else if constexpr (internal::is_std_pair<T>::value) {
         using F = typename T::first_type;
         using S = typename T::second_type;
         if constexpr (std::is_pointer_v<F>) ensureDescriptor<std::remove_pointer_t<F>>(); else ensureDescriptor<F>();
