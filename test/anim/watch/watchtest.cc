@@ -146,7 +146,7 @@ void WatchTest::activity()
     WATCH(point);
 
     Point point_rw(100, 200);
-    WATCH_RW(point_rw);
+    WATCH(point_rw);
 
     Unprintable up{42};
     // WATCH(up); // it's documented that this doesn't need to work
@@ -158,48 +158,48 @@ void WatchTest::activity()
     WATCH(poly_WATCH);
 
     APolygon poly_WATCH_OBJ(5, 100);
-    WATCH_OBJ(poly_WATCH_OBJ);
+    WATCH(poly_WATCH_OBJ);
 
     //
     // Generated structs/classes (with structdesc.)
     //
 
-    // GeneratedStruct gs;
-    // WATCH(gs), WATCH_OBJ(gs) -- don't work because no op<<, and not cObject
+    GeneratedStruct gs;
+    WATCH(gs);
 
     GeneratedClass gc;
     GeneratedMessage gm("gm-obj");
     GeneratedPacket gp("gp-obj");
-    WATCH_OBJ(gc);
-    WATCH_OBJ(gm);
-    WATCH_OBJ(gp);
+    WATCH(gc);
+    WATCH(gm);
+    WATCH(gp);
 
     GeneratedClass *gcp = new GeneratedClass;
     cMessage *gmp = new GeneratedMessage("gmp-obj");
     cPacket *gpp = new GeneratedPacket("gpp-obj");
-    WATCH_PTR(gcp);
-    WATCH_PTR(gmp);
-    WATCH_PTR(gpp);
+    WATCH(gcp);
+    WATCH(gmp);
+    WATCH(gpp);
 
     const GeneratedClass *cgcp = new GeneratedClass;
     const cMessage *cgmp = new GeneratedMessage("cgmp-obj");
     const cPacket *cgpp = new GeneratedPacket("cgpp-obj");
-    WATCH_PTR(cgcp);
-    WATCH_PTR(cgmp);
-    WATCH_PTR(cgpp);
+    WATCH(cgcp);
+    WATCH(cgmp);
+    WATCH(cgpp);
 
     cObject *nada = nullptr;
-    WATCH_PTR(nada);
+    WATCH(nada);
 
     cObject *this_ = this;
-    WATCH_PTR(this_);
+    WATCH(this_);
 
     // pointer is captured by reference, and descriptor is not supposed to be cached
     cObject *changing = nullptr;
-    WATCH_PTR(changing);
+    WATCH(changing);
 
     // int *wrongp = (int *)gcp;
-    // WATCH_PTR(wrongp); -- this has to give a compile error
+    // WATCH(wrongp); -- this has to give a compile error
 
     //
     // Vectors, lists, sets, and maps
@@ -209,20 +209,20 @@ void WatchTest::activity()
     vi.push_back(3);
     vi.push_back(5);
     vi.push_back(7);
-    WATCH_VECTOR(vi);
+    WATCH(vi);
 
     std::list<std::string> ls;
     ls.push_back("two");
     ls.push_back("three");
     ls.push_back("five");
     ls.push_back("seven");
-    WATCH_LIST(ls);
+    WATCH(ls);
 
     std::map<int, std::string> m;
     m[1] = "one";
     m[2] = "two";
     m[3] = "three";
-    WATCH_MAP(m);
+    WATCH(m);
 
     //
     // Nested containers
@@ -231,25 +231,25 @@ void WatchTest::activity()
     vv.push_back(std::vector<int>{2,3});
     vv.push_back(std::vector<int>{5,7});
     vv.push_back(std::vector<int>{11,13});
-    WATCH_VECTOR(vv);
+    WATCH(vv);
 
     std::vector<std::map<int, double>> vm;
     vm.push_back(std::map<int, double>{{1, 1.1}, {2, 2.2}});
     vm.push_back(std::map<int, double>{{3, 3.3}, {4, 4.4}});
     vm.push_back(std::map<int, double>{{5, 5.5}, {6, 6.6}});
-    WATCH_VECTOR(vm);
+    WATCH(vm);
 
     std::map<int, std::vector<std::string>> mv;
     mv[1] = {"one", "uno", "un"};
     mv[2] = {"two", "dos", "deux"};
     mv[3] = {"three", "tres", "trois"};
-    WATCH_MAP(mv);
+    WATCH(mv);
 
     std::map<int, std::map<std::string, int>> mm;
     mm[1] = {{"one", 1}, {"uno", 1}, {"un", 1}};
     mm[2] = {{"two", 2}, {"dos", 2}, {"deux", 2}};
     mm[3] = {{"three", 3}, {"tres", 3}, {"trois", 3}};
-    WATCH_MAP(mm);
+    WATCH(mm);
 
     std::set<std::string> ss;
     ss.insert("Dopey");
@@ -259,7 +259,7 @@ void WatchTest::activity()
     ss.insert("Happy");
     ss.insert("Bashful");
     ss.insert("Doc");
-    WATCH_SET(ss);
+    WATCH(ss);
 
     //
     // Containers with compound elements
@@ -284,7 +284,7 @@ void WatchTest::activity()
     gs3.bar = 44;
     gs3.baz = "thirtythree";
     vgs.push_back(gs3);
-    WATCH_VECTOR(vgs);
+    WATCH(vgs);
 
     GeneratedStructSub gss;
     gss.foo = 55;
@@ -295,12 +295,12 @@ void WatchTest::activity()
     vgsp.push_back(&gs2);
     vgsp.push_back(&gs3);
     vgsp.push_back(&gss);
-    WATCH_PTRVECTOR(vgsp);
+    WATCH(vgsp);
 
     // no way to get desc for this, but op<< of GeneratedStruct should work
     std::vector<GeneratedStructSub *> vgssp;
     vgssp.push_back(&gss);
-    WATCH_PTRVECTOR(vgssp);
+    WATCH(vgssp);
 
     GeneratedPacketSub *pks = new GeneratedPacketSub("packetSub");
     std::vector<GeneratedPacket *> vpacket;
@@ -308,150 +308,150 @@ void WatchTest::activity()
     vpacket.push_back(pk2);
     vpacket.push_back(pk3);
     vpacket.push_back(pks); // should be described by desc of GeneratedPacket
-    WATCH_PTRVECTOR(vpacket);
+    WATCH(vpacket);
 
     // this should still use desc of GeneratedPacket
     // NOTE: see the comment in cStlContainerWatcherBase::getDescriptor() for why this doesn't work
     std::vector<GeneratedPacketSub *> vpkssp;
     vpkssp.push_back(pks);
-    WATCH_PTRVECTOR(vpkssp);
+    WATCH(vpkssp);
 
     std::list<GeneratedStruct> lgs;
     lgs.push_back(gs1);
     lgs.push_back(gs2);
     lgs.push_back(gs3);
-    WATCH_LIST(lgs);
+    WATCH(lgs);
 
     std::list<GeneratedStruct *> lgsp;
     lgsp.push_back(&gs1);
     lgsp.push_back(&gs2);
     lgsp.push_back(&gs3);
-    WATCH_PTRLIST(lgsp);
+    WATCH(lgsp);
 
     std::list<GeneratedPacket *> lpacket;
     lpacket.push_back(pk1);
     lpacket.push_back(pk2);
     lpacket.push_back(pk3);
-    WATCH_PTRLIST(lpacket);
+    WATCH(lpacket);
 
     std::set<GeneratedStruct> sgs;
     sgs.insert(gs1);
     sgs.insert(gs2);
     sgs.insert(gs3);
-    WATCH_SET(sgs);
+    WATCH(sgs);
 
     std::set<GeneratedStruct *> sgsp;
     sgsp.insert(&gs1);
     sgsp.insert(&gs2);
     sgsp.insert(&gs3);
-    WATCH_PTRSET(sgsp);
+    WATCH(sgsp);
 
     std::set<const GeneratedStruct *> csgsp;
     csgsp.insert(&gs1);
     csgsp.insert(&gs2);
     csgsp.insert(&gs3);
-    WATCH_PTRSET(csgsp);
+    WATCH(csgsp);
 
     std::set<GeneratedPacket *> spacket;
     spacket.insert(pk1);
     spacket.insert(pk2);
     spacket.insert(pk3);
-    WATCH_PTRSET(spacket);
+    WATCH(spacket);
 
     std::set<const GeneratedPacket *> cspacket;
     cspacket.insert(pk1);
     cspacket.insert(pk2);
     cspacket.insert(pk3);
-    WATCH_PTRSET(cspacket);
+    WATCH(cspacket);
 
     std::map<int, GeneratedStruct> mgs;
     mgs[1] = gs1;
     mgs[2] = gs2;
     mgs[3] = gs3;
-    WATCH_MAP(mgs);
+    WATCH(mgs);
 
     std::map<int, GeneratedStruct *> mgsp;
     mgsp[1] = &gs1;
     mgsp[2] = &gs2;
     mgsp[3] = &gs3;
-    WATCH_PTRMAP(mgsp);
+    WATCH(mgsp);
 
     std::map<int, const GeneratedStruct *> cmgsp;
     cmgsp[1] = &gs1;
     cmgsp[2] = &gs2;
     cmgsp[3] = &gs3;
-    WATCH_PTRMAP(cmgsp);
+    WATCH(cmgsp);
 
     std::map<int, GeneratedPacket *> mpacket;
     mpacket[1] = pk1;
     mpacket[2] = pk2;
     mpacket[3] = pk3;
-    WATCH_PTRMAP(mpacket);
+    WATCH(mpacket);
 
     std::map<int, const GeneratedPacket *> cmpacket;
     cmpacket[1] = pk1;
     cmpacket[2] = pk2;
     cmpacket[3] = pk3;
-    WATCH_PTRMAP(cmpacket);
+    WATCH(cmpacket);
 
     std::map<int, Unprintable *> mup;
     mup[1] = new Unprintable(11);
     mup[2] = nullptr;
     mup[3] = new Unprintable(33);
-    WATCH_MAP(mup);
+    WATCH(mup);
 
     std::map<Unprintable *, std::string> mupkey;
     mupkey[new Unprintable(100)] = "one hundred";
     mupkey[nullptr] = "null";
     mupkey[new Unprintable(200)] = "two hundred";
-    WATCH_MAP(mupkey);
+    WATCH(mupkey);
 
     std::map<int *, std::string> mnullptrkey;
     mnullptrkey[nullptr] = "null";
     mnullptrkey[new int(42)] = "forty-two";
-    WATCH_MAP(mnullptrkey);
+    WATCH(mnullptrkey);
 
     std::map<Point, std::string> mpointkey;
     mpointkey[Point(1, 2)] = "one-two";
     mpointkey[Point(3, 4)] = "three-four";
     mpointkey[Point(0, 0)] = "origin";
-    WATCH_MAP(mpointkey);
+    WATCH(mpointkey);
 
     std::map<GeneratedStruct, std::string> mgskey;
     mgskey[gs1] = "first";
     mgskey[gs2] = "second";
     mgskey[gs3] = "third";
-    WATCH_MAP(mgskey);
+    WATCH(mgskey);
 
     std::vector<Unprintable *> vup;
     vup.push_back(new Unprintable(1));
     vup.push_back(new Unprintable(2));
     vup.push_back(nullptr);
-    WATCH_VECTOR(vup);
+    WATCH(vup);
 
     std::vector<APolygon *> vpoly;
     vpoly.push_back(new AStar(3, 100, 20)); // this will still use op<< of APolygon
     vpoly.push_back(new APolygon(4, 100));
     vpoly.push_back(nullptr);
-    WATCH_PTRVECTOR(vpoly);
+    WATCH(vpoly);
 
     std::vector<const APolygon *> cvpoly;
     cvpoly.push_back(new AStar(3, 100, 20)); // this will still use op<< of APolygon
     cvpoly.push_back(new APolygon(4, 100));
     cvpoly.push_back(nullptr);
-    WATCH_PTRVECTOR(cvpoly);
+    WATCH(cvpoly);
 
     std::vector<AStar *> vstar;
     vstar.push_back(new AStar(3, 100, 20));
     vstar.push_back(new AStar(5, 150, 30));
     vstar.push_back(nullptr);
-    WATCH_PTRVECTOR(vstar);
+    WATCH(vstar);
 
     std::vector<const AStar *> cvstar;
     cvstar.push_back(new AStar(3, 100, 20));
     cvstar.push_back(new AStar(5, 150, 30));
     cvstar.push_back(nullptr);
-    WATCH_PTRVECTOR(cvstar);
+    WATCH(cvstar);
 
     // TBD: PTRVECTOR, PTRMAP etc.
     for ( ; ; ) {
@@ -482,9 +482,9 @@ class Sub : public cSimpleModule
     Sub() : cSimpleModule(16384) {}
     virtual void activity() override {
         cObject *subdis = this;
-        WATCH_PTR(subdis);
+        WATCH(subdis);
         cObject *parent = getParentModule();
-        WATCH_PTR(parent);
+        WATCH(parent);
 
         for ( ; ; )
             wait(10);
