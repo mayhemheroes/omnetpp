@@ -181,11 +181,18 @@ void WatchTest::activity()
     WATCH_PTR(gmp);
     WATCH_PTR(gpp);
 
-    cObject *no = nullptr;
-    WATCH_PTR(no);
+    const GeneratedClass *cgcp = new GeneratedClass;
+    const cMessage *cgmp = new GeneratedMessage("cgmp-obj");
+    const cPacket *cgpp = new GeneratedPacket("cgpp-obj");
+    WATCH_PTR(cgcp);
+    WATCH_PTR(cgmp);
+    WATCH_PTR(cgpp);
 
-    cObject *dis = this;
-    WATCH_PTR(dis);
+    cObject *nada = nullptr;
+    WATCH_PTR(nada);
+
+    cObject *this_ = this;
+    WATCH_PTR(this_);
 
     // pointer is captured by reference, and descriptor is not supposed to be cached
     cObject *changing = nullptr;
@@ -339,11 +346,23 @@ void WatchTest::activity()
     sgsp.insert(&gs3);
     WATCH_PTRSET(sgsp);
 
+    std::set<const GeneratedStruct *> csgsp;
+    csgsp.insert(&gs1);
+    csgsp.insert(&gs2);
+    csgsp.insert(&gs3);
+    WATCH_PTRSET(csgsp);
+
     std::set<GeneratedPacket *> spacket;
     spacket.insert(pk1);
     spacket.insert(pk2);
     spacket.insert(pk3);
     WATCH_PTRSET(spacket);
+
+    std::set<const GeneratedPacket *> cspacket;
+    cspacket.insert(pk1);
+    cspacket.insert(pk2);
+    cspacket.insert(pk3);
+    WATCH_PTRSET(cspacket);
 
     std::map<int, GeneratedStruct> mgs;
     mgs[1] = gs1;
@@ -357,11 +376,23 @@ void WatchTest::activity()
     mgsp[3] = &gs3;
     WATCH_PTRMAP(mgsp);
 
+    std::map<int, const GeneratedStruct *> cmgsp;
+    cmgsp[1] = &gs1;
+    cmgsp[2] = &gs2;
+    cmgsp[3] = &gs3;
+    WATCH_PTRMAP(cmgsp);
+
     std::map<int, GeneratedPacket *> mpacket;
     mpacket[1] = pk1;
     mpacket[2] = pk2;
     mpacket[3] = pk3;
     WATCH_PTRMAP(mpacket);
+
+    std::map<int, const GeneratedPacket *> cmpacket;
+    cmpacket[1] = pk1;
+    cmpacket[2] = pk2;
+    cmpacket[3] = pk3;
+    WATCH_PTRMAP(cmpacket);
 
     std::map<int, Unprintable *> mup;
     mup[1] = new Unprintable(11);
@@ -404,11 +435,23 @@ void WatchTest::activity()
     vpoly.push_back(nullptr);
     WATCH_PTRVECTOR(vpoly);
 
+    std::vector<const APolygon *> cvpoly;
+    cvpoly.push_back(new AStar(3, 100, 20)); // this will still use op<< of APolygon
+    cvpoly.push_back(new APolygon(4, 100));
+    cvpoly.push_back(nullptr);
+    WATCH_PTRVECTOR(cvpoly);
+
     std::vector<AStar *> vstar;
     vstar.push_back(new AStar(3, 100, 20));
     vstar.push_back(new AStar(5, 150, 30));
     vstar.push_back(nullptr);
     WATCH_PTRVECTOR(vstar);
+
+    std::vector<const AStar *> cvstar;
+    cvstar.push_back(new AStar(3, 100, 20));
+    cvstar.push_back(new AStar(5, 150, 30));
+    cvstar.push_back(nullptr);
+    WATCH_PTRVECTOR(cvstar);
 
     // TBD: PTRVECTOR, PTRMAP etc.
     for ( ; ; ) {
