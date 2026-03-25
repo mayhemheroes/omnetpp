@@ -387,7 +387,20 @@ ExprValue DivNode::evaluate(Context *context) const
     if (leftValue.type == ExprValue::UNDEF || rightValue.type == ExprValue::UNDEF)
         return ExprValue();
 
-    // even if both args are integer, we perform the division in double, to reduce surprises;
+    // if both args are integer and the division is exact, return integer result
+    if (leftValue.type == ExprValue::INT && rightValue.type == ExprValue::INT) {
+        ensureNoLogarithmicUnit(leftValue);
+        //ensureNoLogarithmicUnit(rightValue); - unnecessary, because on this path it must be either the same or empty
+        bool unitless = rightValue.unit.empty();
+        bool sameUnit = !unitless && (leftValue.unit == rightValue.unit);
+        if ((unitless || sameUnit) && rightValue.intv != 0 && leftValue.intv % rightValue.intv == 0) {
+            leftValue.intv = leftValue.intv / rightValue.intv;
+            if (sameUnit)
+                leftValue.unit = nullptr;
+            return leftValue;
+        }
+    }
+
     // for now we only support num/num, unit/num, plus and unit/unit only if the two units are convertible
     leftValue.convertToDouble();
     rightValue.convertToDouble();
