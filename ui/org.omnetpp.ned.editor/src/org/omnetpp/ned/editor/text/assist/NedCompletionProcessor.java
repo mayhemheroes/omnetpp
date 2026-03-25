@@ -10,12 +10,15 @@ package org.omnetpp.ned.editor.text.assist;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.rules.IWordDetector;
+import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -29,7 +32,9 @@ import org.omnetpp.common.editor.text.SyntaxHighlightHelper.NedPropertyTagDetect
 import org.omnetpp.common.editor.text.SyntaxHighlightHelper.NedPropertyTagValueDetector;
 import org.omnetpp.common.image.ImageFactory;
 import org.omnetpp.common.util.EnumSpec;
+import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.ned.core.INedResources;
+import org.omnetpp.ned.core.NedCanvasFigureValidator;
 import org.omnetpp.ned.core.NedResourcesPlugin;
 import org.omnetpp.ned.model.DisplayString;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
@@ -38,6 +43,8 @@ import org.omnetpp.ned.model.interfaces.IChannelKindTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeElement;
 import org.omnetpp.ned.model.interfaces.INedTypeInfo;
 import org.omnetpp.ned.model.interfaces.INedTypeLookupContext;
+
+import static org.omnetpp.common.canvas.CanvasFigureConstants.*;
 
 // TODO completion within inner types
 // TODO a better structure is needed for storing the completion proposals
@@ -50,6 +57,8 @@ import org.omnetpp.ned.model.interfaces.INedTypeLookupContext;
  * @author andras
  */
 public class NedCompletionProcessor extends AbstractNedCompletionProcessor {
+    private static final Pattern figureTypePattern = Pattern.compile(".*type=([^;]*);.*");
+    private static final Pattern figureKeyValuePattern = Pattern.compile("\\W*(\\w*)\\s*=([\\w\\s.,()#/-]*)(\\)\\s*,\\s*)?$");
     public NedCompletionProcessor(ITextEditor editor) {
         super(editor);
     }
@@ -394,6 +403,112 @@ public class NedCompletionProcessor extends AbstractNedCompletionProcessor {
             else if (line.matches(".*interpolationmode=\\w?"))
                 addProposals(viewer, documentOffset, result, NedCompletionHelper.proposedNedStatisticPropertyInterpolationModeParameterValueTempl, new NedPropertyTagValueDetector());
         }
+        else if (line.matches("@figure\\[.*?\\]\\(.*")) {
+            if (line.matches("@figure\\[.*?\\]\\([^=,;]*")) { // this is the first parameter, lets propose type
+                addProposals(viewer, documentOffset, result, new Template[] { NedCompletionHelper.makeShortTemplate("type=${type};", "the type of the figure") }, new NedPropertyTagDetector());
+            }
+
+            if (line.matches(".*;\\s*$")) { // if this matches, we are proposing parameter names
+                Matcher typeMatcher = figureTypePattern.matcher(line);
+                if (typeMatcher.find()) {
+                    String type = typeMatcher.group(1).trim();
+
+                    //Debug.println("matched type: " + type);
+
+                    List<Template> templates = new ArrayList<Template>();
+
+                    List<String> params = NedCanvasFigureValidator.getValidPropertyKeysForType(type);
+
+                    if (params != null) {
+                        for (String param : params) {
+                            if (param.equals(PKEY_TAGS)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("tags=${tag1},${tag2};", "the tags on the figure"));
+                            } else if (param.equals(PKEY_SIZE)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("size=${width},${height};", "the size of the figure"));
+                            } else if (param.equals(PKEY_FONT)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("font=${family},${size},${style};", "the font of the figure"));
+                            } else if (param.equals(PKEY_INNERSIZE)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("innerSize=${size};", "the inner size of the ring"));
+                                templates.add(NedCompletionHelper.makeShortTemplate("innerSize=${width},${height};", "the inner size of the ring"));
+                            } else if (param.equals(PKEY_CORNERRADIUS)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("cornerRadius=${r};", "the corner radius of the rectangle"));
+                                templates.add(NedCompletionHelper.makeShortTemplate("cornerRadius=${rx},${ry};", "the corner radius of the rectangle"));
+                            } else if (param.equals(PKEY_OFFSET)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("offset=${dx},${dy};", "the amount of offset added to the path's coordinates"));
+                            } else if (param.equals(PKEY_POINTS)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("points=${x1},${y1}, ${x2},${y2};", "the coordinates of the figure's points"));
+                            } else if (param.equals(PKEY_POS)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("pos=${x},${y};", "the coordinates of the figure's anchored point"));
+                            } else if (param.equals(PKEY_BOUNDS)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("bounds=${x},${y},${width},${height};", "the bounding rectangle of the figure"));
+                            } else if (param.equals(PKEY_TRANSFORM)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("transform=;", "the transformations of the figure"));
+                                templates.add(NedCompletionHelper.makeShortTemplate("transform=((${a} ${b}) (${c} ${d}) (${t1} ${t2}));", "the transformation matrix of the figure"));
+                            } else if (param.equals(PKEY_TINT)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("tint=${color};", "the tint color of the image"));
+                                templates.add(NedCompletionHelper.makeShortTemplate("tint=${color},${amount};", "the tint color and amount (0..1) of the figure"));
+                            } else if (param.equals(PKEY_RESOLUTION)) {
+                                templates.add(NedCompletionHelper.makeShortTemplate("resolution=${width},${height};", "the resolution of the pixmap"));
+                            } else if (!param.equals(PKEY_TYPE)) { // handled above, also we can be sure that we have one already
+                                templates.add(NedCompletionHelper.makeShortTemplate(param + "=${" + param + "};", ""));
+                            }
+                        }
+                    }
+
+                    addProposals(viewer, documentOffset, result, templates.toArray(new Template[0]), new NedPropertyTagDetector());
+                }
+            }
+
+            if (info.linePrefix.matches(".*=[\\s\\w.,()#/-]*$")) { // if this matches, we are proposing values for a given parameter
+                Matcher keyValueMatcher = figureKeyValuePattern.matcher(info.linePrefix);
+
+                if (keyValueMatcher.find()) {
+                    String key = keyValueMatcher.group(1).trim();
+                    //String[] values = keyValueMatcher.group(2).trim().split(",");
+                    int valueIndex = StringUtils.countMatches(keyValueMatcher.group(2), ",");
+
+                    if (key.equals(PKEY_COLOR) || key.equals(PKEY_LINECOLOR) || key.equals(PKEY_FILLCOLOR) || (key.equals(PKEY_TINT) && valueIndex == 0)) {
+                        addProposals(viewer, documentOffset, result, ColorFactory.getColorNames(), ColorFactory.getColorRGBs(), ColorFactory.getColorImages());
+                    } else if (key.equals(PKEY_IMAGE)) {
+                        addImageProposals(project, viewer, documentOffset, result, ".*", new NedPropertyTagValueDetector());
+                    } else if (key.equals(PKEY_TRANSFORM)) {
+                        List<Template> templates = new ArrayList<Template>();
+
+                        if (valueIndex == 0) {
+                            templates.add(NedCompletionHelper.makeShortTemplate("((${a} ${b}) (${c} ${d}) (${t1} ${t2}))", "the transformation matrix of the figure"));
+                        }
+
+                        if (!info.linePrefix.matches(".*=\\s*\\(\\(.*")) {
+                            templates.add(NedCompletionHelper.makeShortTemplate("translate(${dx}, ${dy})", "translates the figure by (dx,dy)"));
+
+                            templates.add(NedCompletionHelper.makeShortTemplate("rotate(${angle})", "rotates the figure by angle degrees clockwise"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("rotate(${angle}, ${cx}, ${cy})", "rotates the figure around (cx,cy) by angle degrees clockwise"));
+
+                            templates.add(NedCompletionHelper.makeShortTemplate("scale(${s})", "scales the figure by s"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("scale(${sx}, ${sy})", "scales the figure by sx horizontally and sy vertically"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("scale(${s}, ${cx}, ${cy})", "scales the figure around (cx,cy) by s"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("scale(${sx}, ${sy}, ${cx}, ${cy})", "scales the figure around (cx,cy) by sx horizontally and sy vertically"));
+
+                            templates.add(NedCompletionHelper.makeShortTemplate("skewx(${factor})", "skews the figure horizontally by factor"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("skewx(${factor}, ${fixy})", "skews the figure horizontally by factor, while the fixy line stays in place"));
+
+                            templates.add(NedCompletionHelper.makeShortTemplate("skewy(${factor})", "skews the figure vertically by factor"));
+                            templates.add(NedCompletionHelper.makeShortTemplate("skewy(${factor}, ${fixx})", "skews the figure vertically by factor, while the fixx line stays in place"));
+
+                            templates.add(NedCompletionHelper.makeShortTemplate("matrix(${a}, ${b}, ${c}, ${d}, ${t1}, ${t2})", "multiplies the transform of the figure with an affine matrix"));
+                        }
+
+                        addProposals(viewer, documentOffset, result, templates.toArray(new Template[0]), new NedPropertyTagValueDetector());
+                    } else {
+                        List<String> validValues = NedCanvasFigureValidator.getValidValuesForPropertyKey(key);
+                        if (validValues != null) {
+                            addProposals(viewer, documentOffset, result, validValues.toArray(new String[0]), (String)null);
+                        }
+                    }
+                }
+            }
+        }
+
 
         // long millis = System.currentTimeMillis()-startMillis;
         // Debug.println("Proposal creation: "+millis+"ms");
