@@ -29,6 +29,7 @@
 #include "omnetpp/cmodule.h"
 #include "omnetpp/globals.h"
 #include "omnetpp/cexception.h"
+#include "omnetpp/cwatch.h"
 #include "omnetpp/cnedmathfunction.h"
 #include "omnetpp/cscheduler.h"  // dummy()
 #include "omnetpp/distrib.h"  // dummy()
@@ -119,6 +120,7 @@ void _sim_dummy_func()
     ov.str();
     cHistogram h;
     h.draw();
+    cWatchProxyDescriptor wpd(nullptr, nullptr);
 
     nedfunctions_dummy();
     nedpythonfunctions_dummy();
