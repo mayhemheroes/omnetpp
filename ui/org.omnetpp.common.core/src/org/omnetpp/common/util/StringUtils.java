@@ -1068,4 +1068,64 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         return d.toString();
     }
 
+    public static String sanitizePropertyValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value.isEmpty()) {
+            return "";
+        }
+
+        Stack<Character> parens = new Stack<Character>();
+        boolean properlyParenthesized = true;
+
+        loop:
+        for (char c : value.toCharArray()) {
+            switch (c) {
+            case ',':
+                if (parens.isEmpty()) { // comma outside of any parentheses
+                    properlyParenthesized = false;
+                    break loop;
+                }
+                break;
+
+            case '(':
+            case '[':
+            case '{':
+                parens.push(c);
+                break;
+
+            case ')':
+                if (parens.isEmpty() || (parens.peek() != '(')) { // mismatch
+                    properlyParenthesized = false;
+                    break loop;
+                }
+                parens.pop();
+                break;
+            case ']':
+                if (parens.isEmpty() || (parens.peek() != '[')) { // mismatch
+                    properlyParenthesized = false;
+                    break loop;
+                }
+                parens.pop();
+                break;
+            case '}':
+                if (parens.isEmpty() || (parens.peek() != '{')) { // mismatch
+                    properlyParenthesized = false;
+                    break loop;
+                }
+                parens.pop();
+                break;
+            }
+        }
+
+        if (!parens.isEmpty()) { // some unclosed parens at the end
+            properlyParenthesized = false;
+        }
+
+        return (containsAny(value, "=; \"\\") || !properlyParenthesized) ?
+            ("\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"") :
+            value;
+    }
 }
