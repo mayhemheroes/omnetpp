@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -270,7 +271,7 @@ public class ProjectUtils {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         final IProject project = workspace.getRoot().getProject(projectName);
         IProjectDescription description = workspace.newProjectDescription(projectName);
-        
+
         IPath workspaceLocation = workspace.getRoot().getLocation();
         if (!workspaceLocation.append(projectName).equals(new Path(directory.getPath())))
             description.setLocation(new Path(directory.toString()));
@@ -397,9 +398,19 @@ public class ProjectUtils {
     private static void ensureFileContent(IFile file, byte[] bytes, IProgressMonitor monitor) throws CoreException {
         // only overwrites file if its content is not already what's desired
         try {
-            file.refreshLocal(IResource.DEPTH_ZERO, monitor);
-            if (!file.exists())
-                file.create(new ByteArrayInputStream(bytes), true, monitor);
+            file.getParent().refreshLocal(IResource.DEPTH_ONE, monitor);
+            if (!file.exists()) {
+                try {
+                    file.create(new ByteArrayInputStream(bytes), true, monitor);
+                }
+                catch (CoreException e) {
+                    // file may have been created by a concurrent thread between our exists() check and create() call
+                    if (e.getStatus().getCode() != IResourceStatus.RESOURCE_EXISTS)
+                        throw e;
+                    file.refreshLocal(IResource.DEPTH_ZERO, monitor);
+                    file.setContents(new ByteArrayInputStream(bytes), true, false, monitor);
+                }
+            }
             else if (!Arrays.equals(FileUtils.readBinaryFile(file.getContents()), bytes)) // NOTE: byte[].equals does NOT compare content, only references!!!
                 file.setContents(new ByteArrayInputStream(bytes), true, false, monitor);
         }
