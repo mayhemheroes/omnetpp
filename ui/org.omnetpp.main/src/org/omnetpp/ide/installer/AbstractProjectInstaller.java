@@ -33,9 +33,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.ui.part.FileEditorInput;
+import org.omnetpp.cdt.CDTUtils;
 import org.omnetpp.cdt.build.ProjectFeaturesManager;
 import org.omnetpp.common.Debug;
 import org.omnetpp.common.util.DisplayUtils;
+import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.ide.OmnetppMainPlugin;
 
 /**
@@ -112,7 +114,7 @@ public abstract class AbstractProjectInstaller {
                 outputDirectory = projectInstallationOptions.location;
             while ((tarArchiveEntry = tarArchiveInputStream.getNextTarEntry()) != null) {
                 String tarArchiveEntryName = tarArchiveEntry.getName();
-                if (tarArchiveEntryName.equals("pax_global_header"))  // git-archive generates an extended header which is ignored by normal tar 
+                if (tarArchiveEntryName.equals("pax_global_header"))  // git-archive generates an extended header which is ignored by normal tar
                     continue; // skip the extended header entry
                 File tarArchiveEntryFile =  new File(outputDirectory + "/" + tarArchiveEntryName.substring(tarArchiveEntryName.indexOf('/')));
                 if (!tarArchiveEntryFile.getParentFile().exists())
@@ -203,6 +205,21 @@ public abstract class AbstractProjectInstaller {
         if (features.loadFeaturesFile()) {
             Debug.println("Project Features: activating default feature selection for new project " + project.getName());
             features.initializeProjectState();
+        }
+    }
+
+    protected void setBuildEnvironmentVariables(IProject project) throws CoreException {
+        java.util.List<ProjectDescription.BuildEnvVar> envVars = new java.util.ArrayList<>(projectDescription.getBuildEnvVars());
+        for (ProjectDescription.BuildEnvVar envVar : envVars) {
+            String resolvedValue;
+            try {
+                resolvedValue = StringUtils.substituteVariables(envVar.value);
+            }
+            catch (CoreException e) {
+                throw new RuntimeException("Cannot resolve value '" + envVar.value + "' for build environment variable '" + envVar.name
+                        + "'. If it references another project, make sure that project is already installed in the workspace.", e);
+            }
+            CDTUtils.setBuildEnvironmentVariable(project, envVar.name, resolvedValue);
         }
     }
 

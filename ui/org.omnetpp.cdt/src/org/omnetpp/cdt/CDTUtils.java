@@ -13,10 +13,15 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.cdt.build.core.scannerconfig.CfgInfoContext;
 import org.eclipse.cdt.build.internal.core.scannerconfig.CfgDiscoveredPathManager;
+import org.eclipse.cdt.core.CCorePlugin;
+import org.eclipse.cdt.core.envvar.IContributedEnvironment;
+import org.eclipse.cdt.core.envvar.IEnvironmentVariable;
+import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.settings.model.CMacroEntry;
 import org.eclipse.cdt.core.settings.model.CSourceEntry;
 import org.eclipse.cdt.core.settings.model.ICConfigurationDescription;
 import org.eclipse.cdt.core.settings.model.ICFolderDescription;
+import org.eclipse.cdt.core.settings.model.ICProjectDescription;
 import org.eclipse.cdt.core.settings.model.ICLanguageSetting;
 import org.eclipse.cdt.core.settings.model.ICLanguageSettingEntry;
 import org.eclipse.cdt.core.settings.model.ICSettingEntry;
@@ -192,6 +197,25 @@ public class CDTUtils {
         return -1;
     }
 
+
+    /**
+     * Sets a build environment variable on all CDT build configurations of the given project.
+     * This is equivalent to setting the variable in Project Properties -> C/C++ Build -> Environment
+     * for each configuration (gcc-debug, gcc-release, etc.).
+     */
+    public static void setBuildEnvironmentVariable(IProject project, String name, String value) throws CoreException {
+        ICProjectDescription prjDesc = CoreModel.getDefault().getProjectDescription(project);
+        if (prjDesc == null)
+            throw new CoreException(new org.eclipse.core.runtime.Status(
+                    org.eclipse.core.runtime.IStatus.ERROR, Activator.PLUGIN_ID,
+                    "Cannot access CDT project description for " + project.getName()));
+
+        IContributedEnvironment contribEnv = CCorePlugin.getDefault().getBuildEnvironmentManager().getContributedEnvironment();
+        for (ICConfigurationDescription cfg : prjDesc.getConfigurations())
+            contribEnv.addVariable(name, value, IEnvironmentVariable.ENVVAR_REPLACE, null, cfg);
+
+        CoreModel.getDefault().setProjectDescription(project, prjDesc);
+    }
 
     /**
      * Causes CDT to forget discovered include paths, and invoke the toolchain's

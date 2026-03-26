@@ -2,6 +2,8 @@ package org.omnetpp.ide.installer;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,6 +60,29 @@ public class ProjectDescription {
 
     public String getWelcomePage() {
         return getProjectAttribute("welcome-page");
+    }
+
+    public static class BuildEnvVar {
+        public final String name;
+        public final String value;
+
+        public BuildEnvVar(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+    }
+
+    public List<BuildEnvVar> getBuildEnvVars() {
+        List<BuildEnvVar> result = new ArrayList<>();
+        NodeList nodes = document.getElementsByTagName("build-env-var");
+        for (int i = 0; i < nodes.getLength(); i++) {
+            NamedNodeMap attrs = nodes.item(i).getAttributes();
+            Node nameNode = attrs.getNamedItem("name");
+            Node valueNode = attrs.getNamedItem("value");
+            if (nameNode != null && valueNode != null)
+                result.add(new BuildEnvVar(nameNode.getNodeValue(), valueNode.getNodeValue()));
+        }
+        return result;
     }
 
     protected String getProjectAttribute(String attribute) {
