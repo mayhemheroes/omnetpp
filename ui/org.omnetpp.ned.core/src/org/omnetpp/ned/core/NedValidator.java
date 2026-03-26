@@ -600,7 +600,11 @@ public class NedValidator extends AbstractNedValidatorEx {
 
     @Override
     protected void validateElement(PropertyElement node) {
-        validateChildren(node);
+        if (node.getName().equals("figure")) {
+            new NedCanvasFigureValidator(node, errors).validate();
+        } else {
+            validateChildren(node);
+        }
     }
 
     @Override
