@@ -213,6 +213,7 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
                         downloadProjectDescriptions(descriptorsURL);
                         DisplayUtils.runNowOrAsyncInUIThread(() -> {
                             fillProjects();
+                            checkDescriptorConsistency();
                         });
                     }
                     catch (Exception e) {
@@ -238,6 +239,25 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
 
     protected void updateDefaultLocation() {
         location.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/" + projectName.getText());
+    }
+
+    protected void checkDescriptorConsistency() {
+        java.util.Set<String> availableNames = new java.util.HashSet<>();
+        for (ProjectDescription pd : projectDescriptions)
+            availableNames.add(pd.getName());
+        ArrayList<String> problems = new ArrayList<>();
+        for (ProjectDescription pd : projectDescriptions) {
+            String[] refs = pd.getProjectReferences();
+            if (refs != null)
+                for (String ref : refs)
+                    if (!availableNames.contains(ref))
+                        problems.add(pd.getTitle() + " requires '" + ref + "'");
+        }
+        if (!problems.isEmpty())
+            MessageDialog.openWarning(getShell(), "Incomplete Model Catalog",
+                    "Some models reference projects that are not available for installation:\n\n" +
+                    String.join("\n", problems) +
+                    "\n\nThese dependencies may need to be installed manually.");
     }
 
     protected void fillProjects() {
