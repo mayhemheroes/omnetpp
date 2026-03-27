@@ -17,21 +17,30 @@ import org.omnetpp.common.util.StringUtils;
 
 public class NumberPropertyDescriptor extends TextPropertyDescriptor {
 
+    double minValue;
+    double maxValue;
+
     public NumberPropertyDescriptor(Object id, String displayName) {
+        this(id, displayName, -Double.MAX_VALUE, Double.MAX_VALUE);
+    }
+
+    public NumberPropertyDescriptor(Object id, String displayName, double min, double max) {
         super(id, displayName);
+        minValue = min;
+        maxValue = max;
     }
 
     @Override
     public CellEditor createPropertyEditor(Composite parent) {
-        return new NumberCellEditor(parent);
+        return new NumberCellEditor(parent, minValue, maxValue);
     }
 }
 
 class NumberCellEditor extends TextCellEditor
 {
-    public NumberCellEditor(Composite parent) {
+    public NumberCellEditor(Composite parent, double min, double max) {
         super(parent);
-        setValidator(NumberCellEditorValidator.instance());
+        setValidator(new NumberCellEditorValidator(min, max));
     }
 
     @Override
@@ -47,12 +56,12 @@ class NumberCellEditor extends TextCellEditor
 
 class NumberCellEditorValidator implements ICellEditorValidator
 {
-    private static NumberCellEditorValidator instance;
+    double minValue = -Double.MAX_VALUE;
+    double maxValue = Double.MAX_VALUE;
 
-    public static NumberCellEditorValidator instance() {
-        if (instance == null)
-            instance = new NumberCellEditorValidator();
-        return instance;
+    public NumberCellEditorValidator(double min, double max) {
+        minValue = min;
+        maxValue = max;
     }
 
     public String isValid(Object value) {
@@ -66,11 +75,17 @@ class NumberCellEditorValidator implements ICellEditorValidator
         if (StringUtils.isEmpty(strValue))
             return null;
 
+        double doubleValue;
         try {
-            Double.parseDouble(strValue);
-            return null;
+            doubleValue = Double.parseDouble(strValue);
         } catch (NumberFormatException e) {
             return "Not a number";
         }
+
+        if ((doubleValue < minValue) || (doubleValue > maxValue)) {
+            return "The value " + doubleValue + " is out of range. Must be between " + minValue + " and " + maxValue + ".";
+        }
+
+        return null;
     }
 }
