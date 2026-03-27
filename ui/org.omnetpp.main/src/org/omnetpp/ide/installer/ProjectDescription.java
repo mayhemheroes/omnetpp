@@ -62,6 +62,18 @@ public class ProjectDescription {
         return getProjectAttribute("welcome-page");
     }
 
+    public String[] getProjectReferences() {
+        NodeList nodes = document.getElementsByTagName("project-references");
+        if (nodes.getLength() > 0) {
+            Node namesNode = nodes.item(0).getAttributes().getNamedItem("names");
+            if (namesNode != null) {
+                String names = namesNode.getNodeValue().trim();
+                return names.isEmpty() ? new String[0] : names.split("\\s+");
+            }
+        }
+        return null;
+    }
+
     public String getActiveConfig() {
         NodeList nodes = document.getElementsByTagName("active-config");
         if (nodes.getLength() > 0) {

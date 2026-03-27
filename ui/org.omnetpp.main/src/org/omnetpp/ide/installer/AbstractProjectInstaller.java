@@ -208,6 +208,19 @@ public abstract class AbstractProjectInstaller {
         }
     }
 
+    protected void setProjectReferences(IProject project) throws CoreException {
+        String[] refNames = projectDescription.getProjectReferences();
+        if (refNames != null) {
+            IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            IProject[] refs = new IProject[refNames.length];
+            for (int i = 0; i < refNames.length; i++)
+                refs[i] = workspace.getRoot().getProject(refNames[i]);
+            IProjectDescription desc = project.getDescription();
+            desc.setReferencedProjects(refs);
+            project.setDescription(desc, null);
+        }
+    }
+
     protected void setActiveBuildConfiguration(IProject project) throws CoreException {
         String activeConfig = projectDescription.getActiveConfig();
         if (activeConfig != null)

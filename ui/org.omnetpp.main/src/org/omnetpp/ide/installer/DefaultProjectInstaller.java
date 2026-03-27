@@ -42,6 +42,7 @@ public class DefaultProjectInstaller extends AbstractProjectInstaller {
                 openEditor(project.getFile(welcomePage));
             expandProject(project);
             initializeProjectFeaturesState(project);
+            setProjectReferences(project);
             setActiveBuildConfiguration(project);
             setBuildEnvironmentVariables(project);
         }, progressMonitor);
