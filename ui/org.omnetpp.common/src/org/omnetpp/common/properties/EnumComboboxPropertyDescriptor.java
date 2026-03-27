@@ -55,6 +55,8 @@ public class EnumComboboxPropertyDescriptor extends PropertyDescriptor {
     protected ICellEditorValidator getValidator() {
         return new ICellEditorValidator() {
             public String isValid(Object value) {
+                if (value == null) return null;
+
                 String text = value.toString();
                 if (!text.equals("") && enumSpec.getNameFor(text) == null)
                     return "Must be one of: " + StringUtils.join(enumSpec.getNames(), ", ") +
