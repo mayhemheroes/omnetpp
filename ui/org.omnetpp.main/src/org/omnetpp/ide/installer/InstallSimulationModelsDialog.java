@@ -53,6 +53,7 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
     public static final String LOCAL_DIR_ENVVAR = "OMNETPP_IDE_INSTALL_MODELS_DESCRIPTORS_DIR"; // set this env var to load descriptors from local dir instead of downloading
     public static final String DESCRIPTORS_URL = "https://models.omnetpp.org/descriptors";
     public static final String COMMUNITY_MODEL_CATALOG_URL = "https://omnetpp.org/download/models-and-tools";
+    public static final String OPP_ENV_URL = "https://oppenv.omnetpp.org/";
 
     protected ArrayList<ProjectDescription> projectDescriptions;
     protected ArrayList<URL> projectDescriptionURLs;
@@ -117,9 +118,25 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
         projectsTable = new Table(group, SWT.BORDER);
         projectsTable.setHeaderVisible(true);
         projectsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+        Link note = new Link(group, SWT.WRAP);
+        note.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        note.setText("Note: This dialog intentionally provides a small, curated set of simulation models " +
+                "in their most straightforward configuration. If you need older or newer versions, custom " +
+                "configurations, or models not listed here, consider using <a>opp_env</a>, the OMNeT++ " +
+                "environment and package manager.");
+        note.addSelectionListener(new SelectionListener() {
+            public void widgetDefaultSelected(SelectionEvent e) {
+                openOppEnv();
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+                openOppEnv();
+            }});
+
         Link link = new Link(group, SWT.WRAP);
         link.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        link.setText("Other simulation models are available for download in the community <a>catalog</a>.");
+        link.setText("Browse the <a>model catalog</a> for a broad list of models produced by the community.");
         link.addSelectionListener(new SelectionListener() {
             public void widgetDefaultSelected(SelectionEvent e) {
                 openCommunityCatalog();
@@ -128,6 +145,7 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
             public void widgetSelected(SelectionEvent e) {
                 openCommunityCatalog();
             }});
+
         group = new Group(container, SWT.NONE);
         group.setText("Description");
         gridLayout = new GridLayout();
@@ -345,6 +363,21 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
             OmnetppMainPlugin.logError("Error installing " + projectName.getText(), e);
             MessageDialog.openError(null, "Error", "Error installing " + projectDescription.getTitle() + "!");
         }
+    }
+
+    protected void openOppEnv() {
+        Display.getCurrent().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    IWorkbench workbench = PlatformUI.getWorkbench();
+                    workbench.getBrowserSupport().getExternalBrowser().openURL(new URL(OPP_ENV_URL));
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     protected void openCommunityCatalog() {
