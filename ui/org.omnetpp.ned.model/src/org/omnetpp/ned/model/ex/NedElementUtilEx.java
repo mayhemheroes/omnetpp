@@ -10,8 +10,8 @@ package org.omnetpp.ned.model.ex;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -557,7 +557,7 @@ public class NedElementUtilEx implements NedElementTags, NedElementConstants {
                     String name = property.getName();
                     Map<String, PropertyElementEx> propertyMap = map.get(name);
                     if (propertyMap == null) {
-                        propertyMap = new HashMap<String, PropertyElementEx>();
+                        propertyMap = new LinkedHashMap<String, PropertyElementEx>();
                         map.put(name, propertyMap);
                     }
                     propertyMap.put(property.getIndex(), property);
