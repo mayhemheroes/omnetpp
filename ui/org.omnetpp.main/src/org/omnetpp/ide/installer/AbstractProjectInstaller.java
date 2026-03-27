@@ -242,6 +242,23 @@ public abstract class AbstractProjectInstaller {
         }
     }
 
+    protected void applyFileSubstitutions(IProject project) throws CoreException {
+        java.util.List<ProjectDescription.FileSubstitution> substitutions = projectDescription.getFileSubstitutions();
+        for (ProjectDescription.FileSubstitution subst : substitutions) {
+            IFile file = project.getFile(subst.file);
+            if (!file.exists())
+                throw new RuntimeException("Cannot apply file substitution: file '" + subst.file + "' does not exist in project " + project.getName());
+            try {
+                String content = new String(file.getContents().readAllBytes(), file.getCharset());
+                String newContent = java.util.regex.Pattern.compile(subst.find, java.util.regex.Pattern.MULTILINE).matcher(content).replaceAll(subst.replace);
+                file.setContents(new java.io.ByteArrayInputStream(newContent.getBytes(file.getCharset())), IResource.FORCE, null);
+            }
+            catch (java.io.IOException e) {
+                throw new RuntimeException("Cannot apply file substitution to '" + subst.file + "' in project " + project.getName(), e);
+            }
+        }
+    }
+
     protected void buildProject(IProgressMonitor progressMonitor, IProject project) throws CoreException {
         try {
             progressMonitor.subTask("Building project");

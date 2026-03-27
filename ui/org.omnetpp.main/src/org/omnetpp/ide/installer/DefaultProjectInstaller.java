@@ -45,6 +45,7 @@ public class DefaultProjectInstaller extends AbstractProjectInstaller {
             setProjectReferences(project);
             setActiveBuildConfiguration(project);
             setBuildEnvironmentVariables(project);
+            applyFileSubstitutions(project);
         }, progressMonitor);
         buildProject(progressMonitor, projectHolder[0]);
         progressMonitor.done();

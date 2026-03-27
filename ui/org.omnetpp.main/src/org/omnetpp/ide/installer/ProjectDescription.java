@@ -106,6 +106,32 @@ public class ProjectDescription {
         return result;
     }
 
+    public static class FileSubstitution {
+        public final String file;
+        public final String find;
+        public final String replace;
+
+        public FileSubstitution(String file, String find, String replace) {
+            this.file = file;
+            this.find = find;
+            this.replace = replace;
+        }
+    }
+
+    public List<FileSubstitution> getFileSubstitutions() {
+        List<FileSubstitution> result = new ArrayList<>();
+        NodeList nodes = document.getElementsByTagName("file-substitution");
+        for (int i = 0; i < nodes.getLength(); i++) {
+            NamedNodeMap attrs = nodes.item(i).getAttributes();
+            Node fileNode = attrs.getNamedItem("file");
+            Node findNode = attrs.getNamedItem("find");
+            Node replaceNode = attrs.getNamedItem("replace");
+            if (fileNode != null && findNode != null && replaceNode != null)
+                result.add(new FileSubstitution(fileNode.getNodeValue(), findNode.getNodeValue(), replaceNode.getNodeValue()));
+        }
+        return result;
+    }
+
     protected String getProjectAttribute(String attribute) {
         NodeList projectNodeList = document.getElementsByTagName("project");
         if (projectNodeList.getLength() == 1) {
