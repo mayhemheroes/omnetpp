@@ -62,6 +62,15 @@ public class ProjectDescription {
         return getProjectAttribute("welcome-page");
     }
 
+    public String getActiveConfig() {
+        NodeList nodes = document.getElementsByTagName("active-config");
+        if (nodes.getLength() > 0) {
+            Node nameNode = nodes.item(0).getAttributes().getNamedItem("name");
+            return nameNode != null ? nameNode.getNodeValue() : null;
+        }
+        return null;
+    }
+
     public static class BuildEnvVar {
         public final String name;
         public final String value;

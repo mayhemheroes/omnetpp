@@ -218,6 +218,28 @@ public class CDTUtils {
     }
 
     /**
+     * Sets the active CDT build configuration of the given project by name (e.g. "gcc-debug").
+     */
+    public static void setActiveBuildConfiguration(IProject project, String configName) throws CoreException {
+        ICProjectDescription prjDesc = CoreModel.getDefault().getProjectDescription(project);
+        if (prjDesc == null)
+            throw new CoreException(new org.eclipse.core.runtime.Status(
+                    org.eclipse.core.runtime.IStatus.ERROR, Activator.PLUGIN_ID,
+                    "Cannot access CDT project description for " + project.getName()));
+
+        for (ICConfigurationDescription cfg : prjDesc.getConfigurations()) {
+            if (cfg.getName().equals(configName)) {
+                cfg.setActive();
+                CoreModel.getDefault().setProjectDescription(project, prjDesc);
+                return;
+            }
+        }
+        throw new CoreException(new org.eclipse.core.runtime.Status(
+                org.eclipse.core.runtime.IStatus.WARNING, Activator.PLUGIN_ID,
+                "CDT build configuration '" + configName + "' not found in project " + project.getName()));
+    }
+
+    /**
      * Causes CDT to forget discovered include paths, and invoke the toolchain's
      * ScannerInfoCollector class again. This is important because we use ScannerInfoCollector
      * to add the project's source directories to the include path.

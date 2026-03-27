@@ -208,6 +208,12 @@ public abstract class AbstractProjectInstaller {
         }
     }
 
+    protected void setActiveBuildConfiguration(IProject project) throws CoreException {
+        String activeConfig = projectDescription.getActiveConfig();
+        if (activeConfig != null)
+            CDTUtils.setActiveBuildConfiguration(project, activeConfig);
+    }
+
     protected void setBuildEnvironmentVariables(IProject project) throws CoreException {
         java.util.List<ProjectDescription.BuildEnvVar> envVars = new java.util.ArrayList<>(projectDescription.getBuildEnvVars());
         for (ProjectDescription.BuildEnvVar envVar : envVars) {
