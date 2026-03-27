@@ -16,8 +16,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SegmentEvent;
-import org.eclipse.swt.events.SegmentListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -33,7 +31,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -59,7 +56,6 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
     protected ArrayList<URL> projectDescriptionURLs;
     protected Table projectsTable;
     protected Label longDescription;
-    protected Text projectName;
     protected Button useDefaultLocation;
     protected Text location;
     protected Button browseLocation;
@@ -162,16 +158,11 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
         gridLayout.marginWidth = gridLayout.marginHeight = 10;
         group.setLayout(gridLayout);
         group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, false, false, 2, 1));
-        Label label = new Label(group, SWT.NONE);
-        label.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 1, 1));
-        label.setText("Project name: ");
-        projectName = new Text(group, SWT.BORDER);
-        projectName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         useDefaultLocation = new Button(group, SWT.CHECK);
         useDefaultLocation.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 3, 1));
         useDefaultLocation.setText("Use default location");
         useDefaultLocation.setSelection(true);
-        label = new Label(group, SWT.NONE);
+        Label label = new Label(group, SWT.NONE);
         label.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 1, 1));
         label.setText("Location: ");
         location = new Text(group, SWT.BORDER);
@@ -197,16 +188,8 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
             public void widgetSelected(SelectionEvent event) {
                 ProjectDescription projectDescription = (ProjectDescription)event.item.getData();
                 longDescription.setText(projectDescription.getLongDescription());
-                projectName.setText(projectDescription.getName());
                 updateDefaultLocation();
                 getButton(IDialogConstants.OK_ID).setEnabled(true);
-            }
-        });
-        projectName.addSegmentListener(new SegmentListener() {
-            @Override
-            public void getSegments(SegmentEvent event) {
-                if (useDefaultLocation.getSelection())
-                    updateDefaultLocation();
             }
         });
         useDefaultLocation.addSelectionListener(new SelectionAdapter() {
@@ -271,8 +254,13 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
         }
     }
 
+    protected String getSelectedProjectName() {
+        int index = projectsTable.getSelectionIndex();
+        return index != -1 ? projectDescriptions.get(index).getName() : "";
+    }
+
     protected void updateDefaultLocation() {
-        location.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/" + projectName.getText());
+        location.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/" + getSelectedProjectName());
     }
 
     protected void checkDescriptorConsistency() {
@@ -353,14 +341,14 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
     protected void installProject(URL projectDescriptionURL, ProjectDescription projectDescription) {
         try {
             ProjectInstallationOptions projectInstallationOptions = new ProjectInstallationOptions();
-            projectInstallationOptions.name = projectName.getText();
+            projectInstallationOptions.name = projectDescription.getName();
             projectInstallationOptions.location = useDefaultLocation.getSelection() ? null : location.getText();
             InstallProjectJob installProjectJob = new InstallProjectJob(projectDescriptionURL, projectInstallationOptions);
             installProjectJob.setUser(true);
             installProjectJob.schedule();
         }
         catch (Exception e) {
-            OmnetppMainPlugin.logError("Error installing " + projectName.getText(), e);
+            OmnetppMainPlugin.logError("Error installing " + projectDescription.getTitle(), e);
             MessageDialog.openError(null, "Error", "Error installing " + projectDescription.getTitle() + "!");
         }
     }
