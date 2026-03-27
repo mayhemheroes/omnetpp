@@ -269,9 +269,31 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
     @Override
     protected void okPressed() {
         int index = projectsTable.getSelectionIndex();
-        if (index != -1)
-            installProject(projectDescriptionURLs.get(index), projectDescriptions.get(index));
+        if (index != -1) {
+            ProjectDescription projectDescription = projectDescriptions.get(index);
+            if (!checkProjectReferencesExist(projectDescription))
+                return;
+            installProject(projectDescriptionURLs.get(index), projectDescription);
+        }
         super.okPressed();
+    }
+
+    protected boolean checkProjectReferencesExist(ProjectDescription projectDescription) {
+        String[] refs = projectDescription.getProjectReferences();
+        if (refs == null)
+            return true;
+        ArrayList<String> missing = new ArrayList<>();
+        for (String ref : refs)
+            if (!ResourcesPlugin.getWorkspace().getRoot().getProject(ref).exists())
+                missing.add(ref);
+        if (!missing.isEmpty()) {
+            MessageDialog.openError(getShell(), "Missing Required Projects",
+                    "The following projects required by " + projectDescription.getTitle() +
+                    " are not in the workspace:\n\n" + String.join(", ", missing) +
+                    "\n\nPlease install them first.");
+            return false;
+        }
+        return true;
     }
 
     protected void installProject(URL projectDescriptionURL, ProjectDescription projectDescription) {
