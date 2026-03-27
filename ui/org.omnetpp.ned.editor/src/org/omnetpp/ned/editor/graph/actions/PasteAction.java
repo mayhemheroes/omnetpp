@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,7 @@ import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
 import org.omnetpp.ned.model.ex.NedElementFactoryEx;
 import org.omnetpp.ned.model.ex.NedElementUtilEx;
+import org.omnetpp.ned.model.ex.PropertyElementEx;
 import org.omnetpp.ned.model.ex.SubmoduleElementEx;
 import org.omnetpp.ned.model.interfaces.IHasGates;
 import org.omnetpp.ned.model.interfaces.IHasName;
@@ -120,6 +122,7 @@ public class PasteAction extends SelectionAction {
         List<INedElement> pastedElements = new ArrayList<INedElement>();
         pasteNedTypes(elements, compoundCommand, pastedElements);
         pasteSubmodulesAndConnections(elements, compoundCommand, pastedElements);
+        pasteCanvasFigures(elements, compoundCommand, pastedElements);
         pasteParametersAndProperties(elements, compoundCommand, pastedElements);
         pasteGates(elements, compoundCommand, pastedElements);
 
@@ -248,6 +251,85 @@ public class PasteAction extends SelectionAction {
         }
     }
 
+    protected void pasteCanvasFigures(List<INedElement> elements, CompoundCommand compoundCommand, List<INedElement> pastedElements) {
+        INedElement targetElement = getPrimarySelectionElement();
+
+        CompoundModuleElementEx module = null;
+        String prefix = "";
+
+        if (targetElement instanceof PropertyElementEx) {
+            PropertyElementEx targetProp = (PropertyElementEx)targetElement;
+            if (targetProp.getName().equals("figure")) {
+                module = (CompoundModuleElementEx)targetElement.getEnclosingTypeElement();
+                prefix = targetProp.getIndex() + ".";
+            }
+        }
+
+        if (module == null && targetElement instanceof CompoundModuleElementEx)
+            module = (CompoundModuleElementEx)targetElement;
+
+        if (module == null)
+            module = getTargetCompoundModule();
+
+        if (module == null)
+            return;
+
+        // collect existing figure names
+        Map<String, PropertyElementEx> existingFigures = module.getProperties().get("figure");
+        Set<String> usedNames = new HashSet<String>();
+        if (existingFigures != null)
+            usedNames.addAll(existingFigures.keySet());
+
+        // collect figure elements to paste, sorted by index depth (parents before children)
+        List<PropertyElementEx> figuresToPaste = new ArrayList<PropertyElementEx>();
+        for (INedElement element : elements) {
+            if (element instanceof PropertyElementEx && ((PropertyElementEx)element).getName().equals("figure"))
+                figuresToPaste.add((PropertyElementEx)element);
+        }
+        figuresToPaste.sort(Comparator.comparingInt(f -> f.getIndex().split("\\.").length));
+
+        // rename map: tracks renames so child figures can update their prefix
+        Map<String, String> renameMap = new LinkedHashMap<String, String>();
+
+        ParametersElement section = null;
+        for (PropertyElementEx property : figuresToPaste) {
+            String index = property.getIndex();
+
+            // apply prefix when pasting into a figure group
+            if (!prefix.isEmpty() && !index.startsWith(prefix))
+                index = prefix + index;
+
+            // apply parent renames to this figure's index
+            for (Map.Entry<String, String> entry : renameMap.entrySet()) {
+                if (index.startsWith(entry.getKey() + ".")) {
+                    index = entry.getValue() + index.substring(entry.getKey().length());
+                    break;
+                }
+            }
+
+            // generate unique index if needed
+            if (usedNames.contains(index)) {
+                String base = index;
+                String uniqueIndex = index;
+                for (int i = 1; ; i++) {
+                    uniqueIndex = base + i;
+                    if (!usedNames.contains(uniqueIndex))
+                        break;
+                }
+                renameMap.put(index, uniqueIndex);
+                index = uniqueIndex;
+            }
+
+            usedNames.add(index);
+            property.setIndex(index);
+
+            if (section == null)
+                section = (ParametersElement)findOrCreateSection(module, NED_PARAMETERS, compoundCommand);
+            compoundCommand.add(new InsertCommand(section, property));
+            pastedElements.add(property);
+        }
+    }
+
     protected void pasteParametersAndProperties(List<INedElement> elements, CompoundCommand compoundCommand, List<INedElement> pastedElements) {
         INedElement targetElement = getPrimarySelectionElement();
         if (targetElement == null || !(targetElement instanceof IHasParameters))
@@ -255,7 +337,7 @@ public class PasteAction extends SelectionAction {
 
         ParametersElement parametersSection = null;
         for (INedElement element : elements) {
-            if (element instanceof ParamElement || element instanceof PropertyElement) {
+            if ((element instanceof ParamElement || element instanceof PropertyElement) && !pastedElements.contains(element)) {
                 // insert
                 if (parametersSection == null)
                     parametersSection = (ParametersElement) findOrCreateSection(targetElement, NED_PARAMETERS, compoundCommand);
