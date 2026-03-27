@@ -61,7 +61,7 @@ abstract public class NedBasePropertySource implements IPropertySource2 {
 
     public abstract IPropertyDescriptor[] getPropertyDescriptors();
 
-    INedElement getModel() {
+    protected INedElement getModel() {
         return nedModel;
     }
 

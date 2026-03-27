@@ -17,6 +17,7 @@ import org.omnetpp.ned.model.ex.ChannelInterfaceElementEx;
 import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
 import org.omnetpp.ned.model.ex.ConnectionElementEx;
 import org.omnetpp.ned.model.ex.ModuleInterfaceElementEx;
+import org.omnetpp.ned.model.ex.PropertyElementEx;
 import org.omnetpp.ned.model.ex.SimpleModuleElementEx;
 import org.omnetpp.ned.model.ex.SubmoduleElementEx;
 import org.omnetpp.ned.model.interfaces.INedModelProvider;
@@ -60,10 +61,22 @@ public class NedEditPartPropertySourceProvider implements IPropertySourceProvide
             if (nedModel instanceof ChannelInterfaceElementEx)
                 propSource = new ChannelInterfacePropertySource((ChannelInterfaceElementEx)nedModel);
 
+            if (nedModel instanceof PropertyElementEx) {
+                PropertyElementEx property = (PropertyElementEx)nedModel;
+
+                if (property.getName().equals("figure")) {
+                    propSource = new CanvasFigurePropertySource(property);
+                }
+            }
+
             // set the read only flag on the property source
-            if ((object instanceof IReadOnlySupport) && (propSource instanceof MergedPropertySource))
-                ((MergedPropertySource)propSource).setReadOnly(
-                        !((IReadOnlySupport)object).isEditable());
+            if (object instanceof IReadOnlySupport) {
+                boolean isReadOnly = !((IReadOnlySupport)object).isEditable();
+                if (propSource instanceof MergedPropertySource)
+                    ((MergedPropertySource)propSource).setReadOnly(isReadOnly);
+                else if (propSource instanceof CanvasFigurePropertySource)
+                    ((CanvasFigurePropertySource)propSource).setReadOnly(isReadOnly);
+            }
 
         }
         return propSource;

@@ -83,7 +83,7 @@ public class TransformDescription {
                 if (parts[i].isEmpty())
                     continue;
 
-                Double arg = Converter.stringToDouble(parts[i]);
+                Double arg = Converter.stringToOptionalDouble(parts[i]);
                 if (arg == null) {
                     return null; // not a number
                 } else {
