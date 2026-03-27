@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.omnetpp.common.CommonPlugin;
+import org.omnetpp.common.Debug;
 import org.omnetpp.common.OmnetppDirs;
 import org.omnetpp.common.util.DisplayUtils;
 import org.omnetpp.common.util.FileUtils;
@@ -49,6 +50,7 @@ import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.ide.OmnetppMainPlugin;
 
 public class InstallSimulationModelsDialog extends TitleAreaDialog {
+    public static final String LOCAL_DIR_ENVVAR = "OMNETPP_IDE_INSTALL_MODELS_DESCRIPTORS_DIR"; // set this env var to load descriptors from local dir instead of downloading
     public static final String DESCRIPTORS_URL = "https://models.omnetpp.org/descriptors";
     public static final String COMMUNITY_MODEL_CATALOG_URL = "https://omnetpp.org/download/models-and-tools";
 
@@ -204,8 +206,22 @@ public class InstallSimulationModelsDialog extends TitleAreaDialog {
 
     protected void scheduleDownloadProjectDescriptions() {
         try {
-            String omnetppVersion = "omnetpp-" + OmnetppDirs.getMajorVersion() + "." + OmnetppDirs.getMinorVersion();
-            final URL descriptorsURL = new URL(DESCRIPTORS_URL + "/" + omnetppVersion + "/descriptors.txt");
+            final URL descriptorsURL;
+            String localDir = System.getenv(LOCAL_DIR_ENVVAR);
+            if (Debug.inDevelopment() && localDir != null) {
+                File descriptorsFile = new File(localDir, "descriptors.txt");
+                if (!descriptorsFile.isFile()) {
+                    setErrorMessage(LOCAL_DIR_ENVVAR + " is set to '" + localDir +
+                            "' but it does not contain a descriptors.txt file");
+                    return;
+                }
+                descriptorsURL = descriptorsFile.toURI().toURL();
+            }
+            else {
+                Debug.println("No " + LOCAL_DIR_ENVVAR + " env var, using " + DESCRIPTORS_URL + " to load model descriptions from");
+                String omnetppVersion = "omnetpp-" + OmnetppDirs.getMajorVersion() + "." + OmnetppDirs.getMinorVersion();
+                descriptorsURL = new URL(DESCRIPTORS_URL + "/" + omnetppVersion + "/descriptors.txt");
+            }
             Job job = new Job("Download project descriptors") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
