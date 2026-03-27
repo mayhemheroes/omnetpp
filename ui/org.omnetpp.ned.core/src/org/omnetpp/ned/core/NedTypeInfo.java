@@ -413,7 +413,7 @@ public class NedTypeInfo implements INedTypeInfo, NedElementTags, NedElementCons
         for (INedTypeInfo typeInfo : ancestors) {
             Assert.isTrue(typeInfo instanceof NedTypeInfo);
             NedTypeInfo component = (NedTypeInfo)typeInfo;
-            newAllProperties.putAll(component.getLocalProperties());
+            mergeProperties(newAllProperties, component.getLocalProperties());
             newAllParamDecls.putAll(component.getLocalParamDeclarations());
             newAllParamValues.putAll(component.getLocalParamAssignments());
             newAllGates.putAll(component.getLocalGateDeclarations());
@@ -446,6 +446,15 @@ public class NedTypeInfo implements INedTypeInfo, NedElementTags, NedElementCons
             Debug.println("typeInfo " + getName() + " refreshInherited(): " + (System.currentTimeMillis() - startMillis) + "ms");
 
         needsRefreshInherited = false;
+    }
+
+    private static void mergeProperties(Map<String, Map<String, PropertyElementEx>> target, Map<String, Map<String, PropertyElementEx>> source) {
+        for (String propertyName : source.keySet()) {
+            if (!target.containsKey(propertyName))
+                target.put(propertyName, new LinkedHashMap<String, PropertyElementEx>(source.get(propertyName)));
+            else
+                target.get(propertyName).putAll(source.get(propertyName));
+        }
     }
 
     public void invalidate() {
