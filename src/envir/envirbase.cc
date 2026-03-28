@@ -1180,18 +1180,39 @@ void EnvirBase::messageDeleted(cMessage *msg)
         eventlogManager->messageDeleted(msg);
 }
 
+inline const char *skipNetwork(const char *fullPath)
+{
+    const char *dot = strchr(fullPath, '.');
+    return dot ? dot+1 : fullPath;
+}
+
 void EnvirBase::componentMethodBegin(cComponent *from, cComponent *to, const char *methodFmt, va_list va, bool silent)
 {
-    if (recordEventlog) {
-        if (methodFmt) {
-            char methodTextBuf[MAX_METHODCALL];
-            vsnprintf(methodTextBuf, MAX_METHODCALL, methodFmt, va);
-            methodTextBuf[MAX_METHODCALL-1] = '\0';
+    if (methodFmt == nullptr && recordEventlog) {
+        eventlogManager->componentMethodBegin(from, to, "");
+        return;
+    }
+
+    bool traceEnabled = !silent &&  // note: if we logged silent ones too, callInitialize() would ALSO log, breaking tests in test/core
+                        COMPILETIME_LOG_PREDICATE(to, LOGLEVEL_TRACE, nullptr) &&
+                        cLog::runtimeLogPredicate(to, LOGLEVEL_TRACE, nullptr);
+    if (methodFmt && (traceEnabled || recordEventlog)) {
+        char methodTextBuf[MAX_METHODCALL] = "";
+        vsnprintf(methodTextBuf, MAX_METHODCALL, methodFmt, va);
+        methodTextBuf[MAX_METHODCALL-1] = '\0';
+
+        if (traceEnabled) {
+            // Note1: Here the context is already the new ("to") component, so log prefix will reflect that.
+            // Note2: Side effect: This log msg, like all log msgs, is ALSO recorded in the eventlog which
+            // records the string in a CMB (ComponentMethodBegin) entry too, so it will be duplicate.
+            // This is unfortunate, but not much can be done about it in the current architecture.
+            EV_TRACE << "Method call " << (from ? skipNetwork(from->getFullPath().c_str()) : "<none>")
+                     << " --> " << (to ? skipNetwork(to->getFullPath().c_str()) : "<none>")
+                     << ": " << methodTextBuf << "\n";
+        }
+
+        if (recordEventlog)
             eventlogManager->componentMethodBegin(from, to, methodTextBuf);
-        }
-        else {
-            eventlogManager->componentMethodBegin(from, to, "");
-        }
     }
 }
 

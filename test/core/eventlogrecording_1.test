@@ -367,6 +367,7 @@ DM id 6 tid 6 eid 6 etid 6 c cMessage n bubble k 7 m 3 pe 10
 
 E # 11 t 6 m 3 ce 0 msg 7
 - making three method calls
+- Method call node --> compound.node: publicMethod("dummy", 42)
 CMB sm 3 tm 5 m "publicMethod(\"dummy\", 42)"
 - sending a message from the called method
 CM id 16 tid 16 eid 16 etid 16 c cMessage n msg1 pe -1
