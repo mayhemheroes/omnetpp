@@ -399,7 +399,7 @@ class SIM_API cIEventlogManager : public cObject, noncopyable
     virtual void messageCloned(cMessage *msg, cMessage *clone) = 0;
     virtual void messageDeleted(cMessage *msg) = 0;
     virtual void moduleReparented(cModule *module, cModule *oldparent, int oldId) = 0;
-    virtual void componentMethodBegin(cComponent *from, cComponent *to, const char *methodFmt, va_list va) = 0;
+    virtual void componentMethodBegin(cComponent *from, cComponent *to, const char *methodText) = 0;
     virtual void componentMethodEnd() = 0;
     virtual void moduleCreated(cModule *newmodule) = 0;
     virtual void moduleDeleted(cModule *module) = 0;

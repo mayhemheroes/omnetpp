@@ -1182,8 +1182,17 @@ void EnvirBase::messageDeleted(cMessage *msg)
 
 void EnvirBase::componentMethodBegin(cComponent *from, cComponent *to, const char *methodFmt, va_list va, bool silent)
 {
-    if (recordEventlog)
-        eventlogManager->componentMethodBegin(from, to, methodFmt, va);
+    if (recordEventlog) {
+        if (methodFmt) {
+            char methodTextBuf[MAX_METHODCALL];
+            vsnprintf(methodTextBuf, MAX_METHODCALL, methodFmt, va);
+            methodTextBuf[MAX_METHODCALL-1] = '\0';
+            eventlogManager->componentMethodBegin(from, to, methodTextBuf);
+        }
+        else {
+            eventlogManager->componentMethodBegin(from, to, "");
+        }
+    }
 }
 
 void EnvirBase::componentMethodEnd()

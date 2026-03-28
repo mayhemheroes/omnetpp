@@ -622,18 +622,11 @@ void EventlogFileManager::messageDeleted(cMessage *msg)
     }
 }
 
-void EventlogFileManager::componentMethodBegin(cComponent *from, cComponent *to, const char *methodFmt, va_list va)
+void EventlogFileManager::componentMethodBegin(cComponent *from, cComponent *to, const char *methodText)
 {
     if (isEventRecordingEnabled && isMethodCallRecordingEnabled) {
         FileLockAcquirer fileLockAcquirer(fileLock, FILE_LOCK_EXCLUSIVE);
-        const char *methodText = "";  // for the Enter_Method_Silent case
-        if (methodFmt) {
-            static char methodTextBuf[MAX_METHODCALL];
-            vsnprintf(methodTextBuf, MAX_METHODCALL, methodFmt, va);
-            methodTextBuf[MAX_METHODCALL-1] = '\0';
-            methodText = methodTextBuf;
-        }
-        EventLogWriter::recordComponentMethodBeginEntry_sm_tm_m(feventlog, from ? from->getId() : -1, to->getId(), methodText);
+        EventLogWriter::recordComponentMethodBeginEntry_sm_tm_m(feventlog, from ? from->getId() : -1, to->getId(), opp_nulltoempty(methodText));
         entryIndex++;
     }
 }

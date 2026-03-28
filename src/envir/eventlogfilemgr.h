@@ -262,7 +262,7 @@ class ENVIR_API EventlogFileManager : public cIEventlogManager, public cISimulat
     virtual void messageCloned(cMessage *msg, cMessage *clone) override;
     virtual void messageDeleted(cMessage *msg) override;
     virtual void moduleReparented(cModule *module, cModule *oldparent, int oldId) override { throw opp_runtime_error("Unsupported operation"); }
-    virtual void componentMethodBegin(cComponent *from, cComponent *to, const char *methodFmt, va_list va) override;
+    virtual void componentMethodBegin(cComponent *from, cComponent *to, const char *methodText) override;
     virtual void componentMethodEnd() override;
     virtual void moduleCreated(cModule *newmodule) override;
     virtual void moduleDeleted(cModule *module) override;
