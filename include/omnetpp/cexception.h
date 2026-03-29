@@ -20,8 +20,13 @@
 #include <exception>
 #include <stdexcept>
 #include "simkerneldefs.h"
+#include "simutil.h"
 #include "simtime_t.h"
 #include "errmsg.h"
+
+#if __cplusplus >= 202002L // only with C++20 or later
+#include <format>
+#endif
 
 namespace omnetpp {
 
@@ -118,6 +123,30 @@ class SIM_API cException : public std::exception
      */
     _OPP_GNU_ATTRIBUTE(format(printf, 3, 4))
     cException(const cObject *where, const char *msg,...);
+
+#if __cplusplus >= 202002L // only with C++20 or later
+
+    /**
+     * Uses std::format-style formatting. The error code is set to E_CUSTOM.
+     * Use the _fmt suffix on the format string literal:
+     *   cException("value is {}, name is {}"_fmt, 42, name)
+     */
+    template<typename... Args>
+    cException(opp_fmtstr fmt, Args&&... args) {
+        init(nullptr, E_CUSTOM, std::vformat(fmt.str, std::make_format_args(args...)));
+    }
+
+    /**
+     * Uses std::format-style formatting. The error code is set to E_CUSTOM.
+     * The 1st arg is the object where the error occurred: its class and
+     * object name will be prepended to the message like this: "(cArray)arr".
+     */
+    template<typename... Args>
+    cException(const cObject *where, opp_fmtstr fmt, Args&&... args) {
+        init(where, E_CUSTOM, std::vformat(fmt.str, std::make_format_args(args...)));
+    }
+
+#endif // C++20
 
     /**
      * Copy constructor. We unfortunately need to copy exception objects when
@@ -261,6 +290,20 @@ class SIM_API cTerminationException : public cException
     _OPP_GNU_ATTRIBUTE(format(printf, 2, 3))
     cTerminationException(const char *msg,...);
 
+#if __cplusplus >= 202002L // only with C++20 or later
+
+    /**
+     * Uses std::format-style formatting. The error code is set to E_CUSTOM.
+     * Use the _fmt suffix on the format string literal:
+     *   cTerminationException("completed after {} events"_fmt, n)
+     */
+    template<typename... Args>
+    cTerminationException(opp_fmtstr fmt, Args&&... args) {
+        init(nullptr, E_CUSTOM, std::vformat(fmt.str, std::make_format_args(args...)));
+    }
+
+#endif
+
     /**
      * Copy constructor. We unfortunately need to copy exception objects
      * when handing them back from an activity() method.
@@ -336,6 +379,32 @@ class SIM_API cRuntimeError : public cException
      */
     _OPP_GNU_ATTRIBUTE(format(printf, 3, 4))
     cRuntimeError(const cObject *where, const char *msg,...);
+
+#if __cplusplus >= 202002L // only with C++20 or later
+
+    /**
+     * Uses std::format-style formatting. The error code is set to E_CUSTOM.
+     * Use the _fmt suffix on the format string literal:
+     *   cRuntimeError("value is {}, name is {}"_fmt, 42, name)
+     */
+    template<typename... Args>
+    cRuntimeError(opp_fmtstr fmt, Args&&... args) {
+        init(nullptr, E_CUSTOM, std::vformat(fmt.str, std::make_format_args(args...)));
+        notifyEnvir();
+    }
+
+    /**
+     * Uses std::format-style formatting. The error code is set to E_CUSTOM.
+     * The 1st arg is the object where the error occurred: its class and
+     * object name will be prepended to the message like this: "(cArray)arr".
+     */
+    template<typename... Args>
+    cRuntimeError(const cObject *where, opp_fmtstr fmt, Args&&... args) {
+        init(where, E_CUSTOM, std::vformat(fmt.str, std::make_format_args(args...)));
+        notifyEnvir();
+    }
+
+#endif
 
     /**
      * Constructor for re-throwing an exception with location info.

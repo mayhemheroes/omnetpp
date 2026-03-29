@@ -1,0 +1,19 @@
+%description:
+Use of C++20 formatting in exception constructors
+
+%activity:
+
+#if __cplusplus >= 202002L // only with C++20 or later
+
+std::string name = "Joe";
+cRuntimeError e("Value is {}, name is {}"_fmt, 42, name);
+EV << e.what();
+
+#else
+
+EV << "#SKIPPED: Non-C++20 compiler" << std::endl;
+
+#endif
+
+%contains: stdout
+Value is 42, name is Joe

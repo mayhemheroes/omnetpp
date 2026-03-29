@@ -107,6 +107,33 @@ SIM_API int64_t opp_get_monotonic_clock_usecs();  // in gettime.cc
 
 /** @} */
 
+#if __cplusplus >= 202002L // only with C++20 or later
+
+/**
+ * @brief A wrapper type for std::format-style format strings, used for
+ * overload resolution to distinguish them from printf-style format strings.
+ *
+ * Usage: Use the _fmt user-defined literal suffix on string literals to
+ * create an opp_fmtstr value. For example:
+ *
+ *   throw cRuntimeError("value is {}"_fmt, 42);
+ *
+ * @ingroup Fundamentals
+ */
+struct opp_fmtstr {
+    const char *str;
+    size_t len;
+};
+
+/**
+ * @brief User-defined literal for creating opp_fmtstr values from string literals.
+ *
+ * @ingroup Fundamentals
+ */
+constexpr opp_fmtstr operator""_fmt(const char *s, size_t n) { return {s, n}; }
+
+#endif  // C++20
+
 }  // namespace omnetpp
 
 #endif
