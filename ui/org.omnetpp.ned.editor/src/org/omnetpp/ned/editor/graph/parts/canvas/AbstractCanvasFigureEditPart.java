@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PositionConstants;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PrecisionDimension;
 import org.eclipse.draw2d.geometry.PrecisionPoint;
@@ -25,6 +26,7 @@ import org.omnetpp.figures.misc.AnchoredRectangle;
 import org.omnetpp.figures.misc.Transform;
 import org.omnetpp.figures.misc.AnchoredRectangle.Anchor;
 import org.omnetpp.ned.editor.graph.commands.MoveCanvasFigureCommand;
+import org.omnetpp.ned.editor.graph.commands.ResizeCanvasFigureCommand;
 import org.omnetpp.ned.editor.graph.misc.CanvasFigureUtils;
 import org.omnetpp.ned.editor.graph.parts.CompoundModuleEditPart;
 import org.omnetpp.ned.editor.graph.parts.IReadOnlySupport;
@@ -82,6 +84,28 @@ public abstract class AbstractCanvasFigureEditPart extends AbstractGraphicalEdit
         return getCompoundModulePart().getScale();
     }
 
+    /**
+     * Whether this figure type supports resizing (has a bounds/size property).
+     * Subclasses that represent shapes with a defining rectangle should override
+     * this to return true.
+     */
+    public boolean isResizable() {
+        return false;
+    }
+
+    public Dimension getSize() {
+        AnchoredRectangle rect = parseAnchoredRectangle(PKEY_BOUNDS, PKEY_POS, PKEY_SIZE, PKEY_ANCHOR);
+        return (rect == null) ? new PrecisionDimension() : rect.getSize();
+    }
+
+    public void setSize(Dimension size) {
+        AnchoredRectangle rect = parseAnchoredRectangle(PKEY_BOUNDS, PKEY_POS, PKEY_SIZE, PKEY_ANCHOR);
+        if (rect == null)
+            rect = new AnchoredRectangle();
+        rect.setSize(size);
+        setAnchoredRectangle(PKEY_BOUNDS, PKEY_POS, PKEY_SIZE, PKEY_ANCHOR, rect);
+    }
+
     protected Command getTransformedMoveCommand(Request request, Transform t) {
         if (request instanceof ChangeBoundsRequest) {
             ChangeBoundsRequest boundsRequest = (ChangeBoundsRequest)request;
@@ -108,8 +132,23 @@ public abstract class AbstractCanvasFigureEditPart extends AbstractGraphicalEdit
             double scale = getScale();
             PrecisionPoint roundedLocation = new PrecisionPoint(location);
             CanvasFigureUtils.roundForZoom(roundedLocation, scale);
+            Command c;
+            Dimension sizeDelta = boundsRequest.getSizeDelta();
+            if (isResizable() && sizeDelta != null && (sizeDelta.width != 0 || sizeDelta.height != 0)) {
+                Dimension originalSize = getSize();
+                PrecisionDimension newSize = new PrecisionDimension(
+                        originalSize.preciseWidth() + sizeDelta.preciseWidth() / scale,
+                        originalSize.preciseHeight() + sizeDelta.preciseHeight() / scale);
+                if (newSize.preciseWidth() < 1)
+                    newSize.setPreciseWidth(1);
+                if (newSize.preciseHeight() < 1)
+                    newSize.setPreciseHeight(1);
+                CanvasFigureUtils.roundForZoom(newSize, scale);
+                c = new ResizeCanvasFigureCommand(this, roundedLocation, newSize);
+            } else {
+                c = new MoveCanvasFigureCommand(this, new PrecisionPoint(roundedLocation));
+            }
 
-            Command c = new MoveCanvasFigureCommand(this, new PrecisionPoint(roundedLocation));
             boundsRequest.setConstrainedMove(false);
             return c;
         } else {

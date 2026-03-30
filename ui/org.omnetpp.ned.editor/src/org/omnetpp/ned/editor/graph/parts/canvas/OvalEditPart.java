@@ -10,6 +10,11 @@ public class OvalEditPart extends AbstractCanvasShapeEditPart {
         return type.equals(FTYPE_OVAL);
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public CanvasOvalFigure getFigure() {
         return (CanvasOvalFigure)super.getFigure();

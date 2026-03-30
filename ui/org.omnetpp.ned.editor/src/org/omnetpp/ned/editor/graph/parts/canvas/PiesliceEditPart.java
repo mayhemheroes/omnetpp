@@ -10,6 +10,11 @@ public class PiesliceEditPart extends AbstractCanvasShapeEditPart {
         return type.equals(FTYPE_PIESLICE);
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public CanvasPiesliceFigure getFigure() {
         return (CanvasPiesliceFigure)super.getFigure();

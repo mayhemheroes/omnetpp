@@ -21,6 +21,11 @@ public class PlaceholderEditPart extends AbstractCanvasShapeEditPart {
     }
 
     @Override
+    public boolean isResizable() {
+        return true;
+    }
+
+    @Override
     public CanvasPlaceholderFigure getFigure() {
         return (CanvasPlaceholderFigure)super.getFigure();
     }

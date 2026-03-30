@@ -17,6 +17,11 @@ public class IconEditPart extends ImageEditPart {
     }
 
     @Override
+    public boolean isResizable() {
+        return false;
+    }
+
+    @Override
     protected Command getTransformedMoveCommand(Request request, Transform t) {
         IFigure parent = getFigure().getParent();
         Transform transf;

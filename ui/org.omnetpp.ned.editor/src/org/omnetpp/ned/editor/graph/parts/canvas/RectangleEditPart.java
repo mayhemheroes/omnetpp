@@ -11,6 +11,11 @@ public class RectangleEditPart extends AbstractCanvasShapeEditPart {
         return type.equals(FTYPE_RECTANGLE);
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public CanvasRectangleFigure getFigure() {
         return (CanvasRectangleFigure)super.getFigure();

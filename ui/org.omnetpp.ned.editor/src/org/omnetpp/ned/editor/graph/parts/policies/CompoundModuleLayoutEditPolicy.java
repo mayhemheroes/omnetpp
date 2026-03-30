@@ -326,6 +326,10 @@ public class CompoundModuleLayoutEditPolicy extends ConstrainedLayoutEditPolicy 
             policy.setResizeDirections(PositionConstants.NONE);
             policy.setDragAllowed(false);
         }
+        // only allow resizing for canvas figure types that support it (e.g. rectangle, oval)
+        else if (child instanceof AbstractCanvasFigureEditPart && !((AbstractCanvasFigureEditPart)child).isResizable()) {
+            policy.setResizeDirections(PositionConstants.NONE);
+        }
         return policy;
     }
 

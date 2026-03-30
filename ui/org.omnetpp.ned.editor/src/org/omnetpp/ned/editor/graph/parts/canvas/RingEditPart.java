@@ -11,6 +11,11 @@ public class RingEditPart extends AbstractCanvasShapeEditPart {
         return type.equals(FTYPE_RING);
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public CanvasRingFigure getFigure() {
         return (CanvasRingFigure)super.getFigure();

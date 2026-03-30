@@ -20,6 +20,11 @@ import org.omnetpp.figures.misc.AnchoredRectangle.Anchor;
 import org.omnetpp.ned.model.ex.PropertyElementEx;
 
 public abstract class AbstractCanvasImageEditPart extends AbstractCanvasFigureEditPart {
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public AbstractCanvasImage getFigure() {
         return (AbstractCanvasImage)super.getFigure();

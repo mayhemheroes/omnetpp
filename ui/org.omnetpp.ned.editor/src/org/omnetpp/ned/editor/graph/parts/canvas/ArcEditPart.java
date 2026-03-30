@@ -10,6 +10,11 @@ public class ArcEditPart extends AbstractCanvasLineEditPart {
         return type.equals(FTYPE_ARC);
     }
 
+    @Override
+    public boolean isResizable() {
+        return true;
+    }
+
     @Override // For convenience.
     public CanvasArcFigure getFigure() {
         return (CanvasArcFigure)super.getFigure();
