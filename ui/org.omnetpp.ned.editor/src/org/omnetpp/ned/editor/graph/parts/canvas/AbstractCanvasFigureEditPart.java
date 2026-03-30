@@ -24,7 +24,6 @@ import org.omnetpp.figures.canvas.AbstractCanvasFigure;
 import org.omnetpp.figures.misc.AnchoredRectangle;
 import org.omnetpp.figures.misc.Transform;
 import org.omnetpp.figures.misc.AnchoredRectangle.Anchor;
-import org.omnetpp.ned.core.NedCanvasFigureValidator;
 import org.omnetpp.ned.editor.graph.commands.MoveCanvasFigureCommand;
 import org.omnetpp.ned.editor.graph.misc.CanvasFigureUtils;
 import org.omnetpp.ned.editor.graph.parts.CompoundModuleEditPart;
@@ -171,7 +170,7 @@ public abstract class AbstractCanvasFigureEditPart extends AbstractGraphicalEdit
         for (PropertyElementEx figure : figures.values()) {
             String type = figure.getValue(PKEY_TYPE);
 
-            if ((type != null) && NedCanvasFigureValidator.validTypes.contains(type) &&
+            if ((type != null) &&
                     CanvasFigureUtils.getClosestAncestor(figure) == getModel()) {
                 children.add(figure);
             }

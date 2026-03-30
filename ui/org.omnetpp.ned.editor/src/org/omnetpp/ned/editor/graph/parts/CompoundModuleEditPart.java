@@ -36,7 +36,6 @@ import org.omnetpp.figures.anchors.CompoundModuleGateAnchor;
 import org.omnetpp.figures.anchors.GateAnchor;
 import org.omnetpp.ned.editor.NedEditorPlugin;
 import org.omnetpp.figures.CompoundModuleFigure.NetworkLayer;
-import org.omnetpp.ned.core.NedCanvasFigureValidator;
 import org.omnetpp.ned.editor.graph.figures.CompoundModuleTypeFigure;
 import org.omnetpp.ned.editor.graph.misc.CanvasFigureUtils;
 import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
@@ -177,13 +176,13 @@ public class CompoundModuleEditPart extends ModuleEditPart {
         // return all submodules, including inherited ones
         result.addAll(getModel().getSubmodules());
 
-        // adding figure properties with known types, but only the top level ones
+        // adding figure properties with known or unknown types, but only the top level ones
         Map<String, PropertyElementEx> figures = getModel().getProperties().get("figure");
         if (figures != null) {
             for (PropertyElementEx property : figures.values()) {
                 String type = property.getValue(PKEY_TYPE);
 
-                if ((type != null) && NedCanvasFigureValidator.validTypes.contains(type)
+                if ((type != null)
                         && (CanvasFigureUtils.getClosestAncestor(property) == null)) {
                     result.add(property);
                 }

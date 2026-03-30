@@ -7,7 +7,6 @@
 
 package org.omnetpp.ned.editor.graph.parts;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.omnetpp.ned.editor.graph.parts.canvas.*;
@@ -80,12 +79,10 @@ public class NedEditPartFactory implements EditPartFactory {
                     child = new IconEditPart();
                 } else if (type.equals(FTYPE_PATH)) {
                     child = new PathEditPart();
+                } else {
+                    // unknown/custom figure type -- show a placeholder
+                    child = new PlaceholderEditPart();
                 }
-
-                // child must not be null here, because the getModelChildren() methods of
-                // AbstractCanvasFigureEditPart and CompoundModuleEditPart should only allow
-                // PropertyElements here which are all handled above (they have a known type)
-                Assert.isTrue(child != null);
             }
         } else
             throw new IllegalArgumentException("Unknown model element: " + model);
