@@ -108,6 +108,10 @@ public class GNedContextMenuProvider extends ContextMenuProvider {
         action = ar.getAction(OpenTypeAction.ID);
         manager.appendToGroup(GROUP_FIND, action);
 
+        action = ar.getAction(GoToDefinitionAction.ID);
+        if (action.isEnabled())
+            manager.appendToGroup(GROUP_FIND, action);
+
         MenuManager showInSubMenu= new MenuManager(getShowInMenuLabel());
         showInSubMenu.add(ContributionItemFactory.VIEWS_SHOW_IN.create(wwin));
         manager.appendToGroup(GROUP_FIND, showInSubMenu);

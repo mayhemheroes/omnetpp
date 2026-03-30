@@ -120,6 +120,7 @@ import org.omnetpp.ned.editor.graph.actions.CopyAction;
 import org.omnetpp.ned.editor.graph.actions.CutAction;
 import org.omnetpp.ned.editor.graph.actions.ExportImageAction;
 import org.omnetpp.ned.editor.graph.actions.GNedContextMenuProvider;
+import org.omnetpp.ned.editor.graph.actions.GoToDefinitionAction;
 import org.omnetpp.ned.editor.graph.actions.NedDirectEditAction;
 import org.omnetpp.ned.editor.graph.actions.NedSelectAllAction;
 import org.omnetpp.ned.editor.graph.actions.OpenTypeAction;
@@ -537,6 +538,10 @@ public class GraphicalNedEditor
         registry.registerAction(action);
         getSelectionActions().add(action.getId());
 
+        action = new GoToDefinitionAction(this);
+        registry.registerAction(action);
+        getSelectionActions().add(action.getId());
+
         action = new PropertiesAction(this);
         registry.registerAction(action);
         getSelectionActions().add(action.getId());
@@ -884,6 +889,20 @@ public class GraphicalNedEditor
         hoverText += "<i>Source:</i><pre>" + StringUtils.quoteForHtml(StringUtils.abbreviate(nedCode, 1000)) + "</pre>";
 
         return HoverSupport.addHTMLStyleSheet(hoverText);
+    }
+
+    /**
+     * Walks up the edit part hierarchy to find the enclosing CompoundModuleEditPart,
+     * and returns its model. Used to determine whether an element is inherited.
+     */
+    private static CompoundModuleElementEx getDisplayedCompoundModule(EditPart ep) {
+        EditPart current = ep;
+        while (current != null) {
+            if (current instanceof CompoundModuleEditPart)
+                return ((CompoundModuleEditPart) current).getModel();
+            current = current.getParent();
+        }
+        return null;
     }
 
     /**
