@@ -845,6 +845,14 @@ public class GraphicalNedEditor
         // brief
         hoverText += "<b>" + StringUtils.quoteForHtml(NedModelLabelProvider.getInstance().getText(element)) + "</b>\n";
 
+        // "inherited from" notice for elements defined in a base type
+        CompoundModuleElementEx displayedModule = getDisplayedCompoundModule(ep);
+        if (displayedModule != null) {
+            String definingTypeName = GoToDefinitionAction.getDefiningTypeName(element, displayedModule);
+            if (definingTypeName != null)
+                hoverText += "<br/><i>(inherited from " + StringUtils.quoteForHtml(definingTypeName) + " — not editable)</i><br/>\n";
+        }
+
         //debug code:
         //hoverText += element.getSourceLocation() + "<br/>" + element.getSourceRegion();
         //DisplayString ds = ((IHasDisplayString)element).getDisplayString();
