@@ -103,6 +103,7 @@ fi
 # and brew should not be used at all)
 if [ "$(uname)" = "Darwin" -a "$(command -v brew)" != "" -a -z "$IN_NIX_SHELL" ]; then
   [[ "$quiet" != "true" ]] && echo "HOMEBREW detected, activating dependencies (qt@6, bison, flex, pkg-config, make)."
+  export PATH="$(brew --prefix llvm)/bin:$PATH"
   export PATH="$(brew --prefix qt@6)/bin:$PATH"
   export PATH="$(brew --prefix bison)/bin:$PATH"
   export PATH="$(brew --prefix flex)/bin:$PATH"

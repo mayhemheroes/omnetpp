@@ -212,10 +212,10 @@ install_deps() {
             exit 1
         fi
 
-        packages="bison ccache flex perl python@3 make pkg-config doxygen graphviz"
+        packages="bison ccache llvm flex perl python@3 make pkg-config doxygen graphviz"
 
         if ! $no_gui; then
-            packages="$packages qt@6"
+            packages="$packages qt@6 qtkeychain"
         fi
 
         if ! $no_3d; then
