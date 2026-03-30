@@ -388,7 +388,7 @@ ExprValue DivNode::evaluate(Context *context) const
         return ExprValue();
 
     // if both args are integer and the division is exact, return integer result
-    if (leftValue.type == ExprValue::INT && rightValue.type == ExprValue::INT) {
+    if (leftValue.type == ExprValue::INT && rightValue.type == ExprValue::INT && rightValue.intv != 0) {
         ensureNoLogarithmicUnit(leftValue);
         //ensureNoLogarithmicUnit(rightValue); - unnecessary, because on this path it must be either the same or empty
         bool unitless = rightValue.unit.empty();
