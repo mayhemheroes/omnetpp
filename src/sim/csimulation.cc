@@ -45,6 +45,7 @@
 #include "omnetpp/cconfigoption.h"
 #include "omnetpp/ccoroutine.h"
 #include "omnetpp/clifecyclelistener.h"
+#include "omnetpp/crngmanager.h"
 #include "omnetpp/platdep/platmisc.h"  // for DEBUG_TRAP
 
 #ifdef WITH_NETBUILDER
@@ -67,6 +68,7 @@ extern std::set<cOwnedObject *> objectlist;
 void printAllObjects();
 #endif
 
+Register_PerRunConfigOption(CFGID_RNGMANAGER_CLASS, "rngmanager-class", CFG_STRING, "omnetpp::cRngManager", "Part of the Envir plugin mechanism: selects the RNG manager class to be used for providing RNGs to modules and channels. The class has to implement the `cIRngManager` interface.");
 Register_PerRunConfigOption(CFGID_PRINT_INSTANTIATED_NED_TYPES, "print-instantiated-ned-types", CFG_BOOL, "false", "When set to true, the simulation will print the names of all instantiated NED types at the end of the simulation. This is useful for coverage tests.");
 Register_PerRunConfigOption(CFGID_PRINT_UNUSED_PARAMETERS, "print-unused-parameters", CFG_BOOL, "false", "When set to true, the simulation will print the names of all parameters that have not been accessed during simulation, i.e. did not have any effect, pointing to possible deficiencies in the model.");
 
@@ -121,11 +123,10 @@ cSimulation::cSimulation(const char *name, cEnvir *env) : cNamedObject(name, fal
     simulationStage = CTX_NONE;
     contextType = CTX_NONE;
 
-    // install default FES
+    // install default objects
     setFES(new cEventHeap("fes"));
-
-    // install default scheduler
     setScheduler(new cSequentialScheduler());
+    setRngManager(new cRngManager());
 }
 
 cSimulation::~cSimulation()
@@ -138,6 +139,7 @@ cSimulation::~cSimulation()
 
     delete envir;
     delete fingerprint;
+    dropAndDelete(rngManager);
     delete scheduler;
     dropAndDelete(fes);
     delete usageCollector;
@@ -255,6 +257,22 @@ void cSimulation::setFES(cFutureEventSet *f)
     fes = f;
     fes->setName("scheduled-events");
     take(fes);
+}
+
+void cSimulation::setRngManager(cIRngManager *mgr)
+{
+    if (systemModule)
+        throw cRuntimeError(this, "setRngManager(): Cannot switch RNG managers when a network is already set up");
+    if (!mgr)
+        throw cRuntimeError(this, "setRngManager(): New RNG manager cannot be nullptr");
+
+    if (rngManager) {
+        drop(rngManager);
+        delete rngManager;
+    }
+
+    rngManager = mgr;
+    take(rngManager);
 }
 
 void cSimulation::setSimulationTimeLimit(simtime_t simTimeLimit)

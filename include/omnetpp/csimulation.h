@@ -41,6 +41,7 @@ class cFingerprintCalculator;
 class cModuleType;
 class cEnvir;
 class cSoftOwner;
+class cIRngManager;
 class cUsageCollector; // (internal)
 
 SIM_API extern cSoftOwner globalOwningContext; // also in globals.h
@@ -83,6 +84,7 @@ class SIM_API cSimulation : public cNamedObject, noncopyable
     cComponent *contextComponent = nullptr;  // component in context (or nullptr)
     ContextType contextType;            // the innermost context type
     cModuleType *networkType = nullptr; // network type
+    cIRngManager *rngManager = nullptr; // component-rng mapping
     cFutureEventSet *fes = nullptr;     // stores future events
     cScheduler *scheduler = nullptr;    // event scheduler
     simtime_t warmupPeriod;             // warm-up period
@@ -342,6 +344,19 @@ class SIM_API cSimulation : public cNamedObject, noncopyable
      * Returns the future event set data structure used by the simulation.
      */
     cFutureEventSet *getFES() const  {return fes;}
+
+    /**
+     * Installs an RNG manager object. This method may only be called before or
+     * between simulations, when there is no network set up. The cSimulation
+     * object will be responsible for deallocating the object.
+     */
+    virtual void setRngManager(cIRngManager *rngManager);
+
+    /**
+     * Returns the RNG manager that manages the association between the
+     * modules/channels of the simulation, and RNGs.
+     */
+    cIRngManager *getRngManager() const {return rngManager;}
 
     /**
      * Sets the simulation stop time be scheduling an appropriate

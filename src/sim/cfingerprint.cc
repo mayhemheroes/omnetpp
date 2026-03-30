@@ -21,6 +21,7 @@
 #include "omnetpp/ccomponenttype.h"
 #include "omnetpp/cclassdescriptor.h"
 #include "omnetpp/crng.h"
+#include "omnetpp/crngmanager.h"
 #include "omnetpp/cstatistic.h"
 #include "omnetpp/cabstracthistogram.h"
 #include "omnetpp/cdisplaystring.h"
@@ -266,8 +267,7 @@ void cSingleFingerprintCalculator::addEvent(cEvent *event)
                                     hasher_ << module->getComponentType()->getClassName();
                                 break;
                             case RANDOM_NUMBERS_DRAWN:
-                                for (int i = 0; i < getEnvir()->getNumRNGs(); i++)
-                                    hasher_ << getEnvir()->getRNG(i)->getNumbersDrawn();
+                                hasher_ << getSimulation()->getRngManager()->getHash();
                                 break;
                             case CLEAN_HASHER:
                                 hasher_.reset();

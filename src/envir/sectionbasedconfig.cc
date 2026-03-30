@@ -35,6 +35,9 @@ using namespace omnetpp::common;
 using namespace omnetpp::internal;
 
 namespace omnetpp {
+
+extern cConfigOption *CFGID_SEED_SET; // registered in crngmanager.cc
+
 namespace envir {
 
 // XXX make sure quoting "$\{" works!
@@ -54,7 +57,6 @@ Register_PerRunConfigOption(CFGID_RESULTDIR_SUBDIVISION, "resultdir-subdivision"
 
 extern cConfigOption *CFGID_NETWORK;
 extern cConfigOption *CFGID_RESULT_DIR;
-extern cConfigOption *CFGID_SEED_SET;
 extern cConfigOption *CFGID_SIM_TIME_LIMIT;
 
 Register_Class(SectionBasedConfiguration);

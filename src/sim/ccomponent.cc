@@ -28,6 +28,7 @@
 #include "omnetpp/cproperty.h"
 #include "omnetpp/cpar.h"
 #include "omnetpp/cparimpl.h"
+#include "omnetpp/crngmanager.h"
 #include "omnetpp/crng.h"
 #include "omnetpp/cstatistic.h"
 #include "omnetpp/cstatisticbuilder.h"
@@ -222,9 +223,14 @@ cModule *cComponent::findModuleByPath(const char *path) const
     return doFindModuleByPath(path);
 }
 
+int cComponent::getNumRNGs() const
+{
+    return simulation->getRngManager()->getNumRngs(this);
+}
+
 cRNG *cComponent::getRNG(int k) const
 {
-    return getEnvir()->getRNG(k < rngMapSize ? rngMap[k] : k);
+    return simulation->getRngManager()->getRng(this, k);
 }
 
 void cComponent::setLogLevel(LogLevel logLevel)

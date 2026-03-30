@@ -87,10 +87,6 @@ struct ENVIR_API EnvirOptions
     std::string nedPath;
     std::string nedExcludedPackages;
 
-    int numRNGs;
-    std::string rngClass;
-    int seedset; // which set of seeds to use
-
     std::string schedulerClass;
     std::string eventlogManagerClass;
     std::string outputVectorManagerClass;
@@ -141,10 +137,6 @@ class ENVIR_API EnvirBase : public cRunnableEnvir
     cParsimCommunications *parsimComm;
     cParsimPartition *parsimPartition;
 #endif
-
-    // Random number generators. Module RNG's map to these RNG objects.
-    int numRNGs;
-    cRNG **rngs;
 
     // log related
     LogFormatter logFormatter;
@@ -337,9 +329,6 @@ class ENVIR_API EnvirBase : public cRunnableEnvir
 
     // Utility function: checks simulation fingerprint and displays a message accordingly
     void checkFingerprint();
-
-    // Set up RNG mapping for the component
-    virtual void setupRNGMapping(cComponent *component);
 
     // Utility function for getXMLDocument() and getParsedXMLString()
     cXMLElement *resolveXMLPath(cXMLElement *documentnode, const char *path);

@@ -59,6 +59,8 @@
 #include "omnetpp/cscheduler.h"
 #include "omnetpp/ccomponenttype.h"
 #include "omnetpp/chasher.h"
+#include "omnetpp/crng.h"
+#include "omnetpp/crngmanager.h"
 #include "omnetpp/csimulation.h"
 #include "omnetpp/cconfigoption.h"
 #include "omnetpp/regmacros.h"
@@ -1413,9 +1415,10 @@ QString Qtenv::computeSimulationHash()
         hasher.add(value); // should call removeOptionalQuotes() on value, see resultfileutils.cc
     }
 
-    // rngs
-    for (int i = 0; i < getNumRNGs(); i++) {
-        cRNG *rng = getRNG(i);
+    // RNGs
+    cIRngManager *rngMgr = getSimulation()->getRngManager();
+    for (int i = 0; i < rngMgr->getTotalNumRngs(); i++) {
+        cRNG *rng = rngMgr->getGlobalRng(i);
         hasher.add(rng->getClassName());
         hasher.add(rng->str());
     }
@@ -1567,8 +1570,9 @@ std::string Qtenv::getSimulationInfo()
 
     // RNGs, FES, etc.
     out << "RNGs:\n";
-    for (int i=0; i<getNumRNGs(); i++) {
-        cRNG *rng = getRNG(i);
+    cIRngManager *rngMgr = getSimulation()->getRngManager();
+    for (int i = 0; i < rngMgr->getTotalNumRngs(); i++) {
+        cRNG *rng = rngMgr->getGlobalRng(i);
         out << "  rng[" << i << "]: " << rng->getClassName() << ", " << rng->str() << "\n";
     }
     out << "\n";

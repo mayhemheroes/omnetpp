@@ -37,6 +37,7 @@
 #include "omnetpp/cenum.h"
 #include "omnetpp/ccanvas.h"
 #include "omnetpp/cobjectfactory.h"
+#include "omnetpp/crngmanager.h"
 
 #ifdef WITH_PARSIM
 #include "omnetpp/ccommbuffer.h"
@@ -329,6 +330,7 @@ cModule *cModuleType::create(const char *moduleName, cModule *parentModule, int 
 
     // set up RNG mapping, etc.
     getEnvir()->preconfigure(module);
+    getSimulation()->getRngManager()->configureRngs(module);
 
     // should be called before any gateCreated calls on this module
     EVCB.moduleCreated(module);
@@ -451,6 +453,7 @@ cChannel *cChannelType::create(const char *name)
 
     // set up RNG mapping, etc.
     getEnvir()->preconfigure(channel);
+    getSimulation()->getRngManager()->configureRngs(channel);
 
     // add parameters to the new module
     addParametersTo(channel);
