@@ -910,6 +910,7 @@ void Qtenv::runSimulation(RunMode mode, simtime_t until_time, eventnumber_t unti
 
     runMode = RUNMODE_NOT_RUNNING;
     displayUpdateController->setRunMode(runMode);
+    mainWindow->setGuiForRunmode(RUNMODE_NOT_RUNNING);
     if (!messageAnimator->isHoldActive())
         messageAnimator->setMarkedModule(getSimulation()->guessNextModule());
 

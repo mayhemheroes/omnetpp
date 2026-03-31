@@ -564,8 +564,6 @@ void MainWindow::runSimulation(RunMode runMode)
         }
         setGuiForRunmode(runMode);
         env->runSimulation(runMode);
-        setGuiForRunmode(RUNMODE_NOT_RUNNING);
-        closeStopDialog();
     }
 }
 
@@ -656,8 +654,6 @@ void MainWindow::on_actionRunUntil_triggered()
             return;
 
         getQtenv()->runSimulation(runMode, time, event, msg, nullptr, stopOnMsgCancel);
-        setGuiForRunmode(RUNMODE_NOT_RUNNING);
-        closeStopDialog();
     }
 }
 
@@ -817,7 +813,6 @@ void MainWindow::runUntilMsg(cMessage *msg, RunMode runMode)
     else {
         setGuiForRunmode(runMode, true);
         env->runSimulation(runMode, SIMTIME_ZERO, 0, msg);
-        setGuiForRunmode(RUNMODE_NOT_RUNNING);
     }
 }
 
