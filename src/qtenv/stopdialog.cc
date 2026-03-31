@@ -27,6 +27,7 @@ StopDialog::StopDialog(QWidget *parent) :
     ui(new Ui::StopDialog)
 {
     ui->setupUi(this);
+    setWindowModality(Qt::WindowModal);
     ui->checkBox->setChecked(getQtenv()->opt->autoupdateInExpress);
 
     applyAutoupdate();
