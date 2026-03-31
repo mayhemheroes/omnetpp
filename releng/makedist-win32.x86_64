@@ -97,7 +97,7 @@ cd ..
 # create windows version - zip archive with msys and mingw added
 export SOURCE_DISTRIBUTION_NAME_WINDOWS=$SOURCE_DISTRIBUTION_BASE_NAME-windows-x86_64.7z
 echo Creating $DISTDIR/$SOURCE_DISTRIBUTION_NAME_WINDOWS
-7za a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $DISTDIR/$SOURCE_DISTRIBUTION_NAME_WINDOWS $what-$VERSION || { echo --- error creating src-windows-x86_64.7z ---; exit 1;}
+7za a -t7z -mmt32 -mx=9 -mfb=64 -md=32m -ms=on $DISTDIR/$SOURCE_DISTRIBUTION_NAME_WINDOWS $what-$VERSION || { echo --- error creating src-windows-x86_64.7z ---; exit 1;}
 
 # delete the source stuff
 rm -rf $what-$VERSION
