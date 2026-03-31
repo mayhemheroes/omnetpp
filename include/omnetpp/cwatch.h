@@ -33,7 +33,7 @@ class cWatchBase;
  * methods from the cWatchBase (or subclass) pointer to a pointer to
  * the actually watched object.
  */
-class cWatchProxyDescriptor : public cClassDescriptor {
+class SIM_API cWatchProxyDescriptor : public cClassDescriptor {
   protected:
     cWatchBase *watch;
     cClassDescriptor *targetDesc;
