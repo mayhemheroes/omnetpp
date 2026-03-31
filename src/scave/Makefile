@@ -82,10 +82,14 @@ all: $(TARGET_LIB_FILES) $(TARGET_EXE_FILES)
 
 ifeq ($(WITH_SCAVE_PYTHON_BINDINGS),yes)
 all: pythonbindings
+clean: pythonbindings_clean
 endif
 
 pythonbindings: $(TARGET_LIB_FILES)
 	$(Q)$(MAKE) -C python
+
+pythonbindings_clean:
+	$(Q)$(MAKE) clean -C python
 
 $(TARGET_EXE_FILES): $(TARGET_LIB_FILES)
 
@@ -133,6 +137,5 @@ $O/$(LIBNAME).pdb: $O/$(LIBNAME)$(DLL_LIB_SUFFIX)
 clean:
 	$(qecho) Cleaning scave
 	$(Q)rm -rf $O $(GENERATED_SOURCES) $(TARGET_LIB_FILES) $(TARGET_EXE_FILES)
-	$(Q)$(MAKE) clean -C python
 
 -include $(OBJS:%=%.d)
