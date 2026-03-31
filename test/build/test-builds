@@ -138,9 +138,13 @@ compile() {
     $TWEAKCONFIG assert Makefile.inc WITH_SCAVE_PYTHON_BINDINGS  "$WITH_SCAVE_PYTHON_BINDINGS" || failure $CFG
 
     echo "    Building..."
-    $MAKE_PROG cleanall >"$LOG_DIR/$CFG-makeclean.out" 2>"$LOG_DIR/$CFG-makeclean.err" || failure "make cleanall failed - $CFG"
     $MAKE_PROG -j16 >"$LOG_DIR/$CFG-make.out" 2>"$LOG_DIR/$CFG-make.err" || failure "make failed - $CFG"
     samples/aloha/aloha -v >"$LOG_DIR/$CFG-buildinfo.out" 2>"$LOG_DIR/$CFG-buildinfo.err"
+}
+
+cleanall() {
+    echo "    Cleaning..."
+    $MAKE_PROG cleanall >"$LOG_DIR/$CFG-makeclean.out" 2>"$LOG_DIR/$CFG-makeclean.err" || failure "make cleanall failed - $CFG"
 }
 
 
@@ -195,6 +199,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 ###########################################
 CFG=with_libxml
@@ -214,6 +219,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 # check building with gcc
 CFG=default-gcc
@@ -232,6 +238,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 #########################################
 # check building with OSGEARTH, if available
@@ -241,6 +248,7 @@ if which osgearth_version > /dev/null 2>&1; then
     (TEST_PROG="opp_run -v" contains "WITH_OSG" yes)
     (TEST_PROG="opp_run -v" contains "WITH_OSGEARTH" yes)
     (runtest makemake)
+    (cleanall)
 fi
 
 #########################################
@@ -250,6 +258,7 @@ CFG=without_osg
 (TEST_PROG="opp_run -v" contains "WITH_OSG" no)
 (TEST_PROG="opp_run -v" contains "WITH_OSGEARTH" no)
 (runtest makemake)
+(cleanall)
 
 ########################################
 # Run SystemC compile tests on Linux
@@ -258,6 +267,7 @@ if [ "$PLATFORM" = "linux" ]; then
     if [ -d src/systemc ]; then
         CFG=systemc
         (WITH_SYSTEMC=yes compile)
+        (cleanall)
   fi
 fi
 
@@ -276,6 +286,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 ########################################
 # check building with Python support but without Scave Python bindings
@@ -292,6 +303,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 #########################################
 # check building without any Python support
@@ -308,6 +320,7 @@ contains "Qtenv : Qt-based graphical user interface" yes
 (runtest common)
 (runtest envir)
 (runtest makemake)
+(cleanall)
 
 ########################################
 # check the static build
@@ -320,6 +333,7 @@ CFG=default_static
 (TEST_PROG="samples/aloha/aloha -v" contains "WITH_NETBUILDER" yes)
 (TEST_PROG="samples/aloha/aloha -v" contains "WITH_OSG" yes)
 (TEST_PROG="samples/aloha/aloha -v" contains "WITH_OSGEARTH" no)
+(cleanall)
 
 ########################################
 # Test MPI/parsim only on linux where MPI libs are available
@@ -332,6 +346,7 @@ if [ "$PLATFORM" = "linux" ]; then
   contains cParsimPartition yes
   contains cMPICommunications yes
   (runtest makemake)
+  (cleanall)
 
   ########################################
   # test if disabling MPI is working
@@ -341,5 +356,6 @@ if [ "$PLATFORM" = "linux" ]; then
   contains cParsimPartition yes
   contains cMPICommunications no
   (runtest makemake)
+  (cleanall)
 
 fi
