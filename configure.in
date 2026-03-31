@@ -258,7 +258,9 @@ else
     fi
 fi
 
+
 # the below macros should be present only ONCE in the whole file (otherwise bad things will happen)
+: ${ac_cv_prog_cc_c23=no} # this is to disable for searching C23 compatibility flags by default
 AC_PROG_CC($cc_candidates)
 AC_PROG_CXX($cxx_candidates)
 

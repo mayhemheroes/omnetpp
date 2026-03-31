@@ -2945,7 +2945,9 @@ else
     fi
 fi
 
+
 # the below macros should be present only ONCE in the whole file (otherwise bad things will happen)
+: ${ac_cv_prog_cc_c23=no} # this is to disable for searching C23 compatibility flags by default
 
 
 
@@ -6459,7 +6461,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         # Test on macOS using the local Qt framework
         if test $qt_ok = no; then
             QT_LIBS="-framework QtGui -framework QtCore -framework QtWidgets -framework QtPrintSupport -framework QtOpenGL -framework QtOpenGLWidgets -F $QT_INSTALL_LIBS"
-            QT_CFLAGS="-F $QT_INSTALL_LIBS -mmacosx-version-min=12.0"
+            QT_CFLAGS="-F $QT_INSTALL_LIBS -mmacosx-version-min=12.0 -Wno-implicit-function-declaration"
             QTENV_LDFLAGS=""
 
    save_CXXFLAGS=$CXXFLAGS
