@@ -9,7 +9,10 @@ package org.omnetpp.ned.editor.graph.actions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.ui.actions.Clipboard;
@@ -19,7 +22,10 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.omnetpp.ned.editor.graph.parts.EditPartUtil;
+import org.omnetpp.ned.editor.graph.parts.canvas.AbstractCanvasFigureEditPart;
 import org.omnetpp.ned.model.INedElement;
+import org.omnetpp.ned.model.ex.CompoundModuleElementEx;
+import org.omnetpp.ned.model.ex.PropertyElementEx;
 import org.omnetpp.ned.model.interfaces.INedModelProvider;
 
 
@@ -56,9 +62,35 @@ public class CopyAction extends SelectionAction {
 
         // translate from editparts to model elements
         List<INedElement> selectedModelObjects = new ArrayList<INedElement>();
-        for (EditPart editPart : selectedEditParts)
-            if (editPart instanceof INedModelProvider)
-                selectedModelObjects.add(((INedModelProvider)editPart).getModel().deepDup());
+        Set<String> copiedFigureIndices = new HashSet<String>();
+        for (EditPart editPart : selectedEditParts) {
+            if (editPart instanceof INedModelProvider) {
+                INedElement model = ((INedModelProvider)editPart).getModel();
+                selectedModelObjects.add(model.deepDup());
+                if (editPart instanceof AbstractCanvasFigureEditPart && model instanceof PropertyElementEx)
+                    copiedFigureIndices.add(((PropertyElementEx)model).getIndex());
+            }
+        }
+
+        // for canvas figures, also copy all descendant figures
+        for (EditPart editPart : selectedEditParts) {
+            if (editPart instanceof AbstractCanvasFigureEditPart) {
+                PropertyElementEx model = ((AbstractCanvasFigureEditPart)editPart).getModel();
+                if (model != null && model.getParent() != null && model.getParent().getParent() instanceof CompoundModuleElementEx) {
+                    CompoundModuleElementEx module = (CompoundModuleElementEx)model.getParent().getParent();
+                    Map<String, PropertyElementEx> figures = module.getProperties().get("figure");
+                    if (figures != null) {
+                        String prefix = model.getIndex() + ".";
+                        for (PropertyElementEx figure : figures.values()) {
+                            if (figure.getIndex().startsWith(prefix) && !copiedFigureIndices.contains(figure.getIndex())) {
+                                copiedFigureIndices.add(figure.getIndex());
+                                selectedModelObjects.add(figure.deepDup());
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // copy to clipboard
         if (selectedModelObjects.size() > 0)
