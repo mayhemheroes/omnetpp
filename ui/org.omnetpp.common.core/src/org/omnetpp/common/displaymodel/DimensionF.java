@@ -9,6 +9,7 @@ package org.omnetpp.common.displaymodel;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.omnetpp.common.util.GeomUtils;
 
 /**
  * Dimension with float coordinates.
@@ -51,15 +52,8 @@ public class DimensionF {
      * @param scave the zoom level
      */
     public void adjustForZoom(float scale) {
-        float pow10 = 1.0f;
-        while (pow10 < scale)
-            pow10 *= 10.0;
-        width = roundFloat(width, pow10);
-        height = roundFloat(height, pow10);
-    }
-
-    private static float roundFloat(float x, float pow10) {
-        return Math.round(x * pow10) / pow10;
+        width = (float)GeomUtils.roundForZoom(width, scale);
+        height = (float)GeomUtils.roundForZoom(height, scale);
     }
 
     @Override

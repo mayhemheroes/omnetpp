@@ -36,6 +36,20 @@ public class GeomUtils {
     }
 
     /**
+     * Rounds a coordinate value based on the specified zoom level.
+     * The rounding ensures coordinates have no more digits than makes sense
+     * considering the granularity allowed by the zoom level.
+     *
+     * E.g. for a zoom of 1x..9x, round to integers; for a zoom of 10x..99x, round to 1 decimal place, etc.
+     */
+    public static double roundForZoom(double value, double scale) {
+        double pow10 = 1.0;
+        while (pow10 < scale)
+            pow10 *= 10.0;
+        return Math.round(value * pow10) / pow10;
+    }
+
+    /**
      * Calculates bounding box of a rotated rectangle. Rotation is in *degrees*.
      */
     public static Dimension rotatedSize(Dimension size, double rotation) {
