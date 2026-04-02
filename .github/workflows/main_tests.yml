@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install system dependencies
       run: |
@@ -41,9 +41,9 @@ jobs:
         save: ${{ github.event_name != 'pull_request' }}
 
     - name: Install Python dependencies
-      uses: getsentry/action-setup-venv@v2.1.1
+      uses: getsentry/action-setup-venv@v3.2.0
       with:
-        python-version: 3.12.6
+        python-version: 3.12.13
         cache-dependency-path: python/requirements.txt
         install-cmd: python3 -m pip install -r python/requirements.txt
 

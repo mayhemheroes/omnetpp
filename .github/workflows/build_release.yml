@@ -35,7 +35,7 @@ jobs:
           remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox *llvm*"
           rm_cmd: "rmz"  # Faster cleanup
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - id: cat_version
         run: |
@@ -48,15 +48,15 @@ jobs:
 
       # These have to be separate steps in order for the builds to be in their own artifacts
       - name: Upload Linux build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: linux-x86_64, path: releng/dist/*linux-x86_64*, retention-days: 1 }
 
       - name: Upload macOS build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: macos-aarch64, path: releng/dist/*macos-aarch64*, retention-days: 1 }
 
       - name: Upload Windows build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: windows-x86_64, path: releng/dist/*windows-x86_64*, retention-days: 1 }
 
   install_natively:
@@ -73,7 +73,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         name: Download release
         with:
           name: ${{ matrix.build }}
@@ -143,7 +143,7 @@ jobs:
           - { image: "debian:latest", preinstall_cmd: "apt update" }
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         name: Download release
         with:
           name: linux-x86_64
