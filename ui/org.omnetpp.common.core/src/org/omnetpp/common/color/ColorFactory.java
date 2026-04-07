@@ -21,6 +21,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.RGBA;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * A factory that creates and manages colors using symbolic names or
@@ -31,9 +32,9 @@ import org.eclipse.swt.graphics.RGBA;
  */
 public class ColorFactory {
 
-    private static ColorRegistry stringToRgbMap = new ColorRegistry();
+    private static ColorRegistry stringToRgbMap = new ColorRegistry(Display.getDefault(), false);
     private static HashMap<RGB, String> rgbToStringMap = new HashMap<RGB, String>();
-    private static ImageRegistry imageRegistry = new ImageRegistry();
+    private static ImageRegistry imageRegistry = new ImageRegistry(Display.getDefault());
     private static Color[] goodDarkColors;
     private static Color[] goodLightColors;
 
