@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartViewer;
@@ -78,6 +79,9 @@ public class EditPartUtil {
     }
 
     public static float getSnapToGridSpacing(EditPartViewer viewer) {
-        return getPropertyAsFloat(viewer, SnapToGrid.PROPERTY_GRID_SPACING, 10.0f);
+        Object prop = viewer.getProperty(SnapToGrid.PROPERTY_GRID_SPACING);
+        if (prop instanceof Dimension)
+            return ((Dimension)prop).width;
+        return prop instanceof Number ? ((Number)prop).floatValue() : 10.0f;
     }
 }

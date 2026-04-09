@@ -46,8 +46,6 @@ import org.eclipse.gef.SnapToGeometry;
 import org.eclipse.gef.SnapToGrid;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.editparts.GridLayer;
-import org.eclipse.gef.editparts.GraphicalRootEditPart;
 import org.eclipse.gef.editparts.ScalableRootEditPart;
 import org.eclipse.gef.internal.ui.palette.editparts.DrawerEditPart;
 import org.eclipse.gef.internal.ui.palette.editparts.DrawerFigure;
@@ -379,7 +377,8 @@ public class GraphicalNedEditor
         viewer.setProperty(SnapToGeometry.PROPERTY_SNAP_ENABLED, preferenceStore.getBoolean(SnapToGeometry.PROPERTY_SNAP_ENABLED));
         viewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_ENABLED));
         viewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_VISIBLE));
-        //viewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, preferenceStore.getBoolean(SnapToGrid.PROPERTY_GRID_SPACING));
+        int gridSpacing = preferenceStore.getInt(SnapToGrid.PROPERTY_GRID_SPACING);
+        viewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(gridSpacing, gridSpacing));
         viewer.setContextMenu(provider);
         // register the menu so we can contribute to it from other plugins BUT do not include the
         // contributions for the editor input (otherwise we will get a ton of unnecessary menus like
