@@ -123,18 +123,6 @@ class SIM_API opp_component_ptr
     explicit operator bool() const {return ptr != nullptr;}
 
     /**
-     * Returns true if this object references the same object (or nullptr)
-     * as the argument.
-     */
-    bool operator==(const T *ptr) {return ptr == this->ptr;}
-
-    /**
-     * Returns true if this object references the same object (or nullptr)
-     * as the argument.
-     */
-    bool operator==(const opp_component_ptr<T>& other) {return ptr == other.ptr;}
-
-    /**
      * Changes this object to reference the object given as the argument.
      * A nullptr argument is also allowed.
      */
