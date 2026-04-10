@@ -212,11 +212,27 @@ ModuleLayouter::Constraint ModuleLayouter::getSubmoduleCoords(cModule *submod, d
         if (!strcmp(layout, "r") || !strcmp(layout, "row")) {
             // perhaps we should use the size of the 1st element in the vector?
             double dx = dsa.getTagArgAsDouble("p", 3, 2*sx);
-            x += index * dx;
+            int numCols = dsa.getTagArgAsLong("p", 4, 0);
+            if (numCols > 0) {
+                double dy = dsa.getTagArgAsDouble("p", 5, 2*sy);
+                x += (index % numCols) * dx;
+                y += (index / numCols) * dy;
+            }
+            else {
+                x += index * dx;
+            }
         }
         else if (!strcmp(layout, "c") || !strcmp(layout, "col") || !strcmp(layout, "column")) {
             double dy = dsa.getTagArgAsDouble("p", 3, 2*sy);
-            y += index * dy;
+            int numRows = dsa.getTagArgAsLong("p", 4, 0);
+            if (numRows > 0) {
+                double dx = dsa.getTagArgAsDouble("p", 5, 2*sx);
+                x += (index / numRows) * dx;
+                y += (index % numRows) * dy;
+            }
+            else {
+                y += index * dy;
+            }
         }
         else if (!strcmp(layout, "m") || !strcmp(layout, "matrix")) {
             // perhaps we should use the size of the 1st element in the vector?

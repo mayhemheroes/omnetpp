@@ -676,8 +676,10 @@ tag depend on the layout type:
 TODO refine, e.g. list accepted abbreviations for matrix etc; what if x,y are missing; delta args are optional; etc
 
 \begin{itemize}
-  \item Row: \ttt{p=$x$,$y$,r,$deltaX$} (A row of modules with $deltaX$ units between the modules)
-  \item Column: \ttt{p=$x$,$y$,c,$deltaY$} (A column of modules with $deltaY$ units between the modules)
+  \item Row: \ttt{p=$x$,$y$,r,$deltaX$[,$numCols$,$deltaY$]} (A row of modules with $deltaX$ units between
+            the modules. If $numCols$ is given, wraps into multiple rows after that many columns.)
+  \item Column: \ttt{p=$x$,$y$,c,$deltaY$[,$numRows$,$deltaX$]} (A column of modules with $deltaY$ units
+            between the modules. If $numRows$ is given, wraps into multiple columns after that many rows.)
   \item Matrix: \ttt{p=$x$,$y$,m,$numCols$,$deltaX$,$deltaY$} (A matrix with $numCols$ columns, with
             $deltaX$ and $deltaY$ units between rows and columns)
   \item Ring: \ttt{p=$x$,$y$,ri,$rx$,$ry$} (A ring (oval) with $rx$ and $ry$ as the horizontal and vertical radius.

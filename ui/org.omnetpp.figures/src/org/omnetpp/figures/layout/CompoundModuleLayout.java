@@ -192,14 +192,30 @@ public class CompoundModuleLayout extends AbstractLayout {
             }
             case row: {
                 float dx = fallback(p.dx, spacing);
-                x = constraint.getVectorIndex() * dx;
-                y = 0;
+                int index = constraint.getVectorIndex();
+                if (p.n > 0) {
+                    float dy = fallback(p.dy, spacing);
+                    x = (index % p.n) * dx;
+                    y = (index / p.n) * dy;
+                }
+                else {
+                    x = index * dx;
+                    y = 0;
+                }
                 break;
             }
             case column: {
                 float dy = fallback(p.dy, spacing);
-                x = 0;
-                y = constraint.getVectorIndex() * dy;
+                int index = constraint.getVectorIndex();
+                if (p.n > 0) {
+                    float dx = fallback(p.dx, spacing);
+                    x = (index / p.n) * dx;
+                    y = (index % p.n) * dy;
+                }
+                else {
+                    x = 0;
+                    y = index * dy;
+                }
                 break;
             }
             case matrix: {

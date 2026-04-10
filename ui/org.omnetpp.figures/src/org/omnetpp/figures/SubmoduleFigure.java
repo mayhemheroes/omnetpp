@@ -363,9 +363,13 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
             break;
         case row:
             p.dx = parseFloat(par1);
+            p.n = parseInt(par2);
+            p.dy = parseFloat(par3);
             break;
         case column:
             p.dy = parseFloat(par1);
+            p.n = parseInt(par2);
+            p.dx = parseFloat(par3);
             break;
         case matrix:
             p.n = parseInt(par1);

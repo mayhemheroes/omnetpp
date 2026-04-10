@@ -35,17 +35,17 @@ Arrangement of submodule vectors. Values: row (r), column (c), matrix (m), ring 
  \hline
 \tbf{p}[3] - arr. par1
 &
-Depends on arrangement: matrix => ncols, ring/cring => rx, exact => dx, row => dx, column => dy
+Depends on arrangement: row => dx, column => dy, matrix => ncols, ring/cring => rx, exact => dx
 \\
  \hline
 \tbf{p}[4] - arr. par2
 &
-Depends on arrangement: matrix => dx, ring/cring => ry, exact => dy
+Depends on arrangement: row => numcols, column => numrows, matrix => dx, ring/cring => ry, exact => dy
 \\
  \hline
 \tbf{p}[5] - arr. par3
 &
-Depends on arrangement: matrix => dy
+Depends on arrangement: row => dy, column => dx, matrix => dy
 \\
  \hline
 \tbf{g}[5] - layout group
