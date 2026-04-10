@@ -18,7 +18,7 @@ public interface ISubmoduleConstraint {
     /**
      * Vector arrangement. Names must match IDisplayString.Prop.LAYOUT names.
      */
-    public enum VectorArrangement {none, exact, row, column, matrix, ring};
+    public enum VectorArrangement {none, exact, row, column, matrix, ring, cring};
 
     /**
      * Returns the position that occurs in the display string, or null. For non-vector

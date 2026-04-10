@@ -373,6 +373,7 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
             p.dy = parseFloat(par3);
             break;
         case ring:
+        case cring:
             p.dx = parseFloat(par1);
             p.dy = parseFloat(par2);
             break;

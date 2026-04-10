@@ -219,6 +219,14 @@ public class CompoundModuleLayout extends AbstractLayout {
                 y = ry - (float)(ry*Math.cos(alpha));
                 break;
             }
+            case cring: {
+                float rx = fallback(p.dx, (int)(spacing*constraint.getVectorSize()/(2*Math.PI)));
+                float ry = fallback(p.dy, rx);
+                double alpha = constraint.getVectorSize() == 0 ? 0 : constraint.getVectorIndex() * 2 * Math.PI / constraint.getVectorSize();
+                x = -(float)(rx*Math.sin(alpha));
+                y = -(float)(ry*Math.cos(alpha));
+                break;
+            }
             default: {
                 throw new AssertionFailedException("unhandled vector arrangement " + constraint.getVectorArrangement());
             }

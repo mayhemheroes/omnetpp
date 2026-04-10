@@ -670,7 +670,7 @@ Qtenv support zooming.
 
 If the submodule is a module vector, one can also specify in the \ttt{p}
 tag how to arrange the elements of the vector. They can be arranged in a
-row, a column, a matrix or a ring. The rest of the arguments in the \ttt{p}
+row, a column, a matrix, a ring or a centered ring. The rest of the arguments in the \ttt{p}
 tag depend on the layout type:
 
 TODO refine, e.g. list accepted abbreviations for matrix etc; what if x,y are missing; delta args are optional; etc
@@ -680,7 +680,10 @@ TODO refine, e.g. list accepted abbreviations for matrix etc; what if x,y are mi
   \item Column: \ttt{p=$x$,$y$,c,$deltaY$} (A column of modules with $deltaY$ units between the modules)
   \item Matrix: \ttt{p=$x$,$y$,m,$numCols$,$deltaX$,$deltaY$} (A matrix with $numCols$ columns, with
             $deltaX$ and $deltaY$ units between rows and columns)
-  \item Ring \ttt{p=$x$,$y$,ri,$rx$,$ry$} (A ring (oval) with $rx$ and $ry$ as the horizontal and vertical radius.)
+  \item Ring: \ttt{p=$x$,$y$,ri,$rx$,$ry$} (A ring (oval) with $rx$ and $ry$ as the horizontal and vertical radius.
+            The $(x,y)$ coordinates correspond to the upper left corner of the bounding rectangle.)
+  \item Centered ring: \ttt{p=$x$,$y$,cr,$rx$,$ry$} (Same as ring, but the $(x,y)$ coordinates
+            correspond to the center of the ring.)
   \item Exact (default): \ttt{p=$x$,$y$,x,$deltaX$,$deltaY$} (Place each module at $(x+deltaX, y+deltaY)$.
             The coordinates are often set at runtime.)
 \end{itemize}

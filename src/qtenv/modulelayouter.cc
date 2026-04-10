@@ -236,6 +236,13 @@ ModuleLayouter::Constraint ModuleLayouter::getSubmoduleCoords(cModule *submod, d
             x += rx - rx * sin(index * 2 * M_PI / groupSize);
             y += ry - ry * cos(index * 2 * M_PI / groupSize);
         }
+        else if (!strcmp(layout, "cr") || !strcmp(layout, "cri") || !strcmp(layout, "cring")) {
+            double rx = dsa.getTagArgAsDouble("p", 3, (sx+sy)*groupSize/4);
+            double ry = dsa.getTagArgAsDouble("p", 4, rx);
+
+            x += -rx * sin(index * 2 * M_PI / groupSize);
+            y += -ry * cos(index * 2 * M_PI / groupSize);
+        }
         else {
             throw cRuntimeError("Invalid layout '%s' in 'p' tag of display string \"%s\" of module \"%s\"",
                                 layout, ds.str(), submod->getFullPath().c_str());

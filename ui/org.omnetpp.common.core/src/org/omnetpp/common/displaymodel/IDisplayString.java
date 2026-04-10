@@ -103,9 +103,9 @@ public interface IDisplayString {
         // P tag
         X(Tag.p, 0, PropType.COORDINATE , PropGroup.Position , "x", "X position of the center of the icon/shape; defaults to automatic graph layouting", null),
         Y(Tag.p, 1, PropType.COORDINATE, PropGroup.Position, "y", "Y position of the center of the icon/shape; defaults to automatic graph layouting", null),
-        LAYOUT(Tag.p, 2, PropType.STRING, PropGroup.Position, "arrangement", "Arrangement of submodule vectors. Defaults to row or ring. (X,Y) coordinates correspond to the upper left corner of the bounding rectangle", "row=r.*,r; column=c.*,c; matrix=m.*,m; ring=ri.*,ri; exact=e.*|x.*,x"),
-        LAYOUT_PAR1(Tag.p, 3, PropType.STRING, PropGroup.Position, "arr. par1", "Depends on arrangement: matrix => ncols, ring => rx, exact => dx, row => dx, column => dy", null),
-        LAYOUT_PAR2(Tag.p, 4, PropType.STRING, PropGroup.Position, "arr. par2", "Depends on arrangement: matrix => dx, ring => ry, exact => dy", null),
+        LAYOUT(Tag.p, 2, PropType.STRING, PropGroup.Position, "arrangement", "Arrangement of submodule vectors. Defaults to row or ring. (X,Y) coordinates correspond to the upper left corner of the bounding rectangle, or the center for cring", "row=r.*,r; column=c.*,c; matrix=m.*,m; ring=ri.*,ri; cring=cr.*,cr; exact=e.*|x.*,x"),
+        LAYOUT_PAR1(Tag.p, 3, PropType.STRING, PropGroup.Position, "arr. par1", "Depends on arrangement: matrix => ncols, ring/cring => rx, exact => dx, row => dx, column => dy", null),
+        LAYOUT_PAR2(Tag.p, 4, PropType.STRING, PropGroup.Position, "arr. par2", "Depends on arrangement: matrix => dx, ring/cring => ry, exact => dy", null),
         LAYOUT_PAR3(Tag.p, 5, PropType.STRING, PropGroup.Position, "arr. par3", "Depends on arrangement: matrix => dy", null),
 
         // G tag
