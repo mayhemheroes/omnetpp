@@ -1,0 +1,148 @@
+%description:
+Test that opp_component_ptr equality and inequality comparisons compile
+and work correctly with raw pointers of various related types (base and
+derived), in both operand orders, and between different opp_component_ptr
+instantiations. Regression test for a C++20 overload ambiguity caused by
+the interaction of member operator== with implicit operator T*().
+
+%file: test.ned
+
+simple Test
+{
+    parameters:
+        @isNetwork(true);
+}
+
+%file: test.cc
+
+#include <omnetpp.h>
+
+using namespace omnetpp;
+
+namespace @TESTNAME@ {
+
+class Test : public cSimpleModule
+{
+  public:
+    Test() : cSimpleModule(16384) { }
+    virtual void activity() override;
+};
+
+Define_Module(Test);
+
+void Test::activity()
+{
+    cComponent *thisc = this;
+    cModule *thism = this;
+
+    opp_component_ptr<Test> o_t(this);
+    opp_component_ptr<cModule> o_m(this);
+    opp_component_ptr<cComponent> o_c(this);
+
+    EV << std::boolalpha;
+
+    // this (Test*) vs opp_component_ptrs
+    EV << "this == o_t: " << (this == o_t) << endl;
+    EV << "this != o_t: " << (this != o_t) << endl;
+    EV << "o_t == this: " << (o_t == this) << endl;
+    EV << "o_t != this: " << (o_t != this) << endl;
+
+    EV << "this == o_m: " << (this == o_m) << endl;
+    EV << "this != o_m: " << (this != o_m) << endl;
+    EV << "o_m == this: " << (o_m == this) << endl;
+    EV << "o_m != this: " << (o_m != this) << endl;
+
+    EV << "this == o_c: " << (this == o_c) << endl;
+    EV << "this != o_c: " << (this != o_c) << endl;
+    EV << "o_c == this: " << (o_c == this) << endl;
+    EV << "o_c != this: " << (o_c != this) << endl;
+
+    // thism (cModule*) vs opp_component_ptrs
+    EV << "thism == o_t: " << (thism == o_t) << endl;
+    EV << "thism != o_t: " << (thism != o_t) << endl;
+    EV << "o_t == thism: " << (o_t == thism) << endl;
+    EV << "o_t != thism: " << (o_t != thism) << endl;
+
+    EV << "thism == o_m: " << (thism == o_m) << endl;
+    EV << "thism != o_m: " << (thism != o_m) << endl;
+    EV << "o_m == thism: " << (o_m == thism) << endl;
+    EV << "o_m != thism: " << (o_m != thism) << endl;
+
+    EV << "thism == o_c: " << (thism == o_c) << endl;
+    EV << "thism != o_c: " << (thism != o_c) << endl;
+    EV << "o_c == thism: " << (o_c == thism) << endl;
+    EV << "o_c != thism: " << (o_c != thism) << endl;
+
+    // thisc (cComponent*) vs opp_component_ptrs
+    EV << "thisc == o_t: " << (thisc == o_t) << endl;
+    EV << "thisc != o_t: " << (thisc != o_t) << endl;
+    EV << "o_t == thisc: " << (o_t == thisc) << endl;
+    EV << "o_t != thisc: " << (o_t != thisc) << endl;
+
+    EV << "thisc == o_m: " << (thisc == o_m) << endl;
+    EV << "thisc != o_m: " << (thisc != o_m) << endl;
+    EV << "o_m == thisc: " << (o_m == thisc) << endl;
+    EV << "o_m != thisc: " << (o_m != thisc) << endl;
+
+    EV << "thisc == o_c: " << (thisc == o_c) << endl;
+    EV << "thisc != o_c: " << (thisc != o_c) << endl;
+    EV << "o_c == thisc: " << (o_c == thisc) << endl;
+    EV << "o_c != thisc: " << (o_c != thisc) << endl;
+
+    // opp_component_ptr vs opp_component_ptr (cross-type)
+    EV << "o_t == o_m: " << (o_t == o_m) << endl;
+    EV << "o_t != o_m: " << (o_t != o_m) << endl;
+    EV << "o_t == o_c: " << (o_t == o_c) << endl;
+    EV << "o_t != o_c: " << (o_t != o_c) << endl;
+    EV << "o_m == o_c: " << (o_m == o_c) << endl;
+    EV << "o_m != o_c: " << (o_m != o_c) << endl;
+
+    EV << "." << endl;
+}
+
+}; //namespace
+
+%contains: stdout
+this == o_t: true
+this != o_t: false
+o_t == this: true
+o_t != this: false
+this == o_m: true
+this != o_m: false
+o_m == this: true
+o_m != this: false
+this == o_c: true
+this != o_c: false
+o_c == this: true
+o_c != this: false
+thism == o_t: true
+thism != o_t: false
+o_t == thism: true
+o_t != thism: false
+thism == o_m: true
+thism != o_m: false
+o_m == thism: true
+o_m != thism: false
+thism == o_c: true
+thism != o_c: false
+o_c == thism: true
+o_c != thism: false
+thisc == o_t: true
+thisc != o_t: false
+o_t == thisc: true
+o_t != thisc: false
+thisc == o_m: true
+thisc != o_m: false
+o_m == thisc: true
+o_m != thisc: false
+thisc == o_c: true
+thisc != o_c: false
+o_c == thisc: true
+o_c != thisc: false
+o_t == o_m: true
+o_t != o_m: false
+o_t == o_c: true
+o_t != o_c: false
+o_m == o_c: true
+o_m != o_c: false
+.
