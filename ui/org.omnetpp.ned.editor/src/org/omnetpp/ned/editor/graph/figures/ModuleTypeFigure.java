@@ -72,6 +72,17 @@ public class ModuleTypeFigure extends NedTypeFigure {
 
         iconFigure.setImage(image);
 
+        // image transform ("it" tag)
+        float rot = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_ROTATION);
+        String flipStr = displayString.getAsString(IDisplayString.Prop.IMAGE_FLIP);
+        boolean flipH = "h".equals(flipStr) || "b".equals(flipStr);
+        boolean flipV = "v".equals(flipStr) || "b".equals(flipStr);
+        float sx = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_SCALE_X);
+        float sy = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_SCALE_Y);
+        double scaleX = Float.isNaN(sx) ? 1.0 : sx;
+        double scaleY = Float.isNaN(sy) ? (Float.isNaN(sx) ? 1.0 : sx) : sy;
+        iconFigure.setImageTransform(Float.isNaN(rot) ? 0 : rot, flipH, flipV, scaleX, scaleY);
+
         // decoration image
         iconFigure.setDecorationImage(
                 ImageFactory.of(project).getImage(

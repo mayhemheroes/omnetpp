@@ -26,6 +26,7 @@ import org.omnetpp.common.displaymodel.IDisplayString;
 import org.omnetpp.common.displaymodel.PointF;
 import org.omnetpp.common.image.ImageFactory;
 import org.omnetpp.common.ui.ISelectable;
+import org.omnetpp.common.util.GeomUtils;
 import org.omnetpp.common.util.StringUtils;
 import org.omnetpp.figures.anchors.IAnchorBounds;
 import org.omnetpp.figures.layout.ISubmoduleConstraint;
@@ -76,6 +77,11 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
     protected Image image;
     protected Image decoratorImage;
     protected int imageSizePercentage = 100;  // currently unused
+    protected double imageRotation;  // degrees, clockwise
+    protected boolean imageFlipH;
+    protected boolean imageFlipV;
+    protected double imageScaleX = 1.0;
+    protected double imageScaleY = 1.0;
     protected boolean pinVisible;
     protected boolean nameVisible = true;
     protected String text;
@@ -147,6 +153,15 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
         // image support
         String imageSize = displayString.getAsString(IDisplayString.Prop.IMAGE_SIZE);
         imageSizePercentage = (int)(100.0f * iconScale);
+        float rot = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_ROTATION);
+        imageRotation = Float.isNaN(rot) ? 0 : rot;
+        String flipStr = displayString.getAsString(IDisplayString.Prop.IMAGE_FLIP);
+        imageFlipH = "h".equals(flipStr) || "b".equals(flipStr);
+        imageFlipV = "v".equals(flipStr) || "b".equals(flipStr);
+        float sx = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_SCALE_X);
+        float sy = displayString.getAsCoordinate(IDisplayString.Prop.IMAGE_SCALE_Y);
+        imageScaleX = Float.isNaN(sx) ? 1.0 : sx;
+        imageScaleY = Float.isNaN(sy) ? (Float.isNaN(sx) ? 1.0 : sx) : sy;
         Image image = ImageFactory.of(project).getImage(
                 displayString.getAsString(IDisplayString.Prop.IMAGE),
                 imageSize,
@@ -408,8 +423,15 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
         int height = shape==SHAPE_NONE ? 0 : shapeHeight;
         if (image != null) {
             org.eclipse.swt.graphics.Rectangle imageBounds = image.getBounds();
-            width = Math.max(width, imageSizePercentage * imageBounds.width / 100);
-            height = Math.max(height, imageSizePercentage * imageBounds.height / 100);
+            int imgWidth = (int)(imageSizePercentage * imageBounds.width * Math.abs(imageScaleX) / 100);
+            int imgHeight = (int)(imageSizePercentage * imageBounds.height * Math.abs(imageScaleY) / 100);
+            if (imageRotation != 0) {
+                Dimension rotated = GeomUtils.rotatedSize(new Dimension(imgWidth, imgHeight), imageRotation);
+                imgWidth = rotated.width;
+                imgHeight = rotated.height;
+            }
+            width = Math.max(width, imgWidth);
+            height = Math.max(height, imgHeight);
         }
         return centerPos==null ? new Rectangle(0,0,width,height) : new Rectangle(centerPos.x-width/2, centerPos.y-height/2, width, height);
     }
@@ -719,7 +741,26 @@ public class SubmoduleFigure extends Figure implements IAnchorBounds, ISelection
         // draw image
         if (image != null) {
             org.eclipse.swt.graphics.Rectangle imageBounds = image.getBounds();
-            if (imageSizePercentage == 100)
+            boolean hasTransform = imageRotation != 0 || imageFlipH || imageFlipV || imageScaleX != 1.0 || imageScaleY != 1.0;
+            if (hasTransform) {
+                graphics.pushState();
+                graphics.translate(centerPos.x, centerPos.y);
+                // apply scale+flip first, then rotate
+                float sx = (float)(imageScaleX * (imageFlipH ? -1 : 1));
+                float sy = (float)(imageScaleY * (imageFlipV ? -1 : 1));
+                graphics.rotate((float)imageRotation);
+                graphics.scale(sx, sy);
+                if (imageSizePercentage == 100)
+                    graphics.drawImage(image, -imageBounds.width/2, -imageBounds.height/2);
+                else {
+                    int scaledWidth = imageSizePercentage * imageBounds.width / 100;
+                    int scaledHeight = imageSizePercentage * imageBounds.height / 100;
+                    graphics.drawImage(image, 0, 0, imageBounds.width, imageBounds.height,
+                            -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+                }
+                graphics.popState();
+            }
+            else if (imageSizePercentage == 100)
                 graphics.drawImage(image, centerPos.x - imageBounds.width/2, centerPos.y - imageBounds.height/2);
             else {
                 int scaledWidth = imageSizePercentage * imageBounds.width / 100;

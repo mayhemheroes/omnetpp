@@ -562,6 +562,7 @@ module:
 \begin{itemize}
   \item \ttt{i} -- icon
   \item \ttt{is} -- icon size
+  \item \ttt{it} -- icon transform (rotation, flip, scale)
   \item \ttt{i2} -- auxiliary or status icon
   \item \ttt{b} -- shape (box, oval, etc.)
   \item \ttt{p} -- positioning and layout
@@ -1112,6 +1113,35 @@ Sizes are encoded into the icon name's suffix: \ttt{\_vl}, \ttt{\_l}, \ttt{\_s},
 (\ttt{"i=device/router\_l"}) or the \ttt{"is"} (icon size) display string tag
 (\ttt{"i=device/router;is=l"}), but not both at the same time (we recommend
 using the \ttt{is} tag).
+
+
+\subsubsection{Icon Transform}
+\label{sec:graphics:icon-transform}
+
+The \ttt{"it"} (icon transform) display string tag allows rotating, flipping,
+and scaling the module icon. The syntax is
+\ttt{it=<degrees>,<flip>,<scaleX>,<scaleY>}, where all arguments are optional:
+
+\begin{itemize}
+  \item \ttt{degrees} -- rotation in degrees, clockwise (default: 0)
+  \item \ttt{flip} -- \ttt{h} for horizontal flip, \ttt{v} for vertical flip,
+    \ttt{b} for both (default: none)
+  \item \ttt{scaleX} -- horizontal scaling factor (floating-point, default: 1.0)
+  \item \ttt{scaleY} -- vertical scaling factor (floating-point, default: same as scaleX)
+\end{itemize}
+
+Transformations are applied in the following order: scale and flip first, then
+rotation. The transform only affects the main icon (\ttt{"i"} tag), not the
+shape (\ttt{"b"} tag) or the overlay icon (\ttt{"i2"} tag).
+
+Examples:
+
+\begin{ned}
+@display("i=misc/antenna;it=45");       // rotate 45 degrees
+@display("i=misc/antenna;it=,h");       // flip horizontally
+@display("i=misc/antenna;it=90,v,2");   // scale 2x, flip vertically, rotate 90
+@display("i=misc/antenna;it=,,1.5,0.5"); // stretch: 1.5x wide, 0.5x tall
+\end{ned}
 
 \subsection{Layouting}
 \label{sec:graphics:compound-module-layouting}

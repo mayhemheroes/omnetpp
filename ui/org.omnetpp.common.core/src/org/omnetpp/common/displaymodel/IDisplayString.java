@@ -47,6 +47,7 @@ public interface IDisplayString {
         b(COMPOUNDMODULE | SUBMODULE, "Box"),
         i(COMPOUNDMODULE | SUBMODULE, "Icon"),
         is(COMPOUNDMODULE | SUBMODULE, "Icon size"),
+        it(COMPOUNDMODULE | SUBMODULE, "Icon transform"),
         i2(COMPOUNDMODULE | SUBMODULE, "Status icon"),
         r(COMPOUNDMODULE | SUBMODULE, "Radius"),
         q(COMPOUNDMODULE | SUBMODULE, "Queue"),
@@ -125,6 +126,12 @@ public interface IDisplayString {
 
         // IS tag
         IMAGE_SIZE(Tag.is, 0, PropType.STRING, PropGroup.Icon, "icon size", "The size of the image", "very small=v.*s.*,vs; small=s.*,s; normal=n.*,n; large=l.*,l; very large=v[^s]*l.*,vl"),
+
+        // IT tag
+        IMAGE_ROTATION(Tag.it, 0, PropType.COORDINATE, PropGroup.Icon, "icon rotation", "Rotation of the icon, in degrees (clockwise)", null),
+        IMAGE_FLIP(Tag.it, 1, PropType.STRING, PropGroup.Icon, "icon flip", "Flip the icon horizontally (h), vertically (v), or both (b)", "horizontal=h.*,h; vertical=v.*,v; both=b.*,b"),
+        IMAGE_SCALE_X(Tag.it, 2, PropType.COORDINATE, PropGroup.Icon, "icon scale x", "Horizontal scaling factor for the icon", null),
+        IMAGE_SCALE_Y(Tag.it, 3, PropType.COORDINATE, PropGroup.Icon, "icon scale y", "Vertical scaling factor for the icon", null),
 
         // I2 tag
         IMAGE2(Tag.i2, 0, PropType.IMAGE, PropGroup.Icon, "overlay icon", "An icon added to the upper right corner of the original image", null),

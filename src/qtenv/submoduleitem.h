@@ -101,6 +101,11 @@ public:
 protected:
     double zoomFactor = 1;
     double imageSizeFactor = 1;
+    double iconRotation = 0; // degrees, clockwise
+    bool iconFlipHorizontal = false;
+    bool iconFlipVertical = false;
+    double iconScaleX = 1.0;
+    double iconScaleY = 1.0;
     Shape shape = SHAPE_NONE;
     double shapeWidth = 0; // zero if unspec
     double shapeHeight = 0; // zero if unspec
@@ -141,6 +146,7 @@ public:
     void setOutlineWidth(double width);
 
     void setIcon(QPixmap icon);
+    void setIconTransform(double rotation, bool flipH, bool flipV, double scaleX, double scaleY);
     void setDecoratorIcon(QPixmap icon);
 
     void setNameFormat(NameFormat format);

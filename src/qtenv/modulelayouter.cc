@@ -16,6 +16,7 @@
 
 #include "modulelayouter.h"
 
+#include <cmath>
 #include <omnetpp/cdisplaystring.h>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
@@ -99,8 +100,6 @@ ModuleLayouter::Constraint ModuleLayouter::getSubmoduleCoords(cModule *submod, d
         }
     }
 
-    //TODO do it like in submoduleitem.cc
-
     // getting the "image" size
     if (ds.containsTag("i")) {
         const char *imgName = dsa.getTagArg("i", 0, buffer);
@@ -121,6 +120,28 @@ ModuleLayouter::Constraint ModuleLayouter::getSubmoduleCoords(cModule *submod, d
     // applying the scaling factors
     if (iconsx != -1) iconsx *= imageSizeFactor;
     if (iconsy != -1) iconsy *= imageSizeFactor;
+
+    // apply icon transform ("it" tag): scale and rotation affect the bounding box
+    if (iconsx != -1) {
+        bool scaleXOk, scaleYOk;
+        double scaleX = dsa.getTagArgAsDouble("it", 2, 1.0, &scaleXOk);
+        double scaleY = dsa.getTagArgAsDouble("it", 3, 1.0, &scaleYOk);
+        if (!scaleYOk && scaleXOk)
+            scaleY = scaleX;
+        iconsx *= std::abs(scaleX);
+        iconsy *= std::abs(scaleY);
+
+        double rotation = dsa.getTagArgAsDouble("it", 0);
+        if (rotation != 0) {
+            double rad = rotation * M_PI / 180.0;
+            double cosA = std::abs(std::cos(rad));
+            double sinA = std::abs(std::sin(rad));
+            double newW = iconsx * cosA + iconsy * sinA;
+            double newH = iconsx * sinA + iconsy * cosA;
+            iconsx = newW;
+            iconsy = newH;
+        }
+    }
 
     if (shapesx != -1) shapesx *= zoomFactor;
     if (shapesy != -1) shapesy *= zoomFactor;

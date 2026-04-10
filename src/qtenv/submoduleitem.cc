@@ -95,6 +95,21 @@ void SubmoduleItemUtil::setupFromDisplayString(SubmoduleItem *si, cModule *mod)
         si->setIcon(QPixmap());
     }
 
+    // "it" (icon transform) tag: rotation, flip, scaleX, scaleY
+    if (ds.containsTag("it")) {
+        double rotation = dsa.getTagArgAsDouble("it", 0);
+        const char *flipStr = dsa.getTagArg("it", 1, buffer);
+        bool flipH = (flipStr[0] == 'h' || flipStr[0] == 'b');
+        bool flipV = (flipStr[0] == 'v' || flipStr[0] == 'b');
+        bool scaleXGiven, scaleYGiven;
+        double scaleX = dsa.getTagArgAsDouble("it", 2, 1.0, &scaleXGiven);
+        double scaleY = dsa.getTagArgAsDouble("it", 3, scaleX, &scaleYGiven);
+        si->setIconTransform(rotation, flipH, flipV, scaleX, scaleY);
+    }
+    else {
+        si->setIconTransform(0, false, false, 1, 1);
+    }
+
     const char *decoratorImageName = dsa.getTagArg("i2", 0, buffer);
     if (decoratorImageName[0]) {
         std::string buffer2; // can't reuse `buffer` yet, still need `decoratorImageName`
@@ -259,10 +274,17 @@ QRectF SubmoduleItem::shapeImageBoundingRect() const
     QRectF rect;
     if (imageItem) {
         QRectF imageRect = imageItem->boundingRect();
-        // Image scaling is done with a transformation, and boundingRect does
-        // not factor that in, so we have to account the factor in here.
-        imageRect.setTopLeft(imageRect.topLeft() * imageSizeFactor);
-        imageRect.setBottomRight(imageRect.bottomRight() * imageSizeFactor);
+        // The icon transform (scale+flip+rotation) is applied via setTransform(),
+        // and imageSizeFactor is applied via setScale() -- boundingRect() does not
+        // factor in either, so we replicate them here.
+        double sx = iconScaleX * (iconFlipHorizontal ? -1 : 1);
+        double sy = iconScaleY * (iconFlipVertical ? -1 : 1);
+        QTransform t;
+        t.rotate(iconRotation);
+        t.scale(sx, sy);
+        imageRect = t.mapRect(imageRect);
+        // imageSizeFactor is applied uniformly (via setScale), so scale the result
+        imageRect = QRectF(imageRect.topLeft() * imageSizeFactor, imageRect.size() * imageSizeFactor);
         rect = rect.united(imageRect);
     }
     if (shapeItem) {
@@ -399,9 +421,37 @@ void SubmoduleItem::setIcon(QPixmap icon)
     imageItem->setTransformationMode(Qt::SmoothTransformation);
     imageItem->setOffset(-icon.width() / 2.0f, -icon.height() / 2.0f);
     imageItem->setZValue(1); // icon always on top of shape
-    imageItem->setScale(imageSizeFactor);
+
+    // apply transform: scale+flip first, then rotate
+    // note: imageSizeFactor is applied separately via imageItem->setScale(), see setImageSizeFactor()
+    double sx = iconScaleX * (iconFlipHorizontal ? -1 : 1);
+    double sy = iconScaleY * (iconFlipVertical ? -1 : 1);
+    QTransform t;
+    t.rotate(iconRotation);
+    t.scale(sx, sy);
+    imageItem->setTransform(t);
 
     realignAnchoredItems();
+}
+
+void SubmoduleItem::setIconTransform(double rotation, bool flipH, bool flipV, double scaleX, double scaleY)
+{
+    if (iconRotation != rotation || iconFlipHorizontal != flipH || iconFlipVertical != flipV || iconScaleX != scaleX || iconScaleY != scaleY) {
+        iconRotation = rotation;
+        iconFlipHorizontal = flipH;
+        iconFlipVertical = flipV;
+        iconScaleX = scaleX;
+        iconScaleY = scaleY;
+        if (imageItem) {
+            double sx = scaleX * (flipH ? -1 : 1);
+            double sy = scaleY * (flipV ? -1 : 1);
+            QTransform t;
+            t.rotate(rotation);
+            t.scale(sx, sy);
+            imageItem->setTransform(t);
+        }
+        realignAnchoredItems();
+    }
 }
 
 void SubmoduleItem::setDecoratorIcon(QPixmap icon)

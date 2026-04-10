@@ -47,6 +47,11 @@ public class NedIconFigure extends Figure {
     protected Image decoratorImage;
     private int decoratorImageXOffset;
     private int decoratorImageYOffset;
+    protected double imageRotation;  // degrees, clockwise
+    protected boolean imageFlipH;
+    protected boolean imageFlipV;
+    protected double imageScaleX = 1.0;
+    protected double imageScaleY = 1.0;
 
     public NedIconFigure() {
     }
@@ -66,6 +71,17 @@ public class NedIconFigure extends Figure {
      */
     public void setImage(Image image) {
         this.image = ImageUtils.fitImage(image, targetWidth, targetHeight);
+    }
+
+    /**
+     * Sets the icon transform ("it" tag): rotation, flip, scale
+     */
+    public void setImageTransform(double rotation, boolean flipH, boolean flipV, double scaleX, double scaleY) {
+        this.imageRotation = rotation;
+        this.imageFlipH = flipH;
+        this.imageFlipV = flipV;
+        this.imageScaleX = scaleX;
+        this.imageScaleY = scaleY;
     }
 
     /**
@@ -183,7 +199,20 @@ public class NedIconFigure extends Figure {
         // draw image
         if (image != null) {
             org.eclipse.swt.graphics.Rectangle imageBounds = image.getBounds();
-            graphics.drawImage(image, centerLoc.x - imageBounds.width/2, centerLoc.y - imageBounds.height/2);
+            boolean hasTransform = imageRotation != 0 || imageFlipH || imageFlipV || imageScaleX != 1.0 || imageScaleY != 1.0;
+            if (hasTransform) {
+                graphics.pushState();
+                graphics.translate(centerLoc.x, centerLoc.y);
+                float sx = (float)(imageScaleX * (imageFlipH ? -1 : 1));
+                float sy = (float)(imageScaleY * (imageFlipV ? -1 : 1));
+                graphics.rotate((float)imageRotation);
+                graphics.scale(sx, sy);
+                graphics.drawImage(image, -imageBounds.width/2, -imageBounds.height/2);
+                graphics.popState();
+            }
+            else {
+                graphics.drawImage(image, centerLoc.x - imageBounds.width/2, centerLoc.y - imageBounds.height/2);
+            }
         }
 
         // draw decoration image
