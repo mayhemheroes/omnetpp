@@ -1184,7 +1184,7 @@ public class PropertiesDialog extends TrayDialog {
         return fieldEditor;
     }
 
-    
+
 
     protected ComboFieldEditor createCombo(Composite parent, String[] items) {
         return createCombo(parent, items, SWT.DEFAULT);
@@ -1585,20 +1585,24 @@ public class PropertiesDialog extends TrayDialog {
         if (!value.equals(""))
             value = StringUtils.nullToEmpty(IDisplayString.Prop.LAYOUT.getEnumSpec().getShorthandFor(value));
 
-        // values: r/c/m/ri/x (enum spec: "row=r.*,r; column=c.*,c; matrix=m.*,m; ring=ri.*,ri; exact=e.*|x.*,x")
+        // values: r/c/m/ri/cr/x (enum spec: "row=r.*,r; column=c.*,c; matrix=m.*,m; ring=ri.*,ri; cring=cr.*,cr; exact=e.*|x.*,x")
         String par1Label = null, par2Label = null, par3Label = null;
         if (value.equals("r")) {
-            par1Label = "Spacing:";
+            par1Label = "X spacing:";
+            par2Label = "Num.cols:";
+            par3Label = "Y spacing:";
         }
         else if (value.equals("c")) {
-            par1Label = "Spacing:";
+            par1Label = "Y spacing:";
+            par2Label = "Num.rows:";
+            par3Label = "X spacing:";
         }
         else if (value.equals("m")) {
             par1Label = "Num.cols:";
             par2Label = "X spacing:";
             par3Label = "Y spacing:";
         }
-        else if (value.equals("ri")) {
+        else if (value.equals("ri") || value.equals("cr")) {
             par1Label = "X radius:";
             par2Label = "Y radius:";
         }
