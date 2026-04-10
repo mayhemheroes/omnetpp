@@ -155,9 +155,13 @@ void MessageAnimator::redrawMessages()
                 MessageItemUtil::setupSymbolFromDisplayString(messageItem, msg, moduleInsp->getImageSizeFactor());
 
                 // if arrivalGate is connected, msg arrived on a connection, otherwise via sendDirect()
-                messageItem->setPos(previousGate
-                             ? moduleInsp->getConnectionLine(previousGate).p2()
-                             : moduleInsp->getSubmodCoords(arrivalMod));
+                if (previousGate) {
+                    QPolygonF poly = moduleInsp->getConnectionLine(previousGate);
+                    messageItem->setPos(poly.isEmpty() ? QPointF() : poly.last());
+                }
+                else {
+                    messageItem->setPos(moduleInsp->getSubmodCoords(arrivalMod));
+                }
                 messageItems[std::make_pair(moduleInsp, msg)] = messageItem;
             }
         }

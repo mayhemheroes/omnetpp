@@ -108,7 +108,7 @@ static void clip_line_to_rect(Pt& p1, const Pt& p2, const Rc& rect)
 // A special case of "arrowcoords" where one rectangle is
 // fully contained within the other.
 // NOTE: The result will always point from inner to outer.
-static Ln arrowcoords_contained(
+static std::vector<Pt> arrowcoords_contained(
     const Rc& innerRect,
     const Rc& outerRect,
     int bundle_i, int bundle_n, // bundle index and size
@@ -160,7 +160,7 @@ static Ln arrowcoords_contained(
             break;
     }
 
-    return Ln(src_x, src_y, 0, dest_x, dest_y, 0);
+    return {Pt(src_x, src_y, 0), Pt(dest_x, dest_y, 0)};
 }
 
 // Adjusts two intervals ([smaller_1, smaller_2] and [larger_1, larger_2]),
@@ -205,7 +205,7 @@ static inline bool fuzzyCompare(double a, double b)
     return std::abs(a - b) <= 1e-9 * std::max(1.0, std::max(std::abs(a), std::abs(b)));
 }
 
-Ln arrowcoords(const Rc &srcRect, const Rc &destRect,
+std::vector<Pt> arrowcoords(const Rc &srcRect, const Rc &destRect,
                   int bundle_i, int bundle_n, // bundle index and size
                   char mode, // "amnews"
                   double srcAnchX, double srcAnchY,
@@ -246,7 +246,7 @@ Ln arrowcoords(const Rc &srcRect, const Rc &destRect,
             clip_line_to_rect(dest, src, destRect);
         }
 
-        return Ln(src, dest);
+        return {src, dest};
     }
 
     // where this connection should be shifted within the available range
@@ -295,12 +295,13 @@ Ln arrowcoords(const Rc &srcRect, const Rc &destRect,
                                      bundle_i, bundle_n,
                                      mode);
         case Relation::DEST_WITHIN_SRC: {
-            Ln l = arrowcoords_contained(destRect,
+            std::vector<Pt> pts = arrowcoords_contained(destRect,
                                             srcRect,
                                             bundle_i, bundle_n,
                                             mode);
             // flip the line so it points inward
-            return Ln(l.end, l.begin);
+            std::reverse(pts.begin(), pts.end());
+            return pts;
         }
         case Relation::OVERLAPPING:
         case Relation::DISJOINT: {
@@ -412,7 +413,30 @@ Ln arrowcoords(const Rc &srcRect, const Rc &destRect,
         }
     }
 
-    return Ln(src, dest);
+    std::vector<Pt> result = {src, dest};
+
+    // TEMPORARY: insert a random midpoint for testing polyline rendering.
+    // This will be replaced with real routing logic later.
+    if (result.size() == 2) {
+        Pt s = result[0], d = result[1];
+        Pt mid((s.x + d.x) / 2, (s.y + d.y) / 2, 0);
+        // perpendicular offset based on a hash of the coordinates (deterministic per connection)
+        double dx = d.x - s.x;
+        double dy = d.y - s.y;
+        double len = std::sqrt(dx*dx + dy*dy);
+        if (len > 1) {
+            // use a simple hash to get a deterministic but varied offset
+            //int hash = (int)(s.x * 7 + s.y * 13 + d.x * 17 + d.y * 23);
+            //double offset = 15 + (hash % 30); // 15..44 pixels
+            double offset = dy < 0 ? 30 : -30;
+            //if (hash % 2) offset = -offset;
+            mid.x += -dy / len * offset;
+            mid.y += dx / len * offset;
+            result = {s, mid, d};
+        }
+    }
+
+    return result;
 }
 
 }  // namespace layout

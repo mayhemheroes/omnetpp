@@ -18,6 +18,8 @@
 #define __OMNETPP_QTENV_CONNECTIONITEM_H
 
 #include <QtWidgets/QGraphicsObject>
+#include <QtWidgets/QGraphicsPathItem>
+#include <QtGui/QPolygonF>
 #include "omnetpp/cdisplaystring.h"
 #include "qtenvdefs.h"
 #include "qtutil.h"
@@ -40,7 +42,7 @@ class QTENV_API ConnectionItem : public QGraphicsObject
     Q_OBJECT
 
 protected:
-    QPointF src, dest;
+    QPolygonF points; // polyline points (2 for straight, 3+ for routed)
     double lineWidth = 1;
     QColor lineColor = colors::BLACK;
     Qt::PenStyle lineStyle = Qt::SolidLine; // not directly fed to the lineItem
@@ -54,7 +56,7 @@ protected:
     // is 3/4 of the length of the full "connection line".
     QPainterPath shape_;
 
-    QGraphicsLineItem *lineItem;
+    QGraphicsPathItem *lineItem;
     MultiLineOutlinedTextItem *textItem; // This is a managed sibling!
     ArrowheadItem *arrowItem;
 
@@ -67,9 +69,10 @@ public:
     explicit ConnectionItem(QGraphicsItem *parent = 0);
     virtual ~ConnectionItem();
 
-    void setSource(const QPointF &source);
-    void setDestination(const QPointF &destination);
-    void setLine(const QLineF &line);
+    void setPoints(const QPolygonF &points);
+    void setLine(const QLineF &line); // convenience: 2-point polyline
+    void setSource(const QPointF &source); // convenience: updates first point
+    void setDestination(const QPointF &destination); // convenience: updates last point
     void setWidth(double width);
     void setColor(const QColor &color);
     void setLineStyle(Qt::PenStyle style);
@@ -88,7 +91,7 @@ public:
     void setHalfLength(bool enabled);
     bool isHalfLength() const { return halfLength; }
 
-    QRectF boundingRect() const override { return QRectF(src, dest).normalized(); }
+    QRectF boundingRect() const override { return points.boundingRect(); }
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override { /* empty */ }
     QPainterPath shape() const override { return shape_; }
 };

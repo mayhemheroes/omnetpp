@@ -787,7 +787,7 @@ void ModuleCanvasViewer::drawConnection(cGate *gate)
 
     auto item = new ConnectionItem(submoduleLayer);
     try {
-        item->setLine(getConnectionLine(gate));
+        item->setPoints(getConnectionLine(gate));
         ConnectionItemUtil::setupFromDisplayString(item, gate, showArrowHeads);
     }
     catch (cRuntimeError& e) {
@@ -825,13 +825,13 @@ QRectF ModuleCanvasViewer::getModuleRect(bool includeBorder)
     return includeBorder ? compoundModuleItem->boundingRect() : compoundModuleItem->getArea();
 }
 
-QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
+QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
 {
     ASSERT(gate->getOwnerModule() == object || gate->getOwnerModule()->getParentModule() == object);
 
     cGate *nextGate = gate ? gate->getNextGate() : nullptr;
     if (!nextGate)
-        return QLineF();
+        return QPolygonF();
 
     char mode = 'a';
 
@@ -846,7 +846,7 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
         DisplayStringAccess dsa(&ds, channel);
 
         const char *modeString = dsa.getTagArg("m", 0, buffer);
-        if (modeString[0] && QString("amnews").contains(modeString[0]))
+        if (modeString[0])
             mode = modeString[0];
 
         bool xOk, yOk;
@@ -885,7 +885,7 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     QRectF ownerRect = getSubmodRect(owner);
     QRectF nextRect = getSubmodRect(nextOwner);
 
-    QLineF line = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, mode, srcAnch, destAnch);
+    QPolygonF poly = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, mode, srcAnch, destAnch);
 
     // Handling degenerate connections (those crossing compound module boundaries without a gate).
     cModule *parent = owner->getParentModule();
@@ -902,10 +902,17 @@ QLineF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     {
         // The connection is degenerate, so only drawing a half length line
         // to not make a false impression about where it actually ends.
-        line.setP2(line.pointAt(0.5));
+        // Truncate polyline to half its length
+        if (poly.size() >= 2) {
+            QPolygonF half;
+            half << poly.first();
+            QPointF mid = (poly.first() + poly.last()) / 2.0;
+            half << mid;
+            poly = half;
+        }
     }
 
-    return line;
+    return poly;
 }
 
 void ModuleCanvasViewer::setLayoutingScene(QGraphicsScene *layoutingScene)
@@ -1050,7 +1057,7 @@ void ModuleCanvasViewer::refreshConnection(cGate *gate)
         throw cRuntimeError("Error refreshing connection originating in gate %s: %s", gate->getFullPath().c_str(), e.what());
     }
 
-    item->setLine(getConnectionLine(gate));
+    item->setPoints(getConnectionLine(gate));
 }
 
 void ModuleCanvasViewer::refreshConnections(cModule *module)

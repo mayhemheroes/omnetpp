@@ -20,7 +20,8 @@ import org.omnetpp.figures.CompoundModuleFigure;
 import org.omnetpp.figures.anchors.CompoundModuleGateAnchor;
 import org.omnetpp.figures.anchors.IAnchorBounds;
 import org.omnetpp.layout.engine.LayoutEngine;
-import org.omnetpp.layout.engine.Ln;
+import org.omnetpp.layout.engine.Pt;
+import org.omnetpp.layout.engine.PtVector;
 import org.omnetpp.layout.engine.Rc;
 
 /**
@@ -113,15 +114,14 @@ public class CompoundModuleConnectionRouter extends AbstractRouter
             bundleSize = ((ConnectionRoutingConstraint)constraint).bundleSize;
         }
 
-        Ln line = LayoutEngine.arrowcoords(srcRc, destRc, bundleIndex, bundleSize, mode, srcAnchX, srcAnchY, destAnchX, destAnchY);
+        PtVector polyline = LayoutEngine.arrowcoords(srcRc, destRc, bundleIndex, bundleSize, mode, srcAnchX, srcAnchY, destAnchX, destAnchY);
 
-        Point start = new Point((int)Math.round(line.getBegin().getX()), (int)Math.round(line.getBegin().getY()));
-        Point end = new Point((int)Math.round(line.getEnd().getX()), (int)Math.round(line.getEnd().getY()));
-
-        conn.translateToRelative(start);
-        conn.translateToRelative(end);
-        points.addPoint(start);
-        points.addPoint(end);
+        for (int i = 0; i < polyline.size(); i++) {
+            Pt pt = polyline.get(i);
+            Point p = new Point((int)Math.round(pt.getX()), (int)Math.round(pt.getY()));
+            conn.translateToRelative(p);
+            points.addPoint(p);
+        }
     }
 
     protected void routeWithAnchors(Connection conn, PointList points) {

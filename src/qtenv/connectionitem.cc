@@ -16,8 +16,10 @@
 
 #include "connectionitem.h"
 
+#include <cmath>
 #include <QtCore/QDebug>
 #include <QtGui/QPainter>
+#include <QtGui/QPainterPathStroker>
 #include <omnetpp/cgate.h>
 #include <omnetpp/cchannel.h>
 #include "graphicsitems.h"
@@ -26,6 +28,83 @@
 
 namespace omnetpp {
 namespace qtenv {
+
+// Returns the total length of a polyline.
+static double polylineLength(const QPolygonF& poly)
+{
+    double len = 0;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        len += std::sqrt(d.x()*d.x() + d.y()*d.y());
+    }
+    return len;
+}
+
+// Returns the point at fraction t (0..1) along the total polyline length.
+static QPointF pointAtFraction(const QPolygonF& poly, double t)
+{
+    if (poly.size() < 2)
+        return poly.isEmpty() ? QPointF() : poly[0];
+    double totalLen = polylineLength(poly);
+    double targetLen = t * totalLen;
+    double accumulated = 0;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        if (accumulated + segLen >= targetLen) {
+            double frac = (segLen > 0) ? (targetLen - accumulated) / segLen : 0;
+            return poly[i-1] + d * frac;
+        }
+        accumulated += segLen;
+    }
+    return poly.last();
+}
+
+// Returns a sub-polyline between fractions t1 and t2 (0..1) of the total length.
+static QPolygonF subPolyline(const QPolygonF& poly, double t1, double t2)
+{
+    if (poly.size() < 2)
+        return poly;
+    double totalLen = polylineLength(poly);
+    double startLen = t1 * totalLen;
+    double endLen = t2 * totalLen;
+    QPolygonF result;
+    double accumulated = 0;
+    bool started = false;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        double segStart = accumulated;
+        double segEnd = accumulated + segLen;
+        if (!started && segEnd >= startLen) {
+            double frac = (segLen > 0) ? (startLen - segStart) / segLen : 0;
+            result << (poly[i-1] + d * frac);
+            started = true;
+        }
+        if (started) {
+            if (segEnd >= endLen) {
+                double frac = (segLen > 0) ? (endLen - segStart) / segLen : 0;
+                result << (poly[i-1] + d * frac);
+                break;
+            }
+            result << poly[i];
+        }
+        accumulated += segLen;
+    }
+    return result;
+}
+
+// Builds a QPainterPath from a polyline.
+static QPainterPath polylinePath(const QPolygonF& poly)
+{
+    QPainterPath path;
+    if (poly.size() >= 2) {
+        path.moveTo(poly[0]);
+        for (int i = 1; i < poly.size(); i++)
+            path.lineTo(poly[i]);
+    }
+    return path;
+}
 
 void ConnectionItemUtil::setupFromDisplayString(ConnectionItem *ci, cGate *gate, bool showArrowhead)
 {
@@ -82,32 +161,31 @@ void ConnectionItemUtil::setupFromDisplayString(ConnectionItem *ci, cGate *gate,
 
 void ConnectionItem::updateLineItem()
 {
-    if (!lineEnabled || (dest == src)) {  // not drawing the line if the conn would be 0 long
+    if (!lineEnabled || points.size() < 2) {
+        lineItem->setPath(QPainterPath());
         lineItem->setPen(Qt::NoPen);
         shape_.clear();
         return;
     }
 
-    // copying, so we can adjust for half length if needed
-    QPointF paintingDest = dest;
-    QPointF pickingDest = dest;
-
-    QPointF dir = dest - src;
-    double length = std::sqrt(dir.x() * dir.x() + dir.y() * dir.y());
+    // Compute the polyline to paint and the polyline for picking (shape)
+    QPolygonF paintingPoly = points;
+    QPolygonF pickingPoly = points;
 
     if (halfLength) {
-        paintingDest = src + dir * 0.5;
-        pickingDest = src + dir * 0.75;
+        paintingPoly = subPolyline(points, 0, 0.5);
+        pickingPoly = subPolyline(points, 0, 0.75);
     }
     else if (arrowItem->isVisible()) {
-        // making the end not stick out of the arrowhead
-        // the line itself has to be shorter
-        if (length > 0) // avoid division by zero
-            paintingDest -= dir / length * lineWidth;
+        // shorten the last segment so the line doesn't stick out of the arrowhead
+        double totalLen = polylineLength(paintingPoly);
+        if (totalLen > lineWidth)
+            paintingPoly = subPolyline(points, 0, (totalLen - lineWidth) / totalLen);
     }
 
     QPen pen(lineColor, lineWidth);
     pen.setCapStyle(Qt::FlatCap);
+    pen.setJoinStyle(Qt::MiterJoin);
 
     switch (lineStyle) {
         case Qt::DashLine: pen.setDashPattern(QVector<double>() << 2 << 2); break;
@@ -119,11 +197,12 @@ void ConnectionItem::updateLineItem()
 
     lineItem->setPen(pen);
 
-    lineItem->setLine(QLineF(src, pickingDest));
-    // this needs to be computed with the final pen width, but also at a different length
+    // compute shape for picking using the picking polyline
+    lineItem->setPath(polylinePath(pickingPoly));
     shape_ = lineItem->shape().simplified();
 
-    lineItem->setLine(QLineF(src, paintingDest));
+    // set the actual painting path
+    lineItem->setPath(polylinePath(paintingPoly));
 }
 
 void ConnectionItem::updateTextItem()
@@ -132,20 +211,25 @@ void ConnectionItem::updateTextItem()
     textItem->setBrush(textColor);
     textItem->setVisible(isVisible());
 
+    if (points.size() < 2)
+        return;
+
+    QPointF src = points.first();
+    QPointF dest = points.last();
     QRectF textRect = textItem->boundingRect();
     QPointF textSize(textRect.width() + 4, textRect.height() + 4);
 
     switch (textAlignment) {
         case Qt::AlignLeft:
-            textItem->setPos(0.75 * src + 0.25 * dest - textSize * 0.5 + QPoint(2, 2));
+            textItem->setPos(pointAtFraction(points, 0.25) - textSize * 0.5 + QPoint(2, 2));
             textItem->setAlignment(Qt::AlignLeft);
             break;
         case Qt::AlignRight:
-            textItem->setPos(0.25 * src + 0.75 * dest - textSize * 0.5 + QPoint(2, 2));
+            textItem->setPos(pointAtFraction(points, 0.75) - textSize * 0.5 + QPoint(2, 2));
             textItem->setAlignment(Qt::AlignRight);
             break;
         default: // Center
-            textItem->setPos(0.5 * src + 0.5 * dest
+            textItem->setPos(pointAtFraction(points, 0.5)
                               - QPoint(textSize.x() * 0.5,
                                        ((src.x()==dest.x()) ? (src.y()<dest.y()) : (src.x()<dest.x()))
                                         ? 0
@@ -156,14 +240,18 @@ void ConnectionItem::updateTextItem()
 
 void ConnectionItem::updateArrowItem()
 {
-    if (!arrowItem->isVisible() || (dest == src)) {  // no arrow for a 0 long connection
+    if (!arrowItem->isVisible() || points.size() < 2) {
         arrowItem->setVisible(false);
         return;
     }
 
+    // Use the direction of the last segment for arrowhead orientation
+    QPointF lastStart = points[points.size()-2];
+    QPointF lastEnd = points[points.size()-1];
+
     arrowItem->setVisible(true);
     arrowItem->setColor(lineColor);
-    arrowItem->setEndPoints(src, dest);
+    arrowItem->setEndPoints(lastStart, lastEnd);
     arrowItem->setSizeForPenWidth(lineWidth);
     arrowItem->setLineWidth(lineWidth);
     arrowItem->setData(ITEMDATA_COBJECT, data(ITEMDATA_COBJECT));
@@ -173,7 +261,7 @@ void ConnectionItem::updateArrowItem()
 ConnectionItem::ConnectionItem(QGraphicsItem *parent) :
     QGraphicsObject(parent)
 {
-    lineItem = new QGraphicsLineItem(this);
+    lineItem = new QGraphicsPathItem(this);
     // The text has to be a sibling, otherwise the pair line
     // of a twoway connection would obscure it.
     textItem = new MultiLineOutlinedTextItem(parentItem());
@@ -189,20 +277,10 @@ ConnectionItem::~ConnectionItem()
     delete textItem;
 }
 
-void ConnectionItem::setSource(const QPointF& source)
+void ConnectionItem::setPoints(const QPolygonF& newPoints)
 {
-    if (src != source) {
-        src = source;
-        updateTextItem();
-        updateArrowItem();
-        updateLineItem();
-    }
-}
-
-void ConnectionItem::setDestination(const QPointF& destination)
-{
-    if (dest != destination) {
-        dest = destination;
+    if (points != newPoints) {
+        points = newPoints;
         updateTextItem();
         updateArrowItem();
         updateLineItem();
@@ -211,8 +289,39 @@ void ConnectionItem::setDestination(const QPointF& destination)
 
 void ConnectionItem::setLine(const QLineF& line)
 {
-    setSource(line.p1());
-    setDestination(line.p2());
+    QPolygonF poly;
+    poly << line.p1() << line.p2();
+    setPoints(poly);
+}
+
+void ConnectionItem::setSource(const QPointF& source)
+{
+    if (points.isEmpty()) {
+        QPolygonF poly;
+        poly << source << source;
+        setPoints(poly);
+    }
+    else if (points.first() != source) {
+        points[0] = source;
+        updateTextItem();
+        updateArrowItem();
+        updateLineItem();
+    }
+}
+
+void ConnectionItem::setDestination(const QPointF& destination)
+{
+    if (points.isEmpty()) {
+        QPolygonF poly;
+        poly << destination << destination;
+        setPoints(poly);
+    }
+    else if (points.last() != destination) {
+        points[points.size()-1] = destination;
+        updateTextItem();
+        updateArrowItem();
+        updateLineItem();
+    }
 }
 
 void ConnectionItem::setWidth(double width)

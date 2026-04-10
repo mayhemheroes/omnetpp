@@ -770,8 +770,11 @@ void SendOnConnAnimation::begin()
             end();
     }
     else {
-        for (auto p : messageItems)
-            p.second->setPos(p.first->getConnectionLine(srcModuleId, srcGateId).p1());
+        for (auto p : messageItems) {
+            QPolygonF poly = p.first->getConnectionLine(srcModuleId, srcGateId);
+            if (!poly.isEmpty())
+                p.second->setPos(poly.first());
+        }
         requestAnimationSpeed(prop.dbl()+trans.dbl());
     }
 }
@@ -794,8 +797,10 @@ void SendOnConnAnimation::update()
 
         double t = getHoldPosition();
 
-        for (auto p : messageItems)
-            p.second->setPos(p.first->getConnectionLine(srcModuleId, srcGateId).pointAt(t));
+        for (auto p : messageItems) {
+            QPolygonF poly = p.first->getConnectionLine(srcModuleId, srcGateId);
+            p.second->positionOntoLine(poly, t, t, false);
+        }
     }
     else {
         SimTime progr = simTime() - start;
@@ -843,8 +848,8 @@ void SendOnConnAnimation::update()
         t2 = clip(0.0, t2, t1);
 
         for (auto p : messageItems) {
-            QLineF connLine = p.first->getConnectionLine(srcModuleId, srcGateId);
-            p.second->positionOntoLine(connLine, t1, t2, msg->isPacket() && static_cast<cPacket*>(msg)->isUpdate());
+            QPolygonF poly = p.first->getConnectionLine(srcModuleId, srcGateId);
+            p.second->positionOntoLine(poly, t1, t2, msg->isPacket() && static_cast<cPacket*>(msg)->isUpdate());
             p.second->setVisible(visible);
         }
     }
@@ -1044,7 +1049,8 @@ void SendDirectAnimation::update()
                 if (!p.to)
                     dest = QPointF(src.x() + src.y() / 4 + 4, -16);
 
-                QLineF fullLine(src, dest);
+                QPolygonF fullLine;
+                fullLine << src << dest;
 
                 m.second->positionOntoLine(fullLine, t1, t2, msg->isPacket() && static_cast<cPacket*>(msg)->isUpdate());
                 m.second->setVisible(visible);
@@ -1171,14 +1177,14 @@ cGate *DeliveryAnimation::getSourceGate() const
 
 QLineF DeliveryAnimation::getLine(ModuleInspector *mi) const
 {
-    auto connLine = mi->getConnectionLine(sourceModuleId, sourceGateId);
-    if (connLine.isNull())
-        return connLine;
+    QPolygonF connPoly = mi->getConnectionLine(sourceModuleId, sourceGateId);
+    if (connPoly.isEmpty())
+        return QLineF();
 
     // the max amount of pixels an arriving message will move inside the dest submodule rectangle
     static const double msgEndCreep = 10;
 
-    QPointF srcPos = connLine.p2();
+    QPointF srcPos = connPoly.last();
     cGate *gate = getSourceGate();
     ASSERT(gate);
     cModule *dest = gate->getNextGate()->getOwnerModule();
@@ -1188,10 +1194,10 @@ QLineF DeliveryAnimation::getLine(ModuleInspector *mi) const
         return QLineF(srcPos, srcPos);
 
     QPointF destCenterPos = mi->getSubmodCoords(dest);
-    QPointF fromEdgeToCenter = destCenterPos - connLine.p2();
+    QPointF fromEdgeToCenter = destCenterPos - connPoly.last();
     double length = std::sqrt(fromEdgeToCenter.x() * fromEdgeToCenter.x() + fromEdgeToCenter.y() * fromEdgeToCenter.y());
 
-    QPointF destPos = connLine.p2()
+    QPointF destPos = connPoly.last()
             + (length > 0.0
                ? fromEdgeToCenter / length * std::min(length, msgEndCreep)
                : QPointF());

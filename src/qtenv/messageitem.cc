@@ -15,6 +15,7 @@
 *--------------------------------------------------------------*/
 
 #include "messageitem.h"
+#include <cmath>
 #include <QtCore/QDebug>
 #include <QtGui/QPen>
 #include "qtenv.h"
@@ -28,6 +29,107 @@ using namespace omnetpp::common;
 
 namespace omnetpp {
 namespace qtenv {
+
+// Returns the total length of a polyline.
+static double polylineLength(const QPolygonF& poly)
+{
+    double len = 0;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        len += std::sqrt(d.x()*d.x() + d.y()*d.y());
+    }
+    return len;
+}
+
+// Returns the point at fraction t (0..1) along the total polyline length.
+static QPointF pointAtFraction(const QPolygonF& poly, double t)
+{
+    if (poly.size() < 2)
+        return poly.isEmpty() ? QPointF() : poly[0];
+    double totalLen = polylineLength(poly);
+    double targetLen = t * totalLen;
+    double accumulated = 0;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        if (accumulated + segLen >= targetLen) {
+            double frac = (segLen > 0) ? (targetLen - accumulated) / segLen : 0;
+            return poly[i-1] + d * frac;
+        }
+        accumulated += segLen;
+    }
+    return poly.last();
+}
+
+// Returns the direction (unit vector) at fraction t along the polyline.
+static QPointF directionAtFraction(const QPolygonF& poly, double t)
+{
+    if (poly.size() < 2)
+        return QPointF(1, 0);
+    double totalLen = polylineLength(poly);
+    double targetLen = t * totalLen;
+    double accumulated = 0;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        if (accumulated + segLen >= targetLen || i == poly.size()-1) {
+            if (segLen > 0)
+                return d / segLen;
+            break;
+        }
+        accumulated += segLen;
+    }
+    // fallback: use last segment direction
+    QPointF d = poly.last() - poly[poly.size()-2];
+    double len = std::sqrt(d.x()*d.x() + d.y()*d.y());
+    return (len > 0) ? d / len : QPointF(1, 0);
+}
+
+// Extracts the sub-polyline between fractions t1 and t2 (0..1) along the polyline.
+// t1 should be <= t2. The result includes interpolated start/end points and any
+// intermediate vertices of the original polyline that fall between them.
+static QPolygonF subPolyline(const QPolygonF& poly, double t1, double t2)
+{
+    if (poly.size() < 2 || t1 >= t2) {
+        QPointF pt = pointAtFraction(poly, t1);
+        QPolygonF result;
+        result << pt;
+        return result;
+    }
+    double totalLen = polylineLength(poly);
+    double startLen = t1 * totalLen;
+    double endLen = t2 * totalLen;
+    QPolygonF result;
+    double accumulated = 0;
+    bool started = false;
+    for (int i = 1; i < poly.size(); i++) {
+        QPointF d = poly[i] - poly[i-1];
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        double segEnd = accumulated + segLen;
+        if (!started && segEnd >= startLen) {
+            // start point is on this segment
+            double frac = (segLen > 0) ? (startLen - accumulated) / segLen : 0;
+            result << (poly[i-1] + d * frac);
+            started = true;
+        }
+        if (started) {
+            if (segEnd >= endLen) {
+                // end point is on this segment
+                double frac = (segLen > 0) ? (endLen - accumulated) / segLen : 0;
+                result << (poly[i-1] + d * frac);
+                break;
+            }
+            else {
+                // intermediate vertex
+                result << poly[i];
+            }
+        }
+        accumulated = segEnd;
+    }
+    if (result.isEmpty())
+        result << poly.last();
+    return result;
+}
 
 
 // -------- MessageItemUtil --------
@@ -201,7 +303,7 @@ void MessageItem::updateTextItem()
 
 LineMessageItem::LineMessageItem(QGraphicsItem *parent) : MessageItem(parent)
 {
-    lineItem = new QGraphicsLineItem(this);
+    lineItem = new QGraphicsPathItem(this);
     txUpdateMarkerItem = new QGraphicsLineItem(this);
     arrowheadItem = new ArrowheadItem(this);
 
@@ -256,18 +358,21 @@ QPointF LineMessageItem::getTextPosition()
     return offset + QPointF(0, 3);
 }
 
-void LineMessageItem::positionOntoLine(const QLineF& line, double t1, double t2, bool asUpdatePacket)
+void LineMessageItem::positionOntoLine(const QPolygonF& connPolyline, double t1, double t2, bool asUpdatePacket)
 {
-    QLineF packetLine(line.pointAt(t1), line.pointAt(t2));
+    // Extract the sub-polyline between t2 (trailing) and t1 (leading edge)
+    // Note: t1 >= t2, and the polyline goes from trailing to leading edge
+    QPolygonF packetPoly = subPolyline(connPolyline, t2, t1);
 
     bool lineEnabled = true;
 
     if (t1 == t2 && asUpdatePacket) {// we are marker-only
-        packetLine = QLineF(line.pointAt(t1), line.pointAt(t1-0.001));
-        lineEnabled = false; // the packetLine is fake
+        double tFake = std::max(0.0, t1 - 0.001);
+        packetPoly = subPolyline(connPolyline, tFake, t1);
+        lineEnabled = false; // the packetPoly is fake
     }
 
-    setLine(packetLine);
+    setPolyline(packetPoly);
     setLineEnabled(lineEnabled);
     setArrowheadEnabled(t1 > 0.0 && t1 < 1.0 && !asUpdatePacket);
     setTxUpdateMarkerEnabled(t1 > 0.0 && t1 < 1.0 && asUpdatePacket);
@@ -297,11 +402,12 @@ QPainterPath LineMessageItem::shape() const
     return result;
 }
 
-void LineMessageItem::setLine(const QLineF& line)
+void LineMessageItem::setPolyline(const QPolygonF& poly)
 {
-    if (this->line != line) {
-        this->line = line;
-        setPos(line.pointAt(0.5));
+    if (this->polyline != poly) {
+        this->polyline = poly;
+        // position at midpoint of the polyline
+        setPos(pointAtFraction(poly, 0.5));
         updateLineItem();
         updateTextItem();
     }
@@ -309,14 +415,17 @@ void LineMessageItem::setLine(const QLineF& line)
 
 QPointF LineMessageItem::getSideOffsetForWidth(float width) const
 {
-    return (line.isNull() || std::isnan(line.x1() + line.y1() + line.x2() + line.y2()))
-        ? QPointF(0, 0)
-        : ((width / 2 + 2) * line.normalVector().unitVector().translated(-line.p1()).p2());
+    if (polyline.size() < 2)
+        return QPointF(0, 0);
+    // Use direction at midpoint to compute the normal
+    QPointF dir = directionAtFraction(polyline, 0.5);
+    QPointF normal(-dir.y(), dir.x()); // perpendicular
+    return normal * (width / 2 + 2);
 }
 
 void LineMessageItem::updateLineItem()
 {
-    setPos(line.pointAt(0.5));
+    setPos(pointAtFraction(polyline, 0.5));
 
     double width = 6;
 
@@ -325,38 +434,70 @@ void LineMessageItem::updateLineItem()
 
     QPen pen(color, width, Qt::SolidLine, Qt::FlatCap);
 
-    // relative to pos, center is always in origin
-    auto localLine = line.translated(-pos());
-    localLine = QLineF(localLine.p2(), localLine.p1());
+    // Build a local polyline path, relative to pos()
+    // The polyline goes from trailing edge to leading edge (t2..t1)
+    QPolygonF localPoly;
+    for (const QPointF& pt : polyline)
+        localPoly << (pt - pos() + sideOffset);
 
+    double totalLen = polylineLength(localPoly);
     double arrowheadLength = arrowheadEnabled ? width : 0;
 
-    // don't let it get too short (1 px for the line, 1 for the arrowhead, why not...)
-    if (localLine.length() < 2) {
-        localLine.setLength(2);
-        localLine.translate(-localLine.pointAt(0.5));
+    // don't let it get too short
+    if (totalLen < 2 && localPoly.size() >= 2) {
+        QPointF dir = localPoly.last() - localPoly.first();
+        double len = std::sqrt(dir.x()*dir.x() + dir.y()*dir.y());
+        if (len > 0) dir = dir / len;
+        else dir = QPointF(1, 0);
+        QPointF center = (localPoly.first() + localPoly.last()) / 2;
+        localPoly.clear();
+        localPoly << (center - dir) << (center + dir);
+        totalLen = 2;
     }
 
-    if (std::isnan(localLine.x1() + localLine.y1() + localLine.x2() + localLine.y2()))
-        localLine = QLineF(0, 0, 0, 0);
+    arrowheadLength = std::min(arrowheadLength, totalLen / 2);
 
-    arrowheadLength = std::min(arrowheadLength, localLine.length()/2);
+    // Arrowhead at the leading edge (last point of the polyline)
+    if (localPoly.size() >= 2) {
+        QPointF arrowStart = localPoly[localPoly.size()-2];
+        QPointF arrowEnd = localPoly.last();
+        arrowheadItem->setEndPoints(arrowStart, arrowEnd);
+    }
 
-    localLine = localLine.translated(sideOffset);
-    arrowheadItem->setEndPoints(localLine.p1(), localLine.p2());
-    localLine.setLength(localLine.length()-arrowheadLength);
+    // Shorten the last segment by arrowheadLength for the line path
+    QPolygonF drawPoly = localPoly;
+    if (arrowheadLength > 0 && drawPoly.size() >= 2) {
+        QPointF& last = drawPoly[drawPoly.size()-1];
+        QPointF& prev = drawPoly[drawPoly.size()-2];
+        QPointF d = last - prev;
+        double segLen = std::sqrt(d.x()*d.x() + d.y()*d.y());
+        if (segLen > arrowheadLength)
+            last = last - d / segLen * arrowheadLength;
+        else
+            last = prev; // segment too short, collapse
+    }
 
-    lineItem->setLine(localLine);
+    // Build QPainterPath from the polyline
+    QPainterPath path;
+    if (!drawPoly.isEmpty()) {
+        path.moveTo(drawPoly[0]);
+        for (int i = 1; i < drawPoly.size(); i++)
+            path.lineTo(drawPoly[i]);
+    }
+    lineItem->setPath(path);
     lineItem->setVisible(lineEnabled);
     lineItem->setPen(pen);
 
     arrowheadItem->setBrush(color);
     arrowheadItem->setArrowWidth(width);
     arrowheadItem->setArrowLength(arrowheadLength + 0.5); // +0.5 is just to make it "watertight" (AA and imprecision and stuff)
-
     arrowheadItem->setVisible(arrowheadEnabled);
 
-    txUpdateMarkerItem->setLine(QLineF(localLine.p2() + sideOffset * 1.5, localLine.p2() - sideOffset * 1.5));
+    // txUpdateMarker at the leading edge
+    if (localPoly.size() >= 2) {
+        QPointF lastPt = localPoly.last();
+        txUpdateMarkerItem->setLine(QLineF(lastPt + sideOffset * 1.5, lastPt - sideOffset * 1.5));
+    }
     txUpdateMarkerItem->setVisible(txUpdateMarkerEnabled);
     pen.setWidth(width / 2);
     txUpdateMarkerItem->setPen(pen);
@@ -464,12 +605,12 @@ QPointF SymbolMessageItem::getTextPosition()
     return QPointF(0, shapeImageBoundingRect().bottom());
 }
 
-void SymbolMessageItem::positionOntoLine(const QLineF& line, double t1, double t2, bool asUpdatePacket)
+void SymbolMessageItem::positionOntoLine(const QPolygonF& polyline, double t1, double t2, bool asUpdatePacket)
 {
     ASSERT(t1 == t2);
     ASSERT(!asUpdatePacket);
 
-    setPos(line.pointAt(t1));
+    setPos(pointAtFraction(polyline, t1));
 }
 
 QRectF SymbolMessageItem::boundingRect() const

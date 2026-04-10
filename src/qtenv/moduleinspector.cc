@@ -521,15 +521,15 @@ QRectF ModuleInspector::getSubmodRect(cModule *mod)
     return canvasViewer->getSubmodRect(mod);
 }
 
-QLineF ModuleInspector::getConnectionLine(cGate *gate)
+QPolygonF ModuleInspector::getConnectionLine(cGate *gate)
 {
     return canvasViewer->getConnectionLine(gate);
 }
 
-QLineF ModuleInspector::getConnectionLine(int srcModuleId, int srcGateId)
+QPolygonF ModuleInspector::getConnectionLine(int srcModuleId, int srcGateId)
 {
     cModule *mod = getSimulation()->getModule(srcModuleId);
-    return mod ? getConnectionLine(mod->gate(srcGateId)) : QLineF();
+    return mod ? getConnectionLine(mod->gate(srcGateId)) : QPolygonF();
 }
 
 QRect ModuleInspector::getModuleRect(bool includeBorder, int margin)

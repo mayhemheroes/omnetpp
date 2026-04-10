@@ -16,6 +16,7 @@
   `license' for details on this and other legal matters.
 *--------------------------------------------------------------*/
 
+#include <vector>
 #include "arrow.h"
 #include "layout/arrowcoords.h"
 
@@ -26,16 +27,19 @@ static layout::Rc toRc(const QRectF& r) {
     return layout::Rc(r.left(), r.top(), 0, r.width(), r.height());
 }
 
-QLineF arrowcoords(const QRectF& srcRect, const QRectF& destRect,
+QPolygonF arrowcoords(const QRectF& srcRect, const QRectF& destRect,
                    int bundle_i, int bundle_n, char mode,
                    QPointF srcAnch, QPointF destAnch)
 {
-    layout::Ln ln = layout::arrowcoords(
+    std::vector<layout::Pt> pts = layout::arrowcoords(
         toRc(srcRect), toRc(destRect),
         bundle_i, bundle_n, mode,
         srcAnch.x(), srcAnch.y(),
         destAnch.x(), destAnch.y());
-    return QLineF(ln.begin.x, ln.begin.y, ln.end.x, ln.end.y);
+    QPolygonF poly;
+    for (const auto& pt : pts)
+        poly << QPointF(pt.x, pt.y);
+    return poly;
 }
 
 }  // namespace qtenv

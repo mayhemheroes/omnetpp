@@ -19,6 +19,7 @@
 
 #include <map>
 #include <QtCore/QPointF>
+#include <QtGui/QPolygonF>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QGraphicsView>
@@ -212,7 +213,7 @@ public:
     // also accepts the inspected module, returns the whole rectangle for it
     QRectF getSubmodRect(cModule *mod);
     QRectF getModuleRect(bool includeBorder);
-    QLineF getConnectionLine(cGate *gate);
+    QPolygonF getConnectionLine(cGate *gate);
 
     void clear();
     void setNeedsRedraw(bool isNeed = true) { needsRedraw = isNeed; }

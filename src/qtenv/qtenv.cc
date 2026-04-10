@@ -2593,12 +2593,15 @@ std::vector<cFigure::Point> Qtenv::getConnectionLine(const cGate *sourceGate)
 
     double zoomFactor = primaryInsp->getZoomFactor();
 
-    QLineF line = primaryInsp->getConnectionLine(const_cast<cGate *>(sourceGate));
+    QPolygonF poly = primaryInsp->getConnectionLine(const_cast<cGate *>(sourceGate));
 
-    if (line.isNull())
+    if (poly.isEmpty())
         return {};
 
-    return {cFigure::Point(line.x1(), line.y1()) / zoomFactor, cFigure::Point(line.x2(), line.y2()) / zoomFactor };
+    std::vector<cFigure::Point> result;
+    for (const QPointF& pt : poly)
+        result.push_back(cFigure::Point(pt.x(), pt.y()) / zoomFactor);
+    return result;
 }
 
 double Qtenv::getZoomLevel(const cModule *module)

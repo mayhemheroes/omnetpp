@@ -34,7 +34,7 @@ using namespace omnetpp::layout;
 //
 //%include "std_common.i"
 //%include "std_string.i"
-//%include "std_vector.i"
+%include "std_vector.i"
 //
 // %typemap(javacode) Variable %{
 //     protected Variable disown() {
@@ -193,6 +193,11 @@ FIXUP_GETNODEPOSITION(ForceDirectedGraphLayouter);
 // Geometry types and arrowcoords for connection routing
 %ignore omnetpp::layout::Cc;  // not needed for arrowcoords
 %include "layout/geometry.h"
+
+namespace std {
+    %template(PtVector) vector<omnetpp::layout::Pt>;
+}
+
 %include "layout/arrowcoords.h"
 // %include "layout/forcedirectedparametersbase.h"
 // %include "layout/forcedirectedparameters.h"

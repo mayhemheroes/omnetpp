@@ -16,13 +16,14 @@
 #ifndef __OMNETPP_LAYOUT_ARROWCOORDS_H
 #define __OMNETPP_LAYOUT_ARROWCOORDS_H
 
+#include <vector>
 #include "geometry.h"
 #include "layoutdefs.h"
 
 namespace omnetpp {
 namespace layout {
 
-// Computes the line (start and end points) for a connection arrow between
+// Computes the polyline (list of points) for a connection arrow between
 // two rectangles representing the bounding boxes of modules.
 //
 // The rectangles represent the bounding boxes of the source and destination modules.
@@ -33,7 +34,7 @@ namespace layout {
 // and bundle_n is the total number of connections in the bundle.
 // mode must be one of "amnews":
 //   'a' = automatic, 'm' = manual, 'n' = north, 'e' = east, 'w' = west, 's' = south
-LAYOUT_API Ln arrowcoords(
+LAYOUT_API std::vector<Pt> arrowcoords(
     const Rc& srcRect, const Rc& destRect,
     int bundle_i = 0, int bundle_n = 1,
     char mode = 'a',

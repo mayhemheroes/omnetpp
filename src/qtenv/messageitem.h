@@ -19,6 +19,7 @@
 
 #include <QtWidgets/QGraphicsColorizeEffect>
 #include <QtWidgets/QGraphicsObject>
+#include <QtGui/QPolygonF>
 #include "qtenvdefs.h"
 #include "qtutil.h"
 
@@ -72,7 +73,7 @@ public:
     // Positions (and configures) this item as being sent/transmitted on the given
     // (connection) line. The line parameter is in parent coordinates. t1 and t2 are
     // the start and end positions of the message on line, in range [0..1].
-    virtual void positionOntoLine(const QLineF& line, double t1, double t2, bool asUpdatePacket) = 0;
+    virtual void positionOntoLine(const QPolygonF& polyline, double t1, double t2, bool asUpdatePacket) = 0;
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override { /* empty */ }
 };
@@ -86,14 +87,14 @@ class QTENV_API LineMessageItem : public MessageItem
     Q_OBJECT
 
 protected:
-    QLineF line;
+    QPolygonF polyline; // the connection polyline this message is on
     QColor color;
 
     bool lineEnabled = true;
     bool arrowheadEnabled = true;
     bool txUpdateMarkerEnabled = true;
 
-    QGraphicsLineItem *lineItem = nullptr;
+    QGraphicsPathItem *lineItem = nullptr;
     ArrowheadItem *arrowheadItem = nullptr;
     QGraphicsLineItem *txUpdateMarkerItem = nullptr;
 
@@ -105,14 +106,14 @@ public:
     virtual ~LineMessageItem();
 
     void setColor(const QColor& color);
-    void setLine(const QLineF& line);
+    void setPolyline(const QPolygonF& polyline);
 
     void setLineEnabled(bool enabled);
     void setArrowheadEnabled(bool enabled);
     void setTxUpdateMarkerEnabled(bool enabled);
 
     virtual QPointF getTextPosition() override;
-    virtual void positionOntoLine(const QLineF& line, double t1, double t2, bool asUpdatePacket) override;
+    virtual void positionOntoLine(const QPolygonF& polyline, double t1, double t2, bool asUpdatePacket) override;
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
@@ -172,7 +173,7 @@ public:
 
     virtual QPointF getTextPosition() override;
     /// For this subclass, t1 and t2 must be equal and asUpdatePacket must be false.
-    virtual void positionOntoLine(const QLineF& line, double t1, double t2, bool asUpdatePacket);
+    virtual void positionOntoLine(const QPolygonF& polyline, double t1, double t2, bool asUpdatePacket) override;
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
