@@ -272,23 +272,23 @@ fi
 
 
 #------------------------------------
-# check whether compiler supports c++20 mode by default and try to enforce if it does not
+# check whether compiler supports c++17 mode by default and try to enforce if it does not
 #------------------------------------
-AC_MSG_CHECKING([for c++20 support])
+AC_MSG_CHECKING([for c++17 support])
 AC_COMPILE_IFELSE(
      [AC_LANG_PROGRAM([[
-      #if __cplusplus < 202002L
+      #if __cplusplus < 201703L
       #error
       #endif]])],
      [AC_MSG_RESULT(yes)],
-     [CXXFLAGS="-std=c++20 $CXXFLAGS";
+     [CXXFLAGS="-std=c++17 $CXXFLAGS";
       AC_COMPILE_IFELSE(
          [AC_LANG_PROGRAM([[
-          #if __cplusplus < 202002L
+          #if __cplusplus < 201703L
           #error
           #endif]])],
-         AC_MSG_RESULT(yes (forced by -std=c++20)),
-         AC_MSG_RESULT(no); AC_MSG_ERROR([Please adjust CXXFLAGS in configure.user to enable C++20 compilation or install a C++20-capable compiler (e.g. clang 17+ or gcc 13+)]))]
+         AC_MSG_RESULT(yes (forced by -std=c++17)),
+         AC_MSG_RESULT(no); AC_MSG_ERROR([Please adjust CXXFLAGS in configure.user to enable C++17 compilation or install a C++17-capable compiler (e.g. clang 5+ or gcc 8+)]))]
 )
 
 if test "$TOOLCHAIN" = "mingw"; then
