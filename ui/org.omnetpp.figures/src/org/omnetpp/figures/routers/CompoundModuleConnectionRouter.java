@@ -23,6 +23,7 @@ import org.omnetpp.layout.engine.LayoutEngine;
 import org.omnetpp.layout.engine.Pt;
 import org.omnetpp.layout.engine.PtVector;
 import org.omnetpp.layout.engine.Rc;
+import org.omnetpp.layout.engine.RoutingConstraint;
 
 /**
  * Connection router that uses the native arrowcoords() algorithm from the layout
@@ -93,28 +94,24 @@ public class CompoundModuleConnectionRouter extends AbstractRouter
         destFigure.translateToAbsolute(destBounds);
 
         // read routing constraint from the router's constraint map
-        char mode = 'a';
-        double srcAnchX = 50, srcAnchY = 50, destAnchX = 50, destAnchY = 50;
+        RoutingConstraint rc = new RoutingConstraint();
+        int bundleIndex = 0, bundleSize = 1;
         Object constraint = constraints.get(conn);
         if (constraint instanceof ConnectionRoutingConstraint) {
-            ConnectionRoutingConstraint rc = (ConnectionRoutingConstraint)constraint;
-            mode = rc.mode;
-            srcAnchX = rc.srcAnchX;
-            srcAnchY = rc.srcAnchY;
-            destAnchX = rc.destAnchX;
-            destAnchY = rc.destAnchY;
+            ConnectionRoutingConstraint crc = (ConnectionRoutingConstraint)constraint;
+            rc.setMode(crc.mode);
+            rc.setSrcAnchX(crc.srcAnchX);
+            rc.setSrcAnchY(crc.srcAnchY);
+            rc.setDestAnchX(crc.destAnchX);
+            rc.setDestAnchY(crc.destAnchY);
+            bundleIndex = crc.bundleIndex;
+            bundleSize = crc.bundleSize;
         }
 
         Rc srcRc = new Rc(srcBounds.x, srcBounds.y, 0, srcBounds.width, srcBounds.height);
         Rc destRc = new Rc(destBounds.x, destBounds.y, 0, destBounds.width, destBounds.height);
 
-        int bundleIndex = 0, bundleSize = 1;
-        if (constraint instanceof ConnectionRoutingConstraint) {
-            bundleIndex = ((ConnectionRoutingConstraint)constraint).bundleIndex;
-            bundleSize = ((ConnectionRoutingConstraint)constraint).bundleSize;
-        }
-
-        PtVector polyline = LayoutEngine.arrowcoords(srcRc, destRc, bundleIndex, bundleSize, mode, srcAnchX, srcAnchY, destAnchX, destAnchY);
+        PtVector polyline = LayoutEngine.arrowcoords(srcRc, destRc, bundleIndex, bundleSize, rc);
 
         for (int i = 0; i < polyline.size(); i++) {
             Pt pt = polyline.get(i);

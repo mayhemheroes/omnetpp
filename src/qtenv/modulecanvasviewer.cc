@@ -833,10 +833,7 @@ QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     if (!nextGate)
         return QPolygonF();
 
-    char mode = 'a';
-
-    QPointF srcAnch(50, 50);
-    QPointF destAnch(50, 50);
+    layout::RoutingConstraint constraint;
 
     auto channel = gate->getChannel();
     if (channel) {
@@ -847,24 +844,24 @@ QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
 
         const char *modeString = dsa.getTagArg("m", 0, buffer);
         if (modeString[0])
-            mode = modeString[0];
+            constraint.mode = modeString[0];
 
         bool xOk, yOk;
         int x = dsa.getTagArgAsLong("m", 1, 0.0, &xOk);
         int y = dsa.getTagArgAsLong("m", 2, 0.0, &yOk);
 
         if (xOk)
-            srcAnch.setX(x);
+            constraint.srcAnchX = x;
         if (yOk)
-            srcAnch.setY(y);
+            constraint.srcAnchY = y;
 
         x = dsa.getTagArgAsLong("m", 3, 0.0, &xOk);
         y = dsa.getTagArgAsLong("m", 4, 0.0, &yOk);
 
         if (xOk)
-            destAnch.setX(x);
+            constraint.destAnchX = x;
         if (yOk)
-            destAnch.setY(y);
+            constraint.destAnchY = y;
     }
 
     int bundle_i = 0, bundle_n = 1;
@@ -885,7 +882,7 @@ QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     QRectF ownerRect = getSubmodRect(owner);
     QRectF nextRect = getSubmodRect(nextOwner);
 
-    QPolygonF poly = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, mode, srcAnch, destAnch);
+    QPolygonF poly = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, constraint);
 
     // Handling degenerate connections (those crossing compound module boundaries without a gate).
     cModule *parent = owner->getParentModule();

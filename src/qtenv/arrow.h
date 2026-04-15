@@ -24,19 +24,16 @@
 #include <QtCore/QLineF>
 #include <QtGui/QPolygonF>
 #include "qtenvdefs.h"
+#include "layout/arrowcoords.h"
 
 namespace omnetpp {
 namespace qtenv {
 
 // Calculates the coordinates of a connection polyline between two rectangles.
 // The rectangles represent the bounding boxes of the source and destination modules.
-// The srcAnch and destAnch parameters are used in 'm' mode to specify the anchor points
-// within the rectangles as percentages (0-100) of width and height.
 QTENV_API QPolygonF arrowcoords(const QRectF &srcRect, const QRectF &destRect,
                   int bundle_i = 0, int bundle_n = 1, // bundle index and size
-                  char mode = 'a', // must be one of "amnews"
-                  QPointF srcAnch = QPointF(50, 50),
-                  QPointF destAnch = QPointF(50, 50));
+                  const layout::RoutingConstraint& constraint = layout::RoutingConstraint());
 
 }  // namespace qtenv
 }  // namespace omnetpp

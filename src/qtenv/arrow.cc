@@ -28,14 +28,12 @@ static layout::Rc toRc(const QRectF& r) {
 }
 
 QPolygonF arrowcoords(const QRectF& srcRect, const QRectF& destRect,
-                   int bundle_i, int bundle_n, char mode,
-                   QPointF srcAnch, QPointF destAnch)
+                   int bundle_i, int bundle_n,
+                   const layout::RoutingConstraint& constraint)
 {
     std::vector<layout::Pt> pts = layout::arrowcoords(
         toRc(srcRect), toRc(destRect),
-        bundle_i, bundle_n, mode,
-        srcAnch.x(), srcAnch.y(),
-        destAnch.x(), destAnch.y());
+        bundle_i, bundle_n, constraint);
     QPolygonF poly;
     for (const auto& pt : pts)
         poly << QPointF(pt.x, pt.y);

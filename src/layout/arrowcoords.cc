@@ -207,10 +207,14 @@ static inline bool fuzzyCompare(double a, double b)
 
 std::vector<Pt> arrowcoords(const Rc &srcRect, const Rc &destRect,
                   int bundle_i, int bundle_n, // bundle index and size
-                  char mode, // "amnews"
-                  double srcAnchX, double srcAnchY,
-                  double destAnchX, double destAnchY)
+                  const RoutingConstraint& constraint)
 {
+    char mode = constraint.mode;
+    double srcAnchX = constraint.srcAnchX;
+    double srcAnchY = constraint.srcAnchY;
+    double destAnchX = constraint.destAnchX;
+    double destAnchY = constraint.destAnchY;
+
     Pt src(0, 0, 0), dest(0, 0, 0);
 
     // error checks
