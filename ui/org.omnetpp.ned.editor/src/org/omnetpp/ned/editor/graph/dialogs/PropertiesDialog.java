@@ -224,6 +224,11 @@ public class PropertiesDialog extends TrayDialog {
     private ColorFieldEditor connectionColorField;
     private TextFieldEditor connectionWidthField;
     private ComboFieldEditor connectionStyleField;
+    private boolean isSubmodToParent;
+    private ComboFieldEditor routingDirField;        // submod-to-parent: single direction combo
+    private ComboFieldEditor routingSrcDirField;     // submod-to-submod: source direction combo
+    private ComboFieldEditor routingDestDirField;    // submod-to-submod: dest direction combo
+    private Label routingManualLabel;                // shown when m[0]=='m' (manual mode)
 
     private TextFieldEditor bgUnitField;
     private Label bgNoteLabel;
@@ -925,6 +930,30 @@ public class PropertiesDialog extends TrayDialog {
             queueNameField = createText(comp, 20);
         }
         else if (e instanceof ConnectionElement) {
+            // M tag (routing)
+            ConnectionElementEx connElem = (ConnectionElementEx)e;
+            isSubmodToParent = "".equals(connElem.getSrcModule()) || "".equals(connElem.getDestModule());
+
+            group = createGroup(page, "Routing", 4);
+            if (isSubmodToParent) {
+                // submod-to-parent: single direction combo (n/e/s/w/auto)
+                createLabel(group, "Direction:", false);
+                String[] parentDirNames = {"(auto)", "auto", "north", "east", "south", "west"};
+                routingDirField = createCombo(group, parentDirNames, 16);
+            }
+            else {
+                // submod-to-submod: two combos (h/v + cardinals)
+                createLabel(group, "Source:", false);
+                String[] submodDirNames = {"(auto)", "auto", "horizontal", "vertical", "north", "east", "south", "west"};
+                routingSrcDirField = createCombo(group, submodDirNames, 16);
+                createLabel(group, "Dest:", true);
+                routingDestDirField = createCombo(group, submodDirNames, 16);
+            }
+            // manual mode label (shown/hidden dynamically)
+            routingManualLabel = createWrappingLabel(group, "Manual routing — edit display string directly", false, 4);
+            routingManualLabel.setVisible(false);
+            ((GridData)routingManualLabel.getLayoutData()).exclude = true;
+
             group = createGroup(page, "Line Style", 7);
             // LS tag
             createLabel(group, "Line color:", false);
@@ -1461,6 +1490,9 @@ public class PropertiesDialog extends TrayDialog {
         populateField(queueNameField, IDisplayString.Prop.QUEUE_NAME);
 
         //============== CONNECTION ================
+        // M tag (routing)
+        populateRoutingFields();
+
         // LS tag
         populateField(connectionColorField, IDisplayString.Prop.CONNECTION_COLOR);
         populateField(connectionWidthField, IDisplayString.Prop.CONNECTION_WIDTH);
@@ -1502,6 +1534,57 @@ public class PropertiesDialog extends TrayDialog {
 
         // module layouting
         populateField(bgUnitField, IDisplayString.Prop.MODULE_UNIT);
+    }
+
+    protected void populateRoutingFields() {
+        if (routingDirField == null && routingSrcDirField == null)
+            return;
+
+        // Read m[0] raw value to detect manual mode
+        String srcDirValue = (String)getCommonProperty(new DisplayPropertyAccess(IDisplayString.Prop.ROUTING_CONSTRAINT));
+
+        boolean isManualMode = "manual".equals(srcDirValue) || "m".equals(srcDirValue);
+        boolean isAutoMode = "auto".equals(srcDirValue) || "a".equals(srcDirValue);
+
+        if (isManualMode) {
+            // Show manual mode label, hide combos
+            routingManualLabel.setVisible(true);
+            ((GridData)routingManualLabel.getLayoutData()).exclude = false;
+            if (routingDirField != null) routingDirField.setEnabled(false);
+            if (routingSrcDirField != null) routingSrcDirField.setEnabled(false);
+            if (routingDestDirField != null) routingDestDirField.setEnabled(false);
+            routingManualLabel.getParent().layout(true);
+        }
+        else {
+            if (isSubmodToParent) {
+                // For submod-to-parent, m[0] holds the direction (n/e/s/w or auto/empty)
+                if ("".equals(srcDirValue))
+                    populateField(routingDirField, "(auto)"); // implicit auto (no value in display string)
+                else if (isAutoMode)
+                    populateField(routingDirField, "auto");   // explicit "a" in display string
+                else
+                    populateField(routingDirField, IDisplayString.Prop.ROUTING_CONSTRAINT);
+            }
+            else {
+                // For submod-to-submod, m[0] is src dir, m[1] is dest dir
+                if ("".equals(srcDirValue))
+                    populateField(routingSrcDirField, "(auto)");
+                else if (isAutoMode)
+                    populateField(routingSrcDirField, "auto");
+                else
+                    populateField(routingSrcDirField, IDisplayString.Prop.ROUTING_CONSTRAINT);
+
+                String destDirValue = (String)getCommonProperty(new DisplayPropertyAccess(IDisplayString.Prop.ROUTING_ANCHOR_SRCX));
+                if (destDirValue == null)
+                    populateField(routingDestDirField, (String)null); // grayed: differing values
+                else if ("".equals(destDirValue))
+                    populateField(routingDestDirField, "(auto)");
+                else if ("auto".equals(destDirValue))
+                    populateField(routingDestDirField, "auto");
+                else
+                    populateField(routingDestDirField, IDisplayString.Prop.ROUTING_ANCHOR_SRCX);
+            }
+        }
     }
 
     protected void populateField(IFieldEditor field, IDisplayString.Prop displayProperty) {
@@ -1981,6 +2064,15 @@ public class PropertiesDialog extends TrayDialog {
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.TOOLTIP, tooltipField);
 
         //============== CONNECTION ================
+        // M tag (routing)
+        if (isSubmodToParent) {
+            updateRoutingPreviewProperty(displayString, IDisplayString.Prop.ROUTING_CONSTRAINT, routingDirField);
+        }
+        else {
+            updateRoutingPreviewProperty(displayString, IDisplayString.Prop.ROUTING_CONSTRAINT, routingSrcDirField);
+            updateRoutingPreviewProperty(displayString, IDisplayString.Prop.ROUTING_ANCHOR_SRCX, routingDestDirField);
+        }
+
         // LS tag
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.CONNECTION_COLOR, connectionColorField);
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.CONNECTION_WIDTH, connectionWidthField);
@@ -2017,6 +2109,26 @@ public class PropertiesDialog extends TrayDialog {
     protected void updatePreviewDisplayProperty(DisplayString displayString, IDisplayString.Prop property, IFieldEditor fieldEditor) {
         if (fieldEditor != null && !fieldEditor.isGrayed()) {
             String value = fieldEditor.getText();
+
+            // normalize value (replace enum value with its standard abbreviation)
+            if (!value.equals("") && property.getEnumSpec() != null) {
+                String shorthand = property.getEnumSpec().getShorthandFor(value);
+                if (shorthand != null)
+                    value = shorthand;
+            }
+
+            Assert.isNotNull(value);
+            String newValue = getLocalDisplayPropertyChange(displayString, property, value);
+            if (newValue != null)
+                displayString.set(property, newValue);
+        }
+    }
+
+    protected void updateRoutingPreviewProperty(DisplayString displayString, IDisplayString.Prop property, ComboFieldEditor fieldEditor) {
+        if (fieldEditor != null && !fieldEditor.isGrayed()) {
+            String value = fieldEditor.getText();
+            if ("(auto)".equals(value))
+                value = "";
 
             // normalize value (replace enum value with its standard abbreviation)
             if (!value.equals("") && property.getEnumSpec() != null) {
@@ -2174,6 +2286,15 @@ public class PropertiesDialog extends TrayDialog {
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.TOOLTIP, tooltipField);
 
         //============== CONNECTION ================
+        // M tag (routing) — "(auto)" maps to "" (implicit auto), "auto" maps to "a" (explicit)
+        if (isSubmodToParent) {
+            addRoutingChangeCommands(compoundCommand, IDisplayString.Prop.ROUTING_CONSTRAINT, routingDirField);
+        }
+        else {
+            addRoutingChangeCommands(compoundCommand, IDisplayString.Prop.ROUTING_CONSTRAINT, routingSrcDirField);
+            addRoutingChangeCommands(compoundCommand, IDisplayString.Prop.ROUTING_ANCHOR_SRCX, routingDestDirField);
+        }
+
         // LS tag
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.CONNECTION_COLOR, connectionColorField);
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.CONNECTION_WIDTH, connectionWidthField);
@@ -2215,6 +2336,19 @@ public class PropertiesDialog extends TrayDialog {
         if (fieldEditor != null && !fieldEditor.isGrayed()) {
             // if field is disabled, remove its value from the display string
             String value = fieldEditor.isEnabled() ? fieldEditor.getText() : null;
+            addPropertyChangeCommands(compoundCommand, new DisplayPropertyAccess(displayProperty), value);
+        }
+    }
+
+    /**
+     * Like addDisplayPropertyChangeCommands, but maps "(auto)" to "" (implicit auto, no value in display string).
+     * "auto" is left as-is and gets converted to "a" by the EnumSpec shorthand mechanism.
+     */
+    protected void addRoutingChangeCommands(CompoundCommand compoundCommand, IDisplayString.Prop displayProperty, ComboFieldEditor fieldEditor) {
+        if (fieldEditor != null && !fieldEditor.isGrayed()) {
+            String value = fieldEditor.isEnabled() ? fieldEditor.getText() : null;
+            if ("(auto)".equals(value))
+                value = "";
             addPropertyChangeCommands(compoundCommand, new DisplayPropertyAccess(displayProperty), value);
         }
     }
@@ -2378,6 +2512,9 @@ public class PropertiesDialog extends TrayDialog {
         validateIntegerField(errors, "Range border width", rangeBorderWidthField);
         validateComboField(errors, "Text position", textPosField);
         validateColorField(errors, "Text color", textColorField);
+        validateComboField(errors, "Routing direction", routingDirField);
+        validateComboField(errors, "Routing source direction", routingSrcDirField);
+        validateComboField(errors, "Routing dest direction", routingDestDirField);
         validateColorField(errors, "Line color", connectionColorField);
         validateIntegerField(errors, "Line width", connectionWidthField);
         validateComboField(errors, "Line style", connectionStyleField);

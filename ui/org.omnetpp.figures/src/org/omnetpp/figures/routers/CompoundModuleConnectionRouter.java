@@ -64,12 +64,9 @@ public class CompoundModuleConnectionRouter extends AbstractRouter
         if (isSelfConnection(conn)) {
             routeSelfConnection(conn, points);
         }
-        else if (isCompoundModuleAnchorConnection(conn)) {
-            // connections to/from compound module border: use anchor-based routing
-            routeWithAnchors(conn, points);
-        }
         else {
-            // submodule-to-submodule: use native arrowcoords
+            // submodule-to-submodule and submodule-to-parent: use native arrowcoords
+            // (arrowcoords handles containment cases for submod-to-parent connections)
             routeWithArrowCoords(conn, points);
         }
 
@@ -99,7 +96,8 @@ public class CompoundModuleConnectionRouter extends AbstractRouter
         Object constraint = constraints.get(conn);
         if (constraint instanceof ConnectionRoutingConstraint) {
             ConnectionRoutingConstraint crc = (ConnectionRoutingConstraint)constraint;
-            rc.setMode(crc.mode);
+            rc.setSrcDir(crc.srcDir);
+            rc.setDestDir(crc.destDir);
             rc.setSrcAnchX(crc.srcAnchX);
             rc.setSrcAnchY(crc.srcAnchY);
             rc.setDestAnchX(crc.destAnchX);

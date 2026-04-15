@@ -833,35 +833,51 @@ QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     if (!nextGate)
         return QPolygonF();
 
+    // For bidirectional connections, both halves must follow the same polyline path.
+    // Canonicalize: always use the forward half (smaller module ID as source).
+    // The reverse half reuses the forward half's channel for display string parsing,
+    // since NED only sets the display string on the forward channel.
+    bool twoWay = isTwoWayConnection(gate);
+    bool isReverseHalf = twoWay && gate->getOwnerModule()->getId() > nextGate->getOwnerModule()->getId();
+
+    cGate *canonicalGate = gate;
+    if (isReverseHalf) {
+        // Get the forward half's gate: nextGate's other half (inout pair)
+        canonicalGate = nextGate->getOtherHalf();
+    }
+
     layout::RoutingConstraint constraint;
 
-    auto channel = gate->getChannel();
+    auto channel = canonicalGate ? canonicalGate->getChannel() : nullptr;
     if (channel) {
         cDisplayString ds = channel->getDisplayString();
 
         std::string buffer;
         DisplayStringAccess dsa(&ds, channel);
 
-        const char *modeString = dsa.getTagArg("m", 0, buffer);
-        if (modeString[0])
-            constraint.mode = modeString[0];
-
-        bool xOk, yOk;
-        int x = dsa.getTagArgAsLong("m", 1, 0.0, &xOk);
-        int y = dsa.getTagArgAsLong("m", 2, 0.0, &yOk);
-
-        if (xOk)
-            constraint.srcAnchX = x;
-        if (yOk)
-            constraint.srcAnchY = y;
-
-        x = dsa.getTagArgAsLong("m", 3, 0.0, &xOk);
-        y = dsa.getTagArgAsLong("m", 4, 0.0, &yOk);
-
-        if (xOk)
-            constraint.destAnchX = x;
-        if (yOk)
-            constraint.destAnchY = y;
+        const char *arg0 = dsa.getTagArg("m", 0, buffer);
+        char ch = arg0[0];
+        if (ch == 'a') {
+            // legacy 'a' (auto) = both unconstrained (default)
+        }
+        else if (ch == 'm') {
+            // legacy manual mode: m=m,srcAnchX,srcAnchY,destAnchX,destAnchY
+            constraint.srcDir = 'm';
+            bool ok;
+            int v;
+            v = dsa.getTagArgAsLong("m", 1, 0.0, &ok); if (ok) constraint.srcAnchX = v;
+            v = dsa.getTagArgAsLong("m", 2, 0.0, &ok); if (ok) constraint.srcAnchY = v;
+            v = dsa.getTagArgAsLong("m", 3, 0.0, &ok); if (ok) constraint.destAnchX = v;
+            v = dsa.getTagArgAsLong("m", 4, 0.0, &ok); if (ok) constraint.destAnchY = v;
+        }
+        else {
+            if (strchr("newshv", ch))
+                constraint.srcDir = ch;
+            // arg 1 is dest direction (if present and a valid direction letter)
+            const char *arg1 = dsa.getTagArg("m", 1, buffer);
+            if (arg1[0] && strchr("newshv", arg1[0]))
+                constraint.destDir = arg1[0];
+        }
     }
 
     int bundle_i = 0, bundle_n = 1;
@@ -882,7 +898,16 @@ QPolygonF ModuleCanvasViewer::getConnectionLine(cGate *gate)
     QRectF ownerRect = getSubmodRect(owner);
     QRectF nextRect = getSubmodRect(nextOwner);
 
-    QPolygonF poly = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, constraint);
+    QPolygonF poly;
+    if (isReverseHalf) {
+        // Constraint was parsed from the forward half's channel (src=forward_src, dest=forward_dest).
+        // We call arrowcoords with forward direction, then reverse the polyline.
+        poly = arrowcoords(nextRect, ownerRect, bundle_i, bundle_n, constraint);
+        std::reverse(poly.begin(), poly.end());
+    }
+    else {
+        poly = arrowcoords(ownerRect, nextRect, bundle_i, bundle_n, constraint);
+    }
 
     // Handling degenerate connections (those crossing compound module boundaries without a gate).
     cModule *parent = owner->getParentModule();

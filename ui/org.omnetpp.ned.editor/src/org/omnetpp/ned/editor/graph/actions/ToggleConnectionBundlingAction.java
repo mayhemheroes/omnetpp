@@ -7,6 +7,7 @@
 
 package org.omnetpp.ned.editor.graph.actions;
 
+import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPart;
@@ -33,7 +34,17 @@ public class ToggleConnectionBundlingAction extends CompoundModuleAction {
         setImageDescriptor(IMAGE);
         setActionDefinitionId("org.omnetpp.ned.editor.graph.ToggleConnectionBundling");
         setAccelerator(SWT.CTRL | 'T');
-        setChecked(getSelectionCompoundModule() != null && getSelectionCompoundModule().isConnectionBundlingEnabled());
+    }
+
+    @Override
+    protected boolean calculateEnabled() {
+        CompoundModuleEditPart compoundModule = getSelectionCompoundModule();
+        if (compoundModule != null) {
+            setChecked(compoundModule.isConnectionBundlingEnabled());
+            return true;
+        }
+        setChecked(false);
+        return false;
     }
 
     @Override
@@ -43,6 +54,9 @@ public class ToggleConnectionBundlingAction extends CompoundModuleAction {
         compoundModule.setConnectionBundlingEnabled(newState);
         setChecked(newState);
         compoundModule.refresh();
+        // Refresh all connection edit parts so they recompute bundleIndex/bundleSize
+        for (ConnectionEditPart connPart : compoundModule.getModelToConnectionPartsRegistry().values())
+            connPart.refresh();
     }
 
 }

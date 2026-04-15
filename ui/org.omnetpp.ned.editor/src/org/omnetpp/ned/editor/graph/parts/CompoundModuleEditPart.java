@@ -338,21 +338,16 @@ public class CompoundModuleEditPart extends ModuleEditPart {
     }
 
     private int getRoutingConstraintPosition(String routingConstraint) {
-        int position;
-        if (routingConstraint == null || routingConstraint.equals("a"))
-            position = PositionConstants.NSEW;
-        else if (routingConstraint.equals("n"))
-            position = PositionConstants.NORTH;
-        else if (routingConstraint.equals("s"))
-            position = PositionConstants.SOUTH;
-        else if (routingConstraint.equals("e"))
-            position = PositionConstants.EAST;
-        else if (routingConstraint.equals("w"))
-            position = PositionConstants.WEST;
-        else
-            // default;
-            position = PositionConstants.NSEW;
-        return position;
+        if (routingConstraint == null || routingConstraint.isEmpty())
+            return PositionConstants.NSEW;
+        char ch = routingConstraint.charAt(0);
+        switch (ch) {
+            case 'n': return PositionConstants.NORTH;
+            case 's': return PositionConstants.SOUTH;
+            case 'e': return PositionConstants.EAST;
+            case 'w': return PositionConstants.WEST;
+            default:  return PositionConstants.NSEW; // 'a', 'm', or unknown
+        }
     }
 
     /**
@@ -434,9 +429,11 @@ public class CompoundModuleEditPart extends ModuleEditPart {
     public boolean isConnectionBundlingEnabled() {
         if (connectionBundlingEnabled == null) {
             try {
-                connectionBundlingEnabled = getSettings().getBoolean(getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_CONNECTION_BUNDLING);
+                String key = getModel().getNedTypeInfo().getFullyQualifiedName()+PREF_CONNECTION_BUNDLING;
+                // Default to true if no persisted setting exists
+                connectionBundlingEnabled = getSettings().get(key) != null ? getSettings().getBoolean(key) : true;
             } catch (Exception e) {
-                connectionBundlingEnabled = false;
+                connectionBundlingEnabled = true;
             }
         }
         return connectionBundlingEnabled;

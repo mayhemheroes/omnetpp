@@ -81,15 +81,9 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
 
         // Set routing constraint - the router will store it
         ConnectionRoutingConstraint routingConstraint = new ConnectionRoutingConstraint();
-        String modeStr = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
-        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
-            routingConstraint.mode = modeStr.charAt(0);
-        routingConstraint.srcAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCX, 50);
-        routingConstraint.srcAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCY, 50);
-        routingConstraint.destAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTX, 50);
-        routingConstraint.destAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTY, 50);
+        parseRoutingConstraint(connectionModel, routingConstraint);
 
-        // compute connection bundling: group connections by (srcModule, destModule, mode)
+        // compute connection bundling: group connections by (srcModule, destModule, srcDir)
         computeBundling(connectionModel, routingConstraint);
 
         // Set constraint in router BEFORE setting router on connection
@@ -210,15 +204,9 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
 
         // set routing constraint for the connection router (arrowcoords)
         ConnectionRoutingConstraint routingConstraint = new ConnectionRoutingConstraint();
-        String modeStr = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
-        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
-            routingConstraint.mode = modeStr.charAt(0);
-        routingConstraint.srcAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCX, 50);
-        routingConstraint.srcAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCY, 50);
-        routingConstraint.destAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTX, 50);
-        routingConstraint.destAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTY, 50);
+        parseRoutingConstraint(connectionModel, routingConstraint);
 
-        // compute connection bundling: group connections by (srcModule, destModule, mode)
+        // compute connection bundling: group connections by (srcModule, destModule, srcDir)
         computeBundling(connectionModel, routingConstraint);
 
         cfig.setRoutingConstraint(routingConstraint);
@@ -375,15 +363,15 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
                 compoundModel.getConnections(modB, null, modA, null);
 
         // Build ordered list of all connections between this module pair with
-        // the same routing mode. Each connection is one visual line.
+        // the same routing srcDir. Each connection is one visual line.
         // In NED, a <--> connection is a single model element (not two),
         // so no deduplication of reverse directions is needed.
         List<ConnectionElementEx> visualLines = new ArrayList<>();
         for (ConnectionElementEx conn : abConns)
-            if (getRoutingMode(conn) == constraint.mode)
+            if (getSrcDir(conn) == constraint.srcDir)
                 visualLines.add(conn);
         for (ConnectionElementEx conn : baConns)
-            if (getRoutingMode(conn) == constraint.mode)
+            if (getSrcDir(conn) == constraint.srcDir)
                 visualLines.add(conn);
 
         // find this connection's index
@@ -395,11 +383,39 @@ public class NedConnectionEditPart extends AbstractConnectionEditPart
         }
     }
 
-    private char getRoutingMode(ConnectionElementEx conn) {
-        String modeStr = conn.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
-        if (modeStr != null && modeStr.length() > 0 && "amnews".indexOf(modeStr.charAt(0)) >= 0)
-            return modeStr.charAt(0);
-        return 'a';
+    private char getSrcDir(ConnectionElementEx conn) {
+        String str = conn.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
+        if (str != null && str.length() > 0 && "newshv".indexOf(str.charAt(0)) >= 0)
+            return str.charAt(0);
+        return '\0';
+    }
+
+    private void parseRoutingConstraint(ConnectionElementEx connectionModel, ConnectionRoutingConstraint rc) {
+        String arg0 = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_CONSTRAINT);
+        char ch = (arg0 != null && arg0.length() > 0) ? arg0.charAt(0) : '\0';
+        if (ch == 'a') {
+            // legacy 'a' (auto) = both unconstrained (default)
+        }
+        else if (ch == 'm') {
+            // manual mode: m=m,srcAnchX,srcAnchY,destAnchX,destAnchY
+            rc.srcDir = 'm';
+            // m[1] is PropType.STRING (dual-purpose), so parse as string and convert
+            String srcAnchXStr = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_ANCHOR_SRCX);
+            if (srcAnchXStr != null && !srcAnchXStr.isEmpty()) {
+                try { rc.srcAnchX = Integer.parseInt(srcAnchXStr); } catch (NumberFormatException e) { }
+            }
+            rc.srcAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_SRCY, 50);
+            rc.destAnchX = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTX, 50);
+            rc.destAnchY = connectionModel.getDisplayString().getAsInt(IDisplayString.Prop.ROUTING_ANCHOR_DESTY, 50);
+        }
+        else {
+            if ("newshv".indexOf(ch) >= 0)
+                rc.srcDir = ch;
+            // arg 1 is dest direction (if present and a valid direction letter)
+            String arg1 = connectionModel.getDisplayString().getAsString(IDisplayString.Prop.ROUTING_ANCHOR_SRCX);
+            if (arg1 != null && arg1.length() > 0 && "newshv".indexOf(arg1.charAt(0)) >= 0)
+                rc.destDir = arg1.charAt(0);
+        }
     }
 
     public INedTypeElement getNedTypeElementToOpen() {
