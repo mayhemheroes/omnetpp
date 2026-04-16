@@ -1,0 +1,134 @@
+%description:
+Test opp_component_ptr resolveFromPar/resolveFromParOptional and
+resolveFromGate/resolveFromGateOptional utility methods.
+
+%file: test.ned
+simple Tester {
+    parameters:
+        string existing = default("target");
+        string nonexistent = default("nonexistent");
+        string blank = default("");
+        string selfModule = default("tester");
+    gates:
+        output out @loose;
+        input in @loose;
+        output unconnOut @loose;
+        output loopOut @loose;
+        input loopIn @loose;
+}
+
+simple Target {
+    gates:
+        input in @loose;
+        output out @loose;
+}
+
+network Test {
+    submodules:
+        tester: Tester;
+        target: Target;
+    connections:
+        tester.out --> target.in;
+        target.out --> tester.in;
+        tester.loopOut --> tester.loopIn;
+}
+
+%file: tester.cc
+#include <omnetpp.h>
+
+using namespace omnetpp;
+namespace @TESTNAME@ {
+
+class Target : public cSimpleModule { };
+Define_Module(Target);
+
+class Tester : public cSimpleModule
+{
+  public:
+    Tester() : cSimpleModule(16384) { }
+    void activity() override;
+};
+Define_Module(Tester);
+
+#define P(code) { opp_component_ptr<cModule> p; try { code; EV << #code << ": " << (p ? p->getFullPath() : "nullptr") << endl; } catch (std::exception& e) { EV << #code << ": ERROR: " << e.what() << endl; } }
+
+void Tester::activity()
+{
+    EV << "=== resolveFromPar ===" << endl;
+    P(p.resolveFromPar(this, "existing"))
+    P(p.resolveFromPar(this, "blank"))
+    P(p.resolveFromPar(this, "nonexistent"))
+
+    EV << "=== resolveFromParOptional ===" << endl;
+    P(p.resolveFromParOptional(this, "existing"))
+    P(p.resolveFromParOptional(this, "blank"))
+    P(p.resolveFromParOptional(this, "nonexistent"))
+
+    EV << "=== resolveFromGate ===" << endl;
+    P(p.resolveFromGate(gate("out")))
+    P(p.resolveFromGate(gate("in")))
+
+    EV << "=== resolveFromGateOptional ===" << endl;
+    P(p.resolveFromGateOptional(gate("out")))
+    P(p.resolveFromGateOptional(gate("in")))
+    P(p.resolveFromGateOptional(gate("out"), +1))
+    P(p.resolveFromGateOptional(gate("in"), -1))
+
+    EV << "=== resolveFromGateOptional on unconnected gate ===" << endl;
+    P(p.resolveFromGateOptional(gate("unconnOut")))
+    P(p.resolveFromGate(gate("unconnOut")))
+
+    EV << "=== type mismatch ===" << endl;
+    { opp_component_ptr<Target> p; try { p.resolveFromPar(this, "selfModule"); EV << "resolveFromPar type mismatch: " << (p ? p->getFullPath() : "nullptr") << endl; } catch (std::exception& e) { EV << "resolveFromPar type mismatch: ERROR: " << e.what() << endl; } }
+    { opp_component_ptr<Target> p; try { p.resolveFromGate(gate("loopOut")); EV << "resolveFromGate type mismatch: " << (p ? p->getFullPath() : "nullptr") << endl; } catch (std::exception& e) { EV << "resolveFromGate type mismatch: ERROR: " << e.what() << endl; } }
+
+    EV << "=== auto-null on deletion ===" << endl;
+    {
+        opp_component_ptr<cModule> p;
+        p.resolveFromPar(this, "existing");
+        EV << "before delete: " << (p ? p->getFullPath() : "nullptr") << endl;
+        getParentModule()->getSubmodule("target")->deleteModule();
+        EV << "after delete: " << (p ? "non-null" : "nullptr") << endl;
+    }
+
+    EV << "." << endl;
+}
+
+#undef P
+
+};
+
+%inifile: test.ini
+[General]
+network = Test
+cmdenv-express-mode = false
+
+%subst: /opp_component_ptr<.*>::/opp_component_ptr::/
+
+%contains: stdout
+=== resolveFromPar ===
+p.resolveFromPar(this, "existing"): Test.target
+p.resolveFromPar(this, "blank"): ERROR: opp_component_ptr::resolveFromPar(): parameter 'blank' of module '(opp_component_ptr_2::Tester)Test.tester' is empty
+p.resolveFromPar(this, "nonexistent"): ERROR: opp_component_ptr::resolveFromPar(): module 'nonexistent' not found, referenced by parameter 'nonexistent' of module '(opp_component_ptr_2::Tester)Test.tester'
+=== resolveFromParOptional ===
+p.resolveFromParOptional(this, "existing"): Test.target
+p.resolveFromParOptional(this, "blank"): nullptr
+p.resolveFromParOptional(this, "nonexistent"): ERROR: opp_component_ptr::resolveFromParOptional(): module 'nonexistent' not found, referenced by parameter 'nonexistent' of module '(opp_component_ptr_2::Tester)Test.tester'
+=== resolveFromGate ===
+p.resolveFromGate(gate("out")): Test.target
+p.resolveFromGate(gate("in")): Test.target
+=== resolveFromGateOptional ===
+p.resolveFromGateOptional(gate("out")): Test.target
+p.resolveFromGateOptional(gate("in")): Test.target
+p.resolveFromGateOptional(gate("out"), +1): Test.target
+p.resolveFromGateOptional(gate("in"), -1): Test.target
+=== resolveFromGateOptional on unconnected gate ===
+p.resolveFromGateOptional(gate("unconnOut")): nullptr
+p.resolveFromGate(gate("unconnOut")): ERROR: opp_component_ptr::resolveFromGate(): no module of type 'omnetpp::cModule' found along the connection path from gate 'Test.tester.unconnOut'
+=== type mismatch ===
+resolveFromPar type mismatch: ERROR: opp_component_ptr::resolveFromPar(): module '(opp_component_ptr_2::Tester)Test.tester' resolved from parameter 'selfModule' of module '(opp_component_ptr_2::Tester)Test.tester' cannot be cast to type 'opp_component_ptr_2::Target'
+resolveFromGate type mismatch: ERROR: opp_component_ptr::resolveFromGate(): no module of type 'opp_component_ptr_2::Target' found along the connection path from gate 'Test.tester.loopOut'
+=== auto-null on deletion ===
+before delete: Test.target
+after delete: nullptr
+.
