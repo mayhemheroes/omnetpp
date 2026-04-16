@@ -46,15 +46,15 @@ void SubmoduleItemUtil::setupFromDisplayString(SubmoduleItem *si, cModule *mod)
     std::string buffer; // stores getTagArg return values after substitution
     DisplayStringAccess dsa(&ds, mod);
 
-    bool widthOk, heightOk;
-    double shapeWidth = dsa.getTagArgAsDouble("b", 0, 0.0, &widthOk);
-    double shapeHeight = dsa.getTagArgAsDouble("b", 1, 0.0, &heightOk);
+    bool widthGiven, heightGiven;
+    double shapeWidth = dsa.getTagArgAsDouble("b", 0, 0.0, &widthGiven);
+    double shapeHeight = dsa.getTagArgAsDouble("b", 1, 0.0, &heightGiven);
 
-    if (!widthOk)
+    if (!widthGiven)
         shapeWidth = shapeHeight;
-    if (!heightOk)
+    if (!heightGiven)
         shapeHeight = shapeWidth;
-    if (!widthOk && !heightOk) {
+    if (!widthGiven && !heightGiven) {
         shapeWidth = 40;
         shapeHeight = 24;
     }
