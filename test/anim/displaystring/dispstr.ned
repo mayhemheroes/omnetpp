@@ -21,6 +21,8 @@ network DisplayStringTest
         displayStringOption : DisplayStringOption;
         arrangements: Arrangements;
         layoutGroup: LayoutGroup;
+        iconTransform: IconTransform;
+        connTransform: ConnTransform;
 }
 
 
