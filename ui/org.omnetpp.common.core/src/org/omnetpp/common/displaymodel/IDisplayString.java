@@ -129,7 +129,7 @@ public interface IDisplayString {
 
         // IT tag
         IMAGE_ROTATION(Tag.it, 0, PropType.COORDINATE, PropGroup.Icon, "icon rotation", "Rotation of the icon, in degrees (clockwise)", null),
-        IMAGE_FLIP(Tag.it, 1, PropType.STRING, PropGroup.Icon, "icon flip", "Flip the icon horizontally (h), vertically (v), or both (b)", "horizontal=h.*,h; vertical=v.*,v; both=b.*,b"),
+        IMAGE_FLIP(Tag.it, 1, PropType.STRING, PropGroup.Icon, "icon flip", "Flip the icon horizontally (h), vertically (v), or both (b)", "none=none|^$,; horizontal=h.*,h; vertical=v.*,v; both=b.*,b"),
         IMAGE_SCALE_X(Tag.it, 2, PropType.COORDINATE, PropGroup.Icon, "icon scale x", "Horizontal scaling factor for the icon", null),
         IMAGE_SCALE_Y(Tag.it, 3, PropType.COORDINATE, PropGroup.Icon, "icon scale y", "Vertical scaling factor for the icon", null),
 

@@ -194,6 +194,7 @@ public class PropertiesDialog extends TrayDialog {
     private TextFieldEditor layoutPar1Field;
     private TextFieldEditor layoutPar2Field;
     private TextFieldEditor layoutPar3Field;
+    private TextFieldEditor layoutGroupField;
     private TextFieldEditor shapeWidthField;
     private TextFieldEditor shapeHeightField;
     private ComboFieldEditor shapeField;
@@ -204,6 +205,10 @@ public class PropertiesDialog extends TrayDialog {
     private ColorFieldEditor imageColorField;
     private TextFieldEditor imageColorPercentageField;
     private ComboFieldEditor imageSizeField;
+    private TextFieldEditor imageRotationField;
+    private ComboFieldEditor imageFlipField;
+    private TextFieldEditor imageScaleXField;
+    private TextFieldEditor imageScaleYField;
     private ImageFieldEditor image2Field;
     private ColorFieldEditor image2ColorField;
     private TextFieldEditor image2ColorPercentageField;
@@ -754,20 +759,25 @@ public class PropertiesDialog extends TrayDialog {
         createLabel(comp, "Fill color:", true);
         rangeFillColorField = createColorSelector(comp);
 
-        group = createGroup(page, "Module Vector", 8);
-        createLabel(group, "Arrangement:", false);
-        layoutField = createCombo(group, IDisplayString.Prop.LAYOUT.getEnumSpec().getNames());
-        layoutPar1Label = createLabel(group, "", true);  // temporary labels
-        layoutPar1Field = createText(group, 5);
-        layoutPar2Label = createLabel(group, "", true);
-        layoutPar2Field = createText(group, 5);
-        layoutPar3Label = createLabel(group, "", true);
-        layoutPar3Field = createText(group, 5);
+        group = createGroup(page, "Layout", 1);
+        comp = createComposite(group, 10);
+        createLabel(comp, "Group:", false);
+        layoutGroupField = createText(comp, 10);
+        createLabel(comp, "Arrangement:", true);
+        layoutField = createCombo(comp, IDisplayString.Prop.LAYOUT.getEnumSpec().getNames(), 20);
+        layoutPar1Label = createLabel(comp, "", true);  // temporary labels
+        layoutPar1Field = createText(comp, 5);
+        layoutPar2Label = createLabel(comp, "", true);
+        layoutPar2Field = createText(comp, 5);
+        layoutPar3Label = createLabel(comp, "", true);
+        layoutPar3Field = createText(comp, 5);
         layoutField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 updateLayoutParLabels();
             }
         });
+        comp = createComposite(group, 2);
+        createWrappingLabel(group, "Note: Submodules with the same group are arranged together. Vector submodules are implicitly in their own group.", false, 1);
 
         String parentType = ((SubmoduleElementEx) elements[0]).getCompoundModule().isNetwork() ? "network" : "compound module";
         createWrappingLabel(page, "Note: Coordinates and sizes are understood in the " + parentType + "'s units, not pixels.", false, 1);
@@ -794,6 +804,18 @@ public class PropertiesDialog extends TrayDialog {
             imageColorField = createColorSelector(comp);
             imageColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
+
+            // IT tag
+            comp = createComposite(group, 9);
+            createLabel(comp, "Rotation:", false);
+            imageRotationField = createText(comp, 5);
+            createLabel(comp, "\u00B0", false);
+            createLabel(comp, "Flip:", true);
+            imageFlipField = createCombo(comp, IDisplayString.Prop.IMAGE_FLIP.getEnumSpec().getNames());
+            createLabel(comp, "Scale:", true);
+            imageScaleXField = createText(comp, 5);
+            createLabel(comp, "\u00D7", false);
+            imageScaleYField = createText(comp, 5);
 
             group = createGroup(page, "Decorations", 1);
 
@@ -837,6 +859,18 @@ public class PropertiesDialog extends TrayDialog {
             imageColorField = createColorSelector(comp);
             imageColorPercentageField = createText(comp, 5);
             createLabel(comp, "%", false);
+
+            // IT tag
+            comp = createComposite(group, 9);
+            createLabel(comp, "Rotation:", false);
+            imageRotationField = createText(comp, 5);
+            createLabel(comp, "\u00B0", false);
+            createLabel(comp, "Flip:", true);
+            imageFlipField = createCombo(comp, IDisplayString.Prop.IMAGE_FLIP.getEnumSpec().getNames());
+            createLabel(comp, "Scale:", true);
+            imageScaleXField = createText(comp, 5);
+            createLabel(comp, "\u00D7", false);
+            imageScaleYField = createText(comp, 5);
 
             group = createGroup(page, "Shape", 1);
 
@@ -1381,6 +1415,9 @@ public class PropertiesDialog extends TrayDialog {
         populateField(layoutPar2Field, IDisplayString.Prop.LAYOUT_PAR2);
         populateField(layoutPar3Field, IDisplayString.Prop.LAYOUT_PAR3);
 
+        // G tag
+        populateField(layoutGroupField, IDisplayString.Prop.LAYOUT_GROUP);
+
         // B tag
         populateField(shapeField, IDisplayString.Prop.SHAPE);
         populateField(shapeWidthField, IDisplayString.Prop.SHAPE_WIDTH);
@@ -1402,6 +1439,12 @@ public class PropertiesDialog extends TrayDialog {
 
         // IS tag
         populateField(imageSizeField, IDisplayString.Prop.IMAGE_SIZE);
+
+        // IT tag
+        populateField(imageRotationField, IDisplayString.Prop.IMAGE_ROTATION);
+        populateField(imageFlipField, IDisplayString.Prop.IMAGE_FLIP);
+        populateField(imageScaleXField, IDisplayString.Prop.IMAGE_SCALE_X);
+        populateField(imageScaleYField, IDisplayString.Prop.IMAGE_SCALE_Y);
 
         // I2 tag
         populateField(image2Field, IDisplayString.Prop.IMAGE2);
@@ -1667,18 +1710,16 @@ public class PropertiesDialog extends TrayDialog {
             updateConnectionEndpoint(true, connSrcModuleField, connSrcModuleIndexField, connSrcGateField, connSrcGateIndexField);
             updateConnectionEndpoint(false, connDestModuleField, connDestModuleIndexField, connDestGateField, connDestGateIndexField);
         }
-        if (vectorSizeField != null) {
-            boolean isVector = vectorSizeField.getText().trim().length() > 0;
-            layoutField.setEnabled(isVector);
-            layoutPar1Field.setEnabled(isVector);
-            layoutPar2Field.setEnabled(isVector);
-            layoutPar3Field.setEnabled(isVector);
-        }
+
         if (imageField != null) {
             boolean hasImage = imageField.getText().trim().length() > 0;
             imageSizeField.setEnabled(hasImage);
             imageColorPercentageField.setEnabled(hasImage);
             imageColorField.setEnabled(hasImage);
+            imageRotationField.setEnabled(hasImage);
+            imageFlipField.setEnabled(hasImage);
+            imageScaleXField.setEnabled(hasImage);
+            imageScaleYField.setEnabled(hasImage);
         }
         if (image2Field != null) {
             boolean hasImage2 = image2Field.getText().trim().length() > 0;
@@ -1892,6 +1933,9 @@ public class PropertiesDialog extends TrayDialog {
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.LAYOUT_PAR2, layoutPar2Field);
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.LAYOUT_PAR3, layoutPar3Field);
 
+        // G tag
+        updatePreviewDisplayProperty(displayString, IDisplayString.Prop.LAYOUT_GROUP, layoutGroupField);
+
         // B tag
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.SHAPE, shapeField);
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.SHAPE_WIDTH, shapeWidthField);
@@ -1907,6 +1951,12 @@ public class PropertiesDialog extends TrayDialog {
 
         // IS tag
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE_SIZE, imageSizeField);
+
+        // IT tag
+        updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE_ROTATION, imageRotationField);
+        updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE_FLIP, imageFlipField);
+        updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE_SCALE_X, imageScaleXField);
+        updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE_SCALE_Y, imageScaleYField);
 
         // I2 tag
         updatePreviewDisplayProperty(displayString, IDisplayString.Prop.IMAGE2, image2Field);
@@ -2076,6 +2126,9 @@ public class PropertiesDialog extends TrayDialog {
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.LAYOUT_PAR2, layoutPar2Field);
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.LAYOUT_PAR3, layoutPar3Field);
 
+        // G tag
+        addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.LAYOUT_GROUP, layoutGroupField);
+
         // B tag
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.SHAPE, shapeField);
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.SHAPE_WIDTH, shapeWidthField);
@@ -2091,6 +2144,12 @@ public class PropertiesDialog extends TrayDialog {
 
         // IS tag
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE_SIZE, imageSizeField);
+
+        // IT tag
+        addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE_ROTATION, imageRotationField);
+        addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE_FLIP, imageFlipField);
+        addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE_SCALE_X, imageScaleXField);
+        addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE_SCALE_Y, imageScaleYField);
 
         // I2 tag
         addDisplayPropertyChangeCommands(compoundCommand, IDisplayString.Prop.IMAGE2, image2Field);
@@ -2306,6 +2365,10 @@ public class PropertiesDialog extends TrayDialog {
         validateColorField(errors, "Image tint color", imageColorField);
         validateIntegerField(errors, "Image color percentage", imageColorPercentageField);
         validateComboField(errors, "Image size", imageSizeField);
+        validateNumericField(errors, "Icon rotation", imageRotationField);
+        validateComboField(errors, "Icon flip", imageFlipField);
+        validateNumericField(errors, "Icon scale X", imageScaleXField);
+        validateNumericField(errors, "Icon scale Y", imageScaleYField);
         validateImageField(errors, "Status image", image2Field);
         validateColorField(errors, "Status image tint color", image2ColorField);
         validateIntegerField(errors, "Status image tint percentage", image2ColorPercentageField);
