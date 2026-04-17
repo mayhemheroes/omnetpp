@@ -165,7 +165,7 @@ class SIM_API cComponent : public cSoftOwner //implies noncopyable
     virtual void setLogLevel(LogLevel logLevel);
 
     // internal: invoked from the RNG manager
-    virtual void setRNGMap(short size, int *map) {rngMapSize=size; rngMap=map;}
+    virtual void setRngMap(short size, int *map) {rngMapSize=size; rngMap=map;}
 
     // internal: sets associated cComponentType for the component;
     // called as part of the creation process.
@@ -600,13 +600,13 @@ class SIM_API cComponent : public cSoftOwner //implies noncopyable
     /**
      * Returns the number of RNGs available for this component.
      */
-    virtual int getNumRNGs() const;
+    virtual int getNumRNGs() const;  //TODO rename to getNumRngs(), with delegating compat method
 
     /**
      * Returns the RNG mapped to local RNG number k, where k must be between
      * 0 and getNumRNGs()-1.
      */
-    virtual cRNG *getRNG(int k) const;
+    virtual cRNG *getRNG(int k) const; //TODO rename to getRng(), with delegating compat method
 
     /**
      * Produces a random integer in the range [0,r) using the RNG given with its index.

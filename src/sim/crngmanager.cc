@@ -134,7 +134,7 @@ void cRngManager::configureRngs(cComponent *component)
     if (mapsize > 0) {
         int *map = new int[mapsize];
         memcpy(map, tmpmap, mapsize*sizeof(int));
-        component->setRNGMap(mapsize, map);
+        component->setRngMap(mapsize, map);
     }
 }
 
