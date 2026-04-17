@@ -80,10 +80,11 @@ void cStdDev::parsimUnpack(cCommBuffer *buffer)
     buffer->unpack(minValue);
     buffer->unpack(maxValue);
     buffer->unpack(numValues);
-    buffer->unpack(sumWeights);
-    buffer->unpack(sumWeightedValues);
-    buffer->unpack(sumSquaredWeights);
-    buffer->unpack(sumWeightedSquaredValues);
+    double tmp;
+    buffer->unpack(tmp); sumWeights = tmp;
+    buffer->unpack(tmp); sumWeightedValues = tmp;
+    buffer->unpack(tmp); sumSquaredWeights = tmp;
+    buffer->unpack(tmp); sumWeightedSquaredValues = tmp;
 }
 
 void cStdDev::copy(const cStdDev& res)
@@ -236,33 +237,34 @@ void cStdDev::saveToFile(FILE *f) const
     fprintf(f, "%lg %lg\t #= min, max\n", minValue, maxValue);
     fprintf(f, "%d\t #= weighted\n", weighted);
     if (!weighted) {
-        fprintf(f, "%lg\t #= sum\n", sumWeightedValues);
-        fprintf(f, "%lg\t #= sum_squared_vals\n", sumWeightedSquaredValues);
+        fprintf(f, "%lg\t #= sum\n", (double)sumWeightedValues);
+        fprintf(f, "%lg\t #= sum_squared_vals\n", (double)sumWeightedSquaredValues);
     }
     else {
-        fprintf(f, "%lg\t #= sum_weights", sumWeights);
-        fprintf(f, "%lg\t #= sum_weighted_vals", sumWeightedValues);
-        fprintf(f, "%lg\t #= sum_squared_weights", sumSquaredWeights);
-        fprintf(f, "%lg\t #= sum_weighted_squared_vals", sumWeightedSquaredValues);
+        fprintf(f, "%lg\t #= sum_weights", (double)sumWeights);
+        fprintf(f, "%lg\t #= sum_weighted_vals", (double)sumWeightedValues);
+        fprintf(f, "%lg\t #= sum_squared_weights", (double)sumSquaredWeights);
+        fprintf(f, "%lg\t #= sum_weighted_squared_vals", (double)sumWeightedSquaredValues);
     }
 }
 
 void cStdDev::loadFromFile(FILE *f)
 {
-    int tmp;
+    int itmp;
     freadvarsf(f, "%" PRId64 "\t #= num_vals", &numValues);
     freadvarsf(f, "%lg %lg\t #= min, max", &minValue, &maxValue);
-    freadvarsf(f, "%d\t #= weighted", &tmp); weighted = tmp;
+    freadvarsf(f, "%d\t #= weighted", &itmp); weighted = itmp;
+    double tmp;
     if (!weighted) {
-        freadvarsf(f, "%lg\t #= sum", &sumWeightedValues);
-        freadvarsf(f, "%lg\t #= sum_squared_vals", &sumWeightedSquaredValues);
+        freadvarsf(f, "%lg\t #= sum", &tmp); sumWeightedValues = tmp;
+        freadvarsf(f, "%lg\t #= sum_squared_vals", &tmp); sumWeightedSquaredValues = tmp;
         sumWeights = sumSquaredWeights = numValues;
     }
     else {
-        freadvarsf(f, "%lg\t #= sum_weights", &sumWeights);
-        freadvarsf(f, "%lg\t #= sum_weighted_vals", &sumWeightedValues);
-        freadvarsf(f, "%lg\t #= sum_squared_weights", &sumSquaredWeights);
-        freadvarsf(f, "%lg\t #= sum_weighted_squared_vals", &sumWeightedSquaredValues);
+        freadvarsf(f, "%lg\t #= sum_weights", &tmp); sumWeights = tmp;
+        freadvarsf(f, "%lg\t #= sum_weighted_vals", &tmp); sumWeightedValues = tmp;
+        freadvarsf(f, "%lg\t #= sum_squared_weights", &tmp); sumSquaredWeights = tmp;
+        freadvarsf(f, "%lg\t #= sum_weighted_squared_vals", &tmp); sumWeightedSquaredValues = tmp;
     }
 }
 

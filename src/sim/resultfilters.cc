@@ -405,7 +405,7 @@ double MeanFilter::getMean() const
     }
     else {
         simtime_t tmpTotalTime = totalTime;
-        double tmpWeightedSum = weightedSum;
+        statsum_t tmpWeightedSum = weightedSum;
 
         if (!std::isnan(lastValue)) {
             simtime_t t = getSimulation()->getSimTime();
@@ -508,7 +508,7 @@ bool TimeAverageFilter::process(simtime_t& t, double& value, cObject *details)
 double TimeAverageFilter::getTimeAverage() const
 {
     simtime_t tmpTotalTime = totalTime;
-    double tmpWeightedSum = weightedSum;
+    statsum_t tmpWeightedSum = weightedSum;
 
     if (!std::isnan(lastValue)) {
         simtime_t t = getSimulation()->getSimTime();

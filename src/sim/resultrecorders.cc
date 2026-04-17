@@ -275,7 +275,7 @@ double MeanRecorder::getMean() const
     }
     else {
         simtime_t tmpTotalTime = totalTime;
-        double tmpWeightedSum = weightedSum;
+        statsum_t tmpWeightedSum = weightedSum;
 
         if (!std::isnan(lastValue)) {
             simtime_t t = getSimulation()->getSimTime();
@@ -377,7 +377,7 @@ void TimeAverageRecorder::collect(simtime_t_cref t, double value, cObject *detai
 double TimeAverageRecorder::getTimeAverage() const
 {
     simtime_t tmpTotalTime = totalTime;
-    double tmpWeightedSum = weightedSum;
+    statsum_t tmpWeightedSum = weightedSum;
 
     if (!std::isnan(lastValue)) {
         simtime_t t = getSimulation()->getSimTime();

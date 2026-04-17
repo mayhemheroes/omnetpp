@@ -80,10 +80,11 @@ void cPrecollectionBasedDensityEst::parsimUnpack(cCommBuffer *buffer)
     buffer->unpack(numFiniteOverflows);
     buffer->unpack(numNegInfs);
     buffer->unpack(numPosInfs);
-    buffer->unpack(finiteUnderflowSumWeights);
-    buffer->unpack(finiteOverflowSumWeights);
-    buffer->unpack(negInfSumWeights);
-    buffer->unpack(posInfSumWeights);
+    double dtmp;
+    buffer->unpack(dtmp); finiteUnderflowSumWeights = dtmp;
+    buffer->unpack(dtmp); finiteOverflowSumWeights = dtmp;
+    buffer->unpack(dtmp); negInfSumWeights = dtmp;
+    buffer->unpack(dtmp); posInfSumWeights = dtmp;
     buffer->unpack(rangeExtFactor);
     int tmp;
     buffer->unpack(tmp);
@@ -413,8 +414,8 @@ void cPrecollectionBasedDensityEst::saveToFile(FILE *f) const
     fprintf(f, "%lg %g\t #= range\n", rangeMin, rangeMax);
     fprintf(f, "%" PRId64 " %" PRId64 "\t #= cell_under, cell_over\n", numFiniteUnderflows, numFiniteOverflows);
     fprintf(f, "%" PRId64 " %" PRId64 "\t #= num_neg_infs, num_pos_infs\n", numNegInfs, numPosInfs);
-    fprintf(f, "%lg %lg\t #= sum_weights_underflow, sum_weights_overflow\n", finiteUnderflowSumWeights, finiteOverflowSumWeights);
-    fprintf(f, "%lg %lg\t #= sum_weights_neg_inf, sum_weights_pos_inf\n", negInfSumWeights, posInfSumWeights);
+    fprintf(f, "%lg %lg\t #= sum_weights_underflow, sum_weights_overflow\n", (double)finiteUnderflowSumWeights, (double)finiteOverflowSumWeights);
+    fprintf(f, "%lg %lg\t #= sum_weights_neg_inf, sum_weights_pos_inf\n", (double)negInfSumWeights, (double)posInfSumWeights);
     fprintf(f, "%d\t #= num_firstvals\n", numPrecollected);
 
     fprintf(f, "%d\t #= firstvals[] exists\n", precollectedValues != nullptr);
@@ -442,8 +443,11 @@ void cPrecollectionBasedDensityEst::loadFromFile(FILE *f)
     freadvarsf(f, "%lg %lg\t #= range", &rangeMin, &rangeMax);
     freadvarsf(f, "%" PRId64 " %" PRId64 "\t #= cell_under, cell_over", &numFiniteUnderflows, &numFiniteOverflows);
     freadvarsf(f, "%" PRId64 " %" PRId64 "\t #= num_neg_infs, num_pos_infs", &numNegInfs, &numPosInfs);
-    freadvarsf(f, "%lg %lg\t #= sum_weights_underflow, sum_weights_overflow", &finiteUnderflowSumWeights, &finiteOverflowSumWeights);
-    freadvarsf(f, "%lg %lg\t #= sum_weights_neg_inf, sum_weights_pos_inf", &negInfSumWeights, &posInfSumWeights);
+    double dtmp2, dtmp3;
+    freadvarsf(f, "%lg %lg\t #= sum_weights_underflow, sum_weights_overflow", &dtmp2, &dtmp3);
+    finiteUnderflowSumWeights = dtmp2; finiteOverflowSumWeights = dtmp3;
+    freadvarsf(f, "%lg %lg\t #= sum_weights_neg_inf, sum_weights_pos_inf", &dtmp2, &dtmp3);
+    negInfSumWeights = dtmp2; posInfSumWeights = dtmp3;
     freadvarsf(f, "%d\t #= num_firstvals", &numPrecollected);
 
     int hasPrecollectedValues;

@@ -17,6 +17,7 @@
 #define __OMNETPP_CPRECOLLDENSITYEST_H
 
 #include "cabstracthistogram.h"
+#include "statsum_t.h"
 
 namespace omnetpp {
 
@@ -84,10 +85,10 @@ class SIM_API cPrecollectionBasedDensityEst : public cAbstractHistogram
     int64_t numFiniteOverflows = 0;
     int64_t numNegInfs = 0;
     int64_t numPosInfs = 0;
-    double finiteUnderflowSumWeights = 0;
-    double finiteOverflowSumWeights = 0;
-    double negInfSumWeights = 0;
-    double posInfSumWeights = 0;
+    statsum_t finiteUnderflowSumWeights = 0;
+    statsum_t finiteOverflowSumWeights = 0;
+    statsum_t negInfSumWeights = 0;
+    statsum_t posInfSumWeights = 0;
 
   private:
     void copy(const cPrecollectionBasedDensityEst& other);

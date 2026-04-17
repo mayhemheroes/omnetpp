@@ -18,6 +18,7 @@
 
 #include <cmath>  // INFINITY, NAN
 #include "omnetpp/simkerneldefs.h"
+#include "omnetpp/statsum_t.h"
 #include "omnetpp/cresultfilter.h"
 #include "omnetpp/csimulation.h"
 #include "omnetpp/cstatistic.h"
@@ -249,7 +250,7 @@ class SIM_API CountNanFilter : public cNumericResultFilter
 class SIM_API SumFilter : public cNumericResultFilter
 {
     protected:
-        double sum;
+        statsum_t sum;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
     public:
@@ -271,7 +272,7 @@ class SIM_API MeanFilter : public cNumericResultFilter
         intval_t count = 0;
         double lastValue = NAN;
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
@@ -323,7 +324,7 @@ class SIM_API AverageFilter : public cNumericResultFilter
 {
     protected:
         intval_t count;
-        double sum;
+        statsum_t sum;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
     public:
@@ -348,7 +349,7 @@ class SIM_API TimeAverageFilter : public cNumericResultFilter
     protected:
         double lastValue = NAN;
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
@@ -383,7 +384,7 @@ class SIM_API RateAverageFilter : public cNumericResultFilter
 {
     protected:
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
@@ -439,7 +440,7 @@ class SIM_API PacketBitsFilter : public cObjectResultFilter
 class SIM_API SumPerDurationFilter : public cNumericResultFilter
 {
     protected:
-        double sum;
+        statsum_t sum;
     protected:
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
     public:

@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstdint>
 #include "commondefs.h"
+#include "statsum_t.h"
 
 namespace omnetpp {
 namespace common {
@@ -33,10 +34,10 @@ class COMMON_API Statistics
         double minValue;
         double maxValue;
         int64_t count; // the actual count of observations, independent of their weights
-        double sumWeights;  // equals count in the unweighted case
-        double sumWeightedValues; // sum in the unweighted case
-        double sumSquaredWeights; // equals count in the unweighted case
-        double sumWeightedSquaredValues; // sum of squared values in the unweighted case
+        statsum_t sumWeights;  // equals count in the unweighted case
+        statsum_t sumWeightedValues; // sum in the unweighted case
+        statsum_t sumSquaredWeights; // equals count in the unweighted case
+        statsum_t sumWeightedSquaredValues; // sum of squared values in the unweighted case
 
     private:
         void assertUnweighted() const;

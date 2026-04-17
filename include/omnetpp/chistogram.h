@@ -18,6 +18,7 @@
 
 #include <climits>
 #include "cabstracthistogram.h"
+#include "statsum_t.h"
 
 namespace omnetpp {
 
@@ -99,8 +100,8 @@ class SIM_API cHistogram : public cAbstractHistogram
 
     std::vector<double> binEdges;
     std::vector<double> binValues; // one less than bin edges
-    double finiteUnderflowSumWeights = 0, finiteOverflowSumWeights = 0;
-    double posInfSumWeights = 0, negInfSumWeights = 0;
+    statsum_t finiteUnderflowSumWeights = 0, finiteOverflowSumWeights = 0;
+    statsum_t posInfSumWeights = 0, negInfSumWeights = 0;
 
   public:
     // INTERNAL, only for cIHistogramSetupStrategy implementations.

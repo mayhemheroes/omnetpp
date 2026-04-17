@@ -18,6 +18,7 @@
 
 #include <cmath>  // INFINITY, NAN
 #include "omnetpp/cresultrecorder.h"
+#include "omnetpp/statsum_t.h"
 
 namespace omnetpp {
 
@@ -119,7 +120,7 @@ class SIM_API ErrorNanRecorder : public cNumericResultRecorder
 class SIM_API SumRecorder : public cNumericResultRecorder
 {
     protected:
-        double sum;
+        statsum_t sum;
     protected:
         virtual void collect(simtime_t_cref t, double value, cObject *details) override;
         virtual void finish(cResultFilter *prev) override;
@@ -141,7 +142,7 @@ class SIM_API MeanRecorder : public cNumericResultRecorder
         long count = 0;
         double lastValue = NAN;
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual void init(Context *ctx) override;
@@ -195,7 +196,7 @@ class SIM_API AverageRecorder : public cNumericResultRecorder
 {
     protected:
         long count;
-        double sum;
+        statsum_t sum;
     protected:
         virtual void collect(simtime_t_cref t, double value, cObject *details) override;
         virtual void finish(cResultFilter *prev) override;
@@ -221,7 +222,7 @@ class SIM_API TimeAverageRecorder : public cNumericResultRecorder
     protected:
         double lastValue = NAN;
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual void collect(simtime_t_cref t, double value, cObject *details) override;
@@ -251,7 +252,7 @@ class SIM_API RateAverageRecorder : public cNumericResultRecorder
 {
     protected:
         simtime_t lastTime = SIMTIME_ZERO;
-        double weightedSum = 0;
+        statsum_t weightedSum = 0;
         simtime_t totalTime = SIMTIME_ZERO;
     protected:
         virtual void collect(simtime_t_cref t, double value, cObject *details) override;

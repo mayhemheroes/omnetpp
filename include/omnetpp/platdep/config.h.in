@@ -12,6 +12,7 @@
 #undef WITH_AKAROA
 #undef WITH_SYSTEMC
 #undef WITH_PYTHON
+#undef WITH_NEUMAIER_SUMMATION
 
 
 // Detected properties of the platform:

@@ -134,10 +134,11 @@ void cHistogram::parsimUnpack(cCommBuffer *buffer)
     for (size_t i = 0; i < n; n++)
         buffer->unpack(binValues[i]);
 
-    buffer->unpack(finiteUnderflowSumWeights);
-    buffer->unpack(finiteOverflowSumWeights);
-    buffer->unpack(negInfSumWeights);
-    buffer->unpack(posInfSumWeights);
+    double tmp;
+    buffer->unpack(tmp); finiteUnderflowSumWeights = tmp;
+    buffer->unpack(tmp); finiteOverflowSumWeights = tmp;
+    buffer->unpack(tmp); negInfSumWeights = tmp;
+    buffer->unpack(tmp); posInfSumWeights = tmp;
 
     if (buffer->checkFlag())
         setStrategy((cIHistogramStrategy *)buffer->unpackObject());
@@ -228,10 +229,10 @@ void cHistogram::saveToFile(FILE *f) const
 
     cAbstractHistogram::saveToFile(f);
 
-    fprintf(f, "%g\t #= underflow\n", finiteUnderflowSumWeights);
-    fprintf(f, "%g\t #= overflow\n", finiteOverflowSumWeights);
-    fprintf(f, "%g\t #= neg_inf\n", negInfSumWeights);
-    fprintf(f, "%g\t #= pos_inf\n", posInfSumWeights);
+    fprintf(f, "%g\t #= underflow\n", (double)finiteUnderflowSumWeights);
+    fprintf(f, "%g\t #= overflow\n", (double)finiteOverflowSumWeights);
+    fprintf(f, "%g\t #= neg_inf\n", (double)negInfSumWeights);
+    fprintf(f, "%g\t #= pos_inf\n", (double)posInfSumWeights);
 
     fprintf(f, "%d\t #= num_bins\n", getNumBins());
 
@@ -255,10 +256,11 @@ void cHistogram::loadFromFile(FILE *f)
 
     cAbstractHistogram::loadFromFile(f);
 
-    freadvarsf(f, "%lg\t #= underflow", &finiteUnderflowSumWeights);
-    freadvarsf(f, "%lg\t #= overflow", &finiteOverflowSumWeights);
-    freadvarsf(f, "%lg\t #= neg_inf", &negInfSumWeights);
-    freadvarsf(f, "%lg\t #= pos_inf", &posInfSumWeights);
+    double tmp2;
+    freadvarsf(f, "%lg\t #= underflow", &tmp2); finiteUnderflowSumWeights = tmp2;
+    freadvarsf(f, "%lg\t #= overflow", &tmp2); finiteOverflowSumWeights = tmp2;
+    freadvarsf(f, "%lg\t #= neg_inf", &tmp2); negInfSumWeights = tmp2;
+    freadvarsf(f, "%lg\t #= pos_inf", &tmp2); posInfSumWeights = tmp2;
 
     int numBins;
     freadvarsf(f, "%d\t #= num_bins", &numBins);
