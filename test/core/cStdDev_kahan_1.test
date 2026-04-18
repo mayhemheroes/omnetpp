@@ -1,0 +1,35 @@
+%description:
+Test that cStdDev handles numbers of different magnitudes better than
+plain IEEE doubles, due to Niemaier summation.
+
+%global:
+
+void printStats(const std::vector<double>& arr)
+{
+    cStdDev sd;
+    for (double d : arr)
+        sd.collect(d);
+    EV << "sum=" << sd.getSum() << std::endl;
+}
+
+#define P(arr)   {EV << #arr << " --> "; printStats(arr);}
+#define PA(...)  {EV << "[" #__VA_ARGS__ "]" << " --> "; printStats(std::vector<double>({__VA_ARGS__}));}
+
+%activity:
+PA(1,2,3,4,5);
+PA(1e18, 1, -1e18);  // summation in doubles -> 0, correct: 1
+PA(1e18, 1, -1e18, 1);  // summation in doubles -> 1, correct: 2
+
+EV << "." << endl;
+
+%subst: /-?1\.#INF/inf/
+%subst: /-?1\.#IND/nan/
+%subst: /-?1\.#QNAN/nan/
+%subst: /-?NaN/nan/
+%subst: /-?nan/nan/
+
+%contains: stdout
+[1,2,3,4,5] --> sum=15
+[1e18, 1, -1e18] --> sum=1
+[1e18, 1, -1e18, 1] --> sum=2
+.

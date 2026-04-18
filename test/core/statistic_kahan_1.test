@@ -1,0 +1,61 @@
+%description:
+Test that summing in signal filters/recorders handles numbers of different magnitudes
+better than plain IEEE doubles, due to Niemaier summation.
+
+%file: test.msg
+
+namespace @TESTNAME@;
+
+class Foo extends cObject {}
+
+%file: test.ned
+
+simple Test extends testlib.SignalSource
+{
+    @isNetwork(true);
+
+    @signal[x](type="double");
+    @signal[xp](type="double"); // time shifted by 1s, because rateavg uses backward-sample-hold (unlike timeavg)
+
+    @statistic[x](record=sum,mean,avg,timeavg,last(sum),last(mean),last(avg),last(timeavg),last(sumPerDuration));
+    @statistic[xp](record=rateavg,last(rateavg));
+
+    script = xml("<root>\
+       <e at='0' name='x' type='double' value='1e18'/> \
+       <e at='1' name='x' type='double' value='3'/> \
+       <e at='2' name='x' type='double' value='-1e18'/> \
+       <e at='1' name='xp' type='double' value='1e18'/> \
+       <e at='2' name='xp' type='double' value='3'/> \
+       <e at='3' name='xp' type='double' value='-1e18'/> \
+    </root>");
+}
+
+%inifile: omnetpp.ini
+network = Test
+cmdenv-express-mode = false
+sim-time-limit = 3s
+
+%contains: results/General-#0.sca
+scalar Test xp:rateavg 1
+attr recordingmode rateavg
+scalar Test xp:last(rateavg) 1
+attr recordingmode last(rateavg)
+scalar Test x:sum 3
+attr recordingmode sum
+scalar Test x:mean 1
+attr recordingmode mean
+scalar Test x:avg 1
+attr recordingmode avg
+scalar Test x:timeavg 1
+attr recordingmode timeavg
+scalar Test x:last(sum) 3
+attr recordingmode last(sum)
+scalar Test x:last(mean) 1
+attr recordingmode last(mean)
+scalar Test x:last(avg) 1
+attr recordingmode last(avg)
+scalar Test x:last(timeavg) 1
+attr recordingmode last(timeavg)
+scalar Test x:last(sumPerDuration) 1
+attr recordingmode last(sumPerDuration)
+
