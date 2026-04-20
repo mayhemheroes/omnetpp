@@ -31,6 +31,7 @@ import traceback
 import unittest
 from io import StringIO
 
+oppErrorCodeMax = 10
 rootDir = os.path.abspath(".")  # the working directory in the CSV file is relative to this dir
 cpuTimeLimit = "30000s"
 logFile = "test.out"
@@ -276,26 +277,58 @@ class SimulationTestCase(unittest.TestCase):
         # process error messages
         errorLines = re.findall("<!>.*", out, re.M)
         errorMsg = ""
+        isFingerprintPass = False
+        isFingerprintFail = False
+        wasError = False
+        result.exitcode = 0
+
         for err in errorLines:
             err = err.strip()
             if re.search("Fingerprint", err):
-                if re.search("successfully", err):
+                if re.search("Fingerprint successfully", err):
+                    isFingerprintPass = True
                     result.isFingerprintOK = True
                 else:
                     m = re.search("(computed|calculated): ([-a-zA-Z0-9]+(/[a-z0]+)?)", err)
                     if m:
+                        isFingerprintFail = True
                         result.isFingerprintOK = False
                         result.computedFingerprint = m.group(2)
                     else:
                         raise Exception("Cannot parse fingerprint-related error message: " + err)
+            elif re.search("Simulation time limit reached", err):
+                pass
             else:
                 errorMsg += "\n" + err
+                wasError = True
                 if re.search("CPU time limit reached", err):
                     result.cpuTimeLimitReached = True
                 m = re.search(r"at t=([0-9]*(\.[0-9]+)?)s, event #([0-9]+)", err)
                 if m:
                     result.simulatedTime = float(m.group(1))
                     result.numEvents = int(m.group(3))
+
+        if exitcode > oppErrorCodeMax: # smallest system error code
+            wasError = True
+            errorMsg += "\nExit code: " + str(exitcode)
+#            try:
+#                errorMsg += " " + os.strerror(exitcode-128)
+#            except ValueError:
+#                pass    # do nothing
+
+        if wasError:
+            result.exitcode = exitcode
+        elif result.cpuTimeLimitReached:
+            result.exitcode = 1
+        elif isFingerprintFail and isFingerprintPass:
+            result.isFingerprintOK = False
+            errorMsg += "\nFound PASSED and FAILED fingerprint results, too."
+        elif isFingerprintFail:
+            result.isFingerprintOK = False
+        elif isFingerprintPass:
+            result.isFingerprintOK = True
+        else:
+            pass
 
         result.errorMsg = errorMsg.strip()
         return result
@@ -355,7 +388,8 @@ class FingerprintTestCase(SimulationTestCase):
             result = self.runSimulation(self.title, command, workingdir, resultdir)
 
             # process the result
-            # note: fingerprint mismatch is technically NOT an error in 4.2 or before! (exitcode==0)
+            # note: fingerprint mismatch is technically NOT an error in omnetpp 6.0 or before! (exitcode==0)
+            # note: fingerprint mismatch is an error in omnetpp 6.1 or after! (exitcode==1)
             self.storeExitcodeCallback(result.exitcode)
             if result.exitcode != 0:
                 raise Exception("runtime error with exitcode="+str(result.exitcode)+": " + result.errorMsg)
