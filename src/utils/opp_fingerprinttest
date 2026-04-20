@@ -97,8 +97,15 @@ class FingerprintTestCaseGenerator():
                 pass        # empty line
             elif len(fields) == 6:
                 if fields[4] in ['PASS', 'FAIL', 'ERROR']:
-                    simulations.append({'file': csvFile, 'line' : csvReader.line_num,
-                            'wd': fields[0], 'args': fields[1], 'simtimelimit': fields[2], 'fingerprint': fields[3], 'expectedResult': fields[4]})
+                    simulations.append({
+                            'file': csvFile,
+                            'line' : csvReader.line_num,
+                            'wd': fields[0],
+                            'args': fields[1],
+                            'simtimelimit': fields[2],
+                            'fingerprint': fields[3],
+                            'expectedResult': fields[4]
+                            })
                 else:
                     raise Exception(csvFile + " Line " + str(csvReader.line_num) + ": the 5th item must contain one of 'PASS', 'FAIL', 'ERROR'" + ": " + '"' + '", "'.join(fields) + '"')
             else:
