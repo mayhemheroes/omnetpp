@@ -27,6 +27,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import unittest
 from io import StringIO
 
@@ -531,6 +532,10 @@ class SimulationTextTestResult(ThreadedTestResult):
         else:
             super(SimulationTextTestResult, self).addError(test, err)
             errmsg = err[1]
+
+            # for complete error msg (e.g. error in python code):
+            # errmsg = traceback.format_exception(err[0], err[1], err[2])
+
             self.errors[-1] = (test, errmsg)  # super class method inserts stack trace; we don't need that, so overwrite it
             if self.showAll:
                 self.stream.write(": ERROR (should be %s): %s\n" % (test.expectedResult, errmsg))
