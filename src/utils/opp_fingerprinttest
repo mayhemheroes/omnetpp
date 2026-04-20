@@ -30,7 +30,6 @@ import time
 import unittest
 from io import StringIO
 
-# FIXME this is a hard coded path!!! must be specified from command line or dicovered automatically
 rootDir = os.path.abspath(".")  # the working directory in the CSV file is relative to this dir
 cpuTimeLimit = "30000s"
 logFile = "test.out"
@@ -63,12 +62,14 @@ class FingerprintTestCaseGenerator():
         class StoreFingerprintCallback:
             def __init__(self, simulation):
                 self.simulation = simulation
+
             def __call__(self, fingerprint):
                 self.simulation['computedFingerprint'] = fingerprint
 
         class StoreExitcodeCallback:
             def __init__(self, simulation):
                 self.simulation = simulation
+
             def __call__(self, exitcode):
                 self.simulation['exitcode'] = exitcode
 
@@ -316,11 +317,10 @@ class FingerprintTestCase(SimulationTestCase):
         # CPU time limit is a safety guard: fingerprint checks shouldn't take forever
         global rootDir, executable, debug, cpuTimeLimit, extraOppRunArgs
 
-
         # run the simulation
         workingdir = _iif(self.wd.startswith('/'), rootDir + "/" + self.wd, self.wd)
         wdname = '' + self.wd + ' ' + self.cmdLine
-        wdname = re.sub(r'/', '_', wdname)
+        wdname = re.sub('/', '_', wdname)
         wdname = re.sub(r'[\W]+', '_', wdname)
         resultdir = os.path.abspath(".") + "/results/" + self.csvFile + "/" + wdname
         ensure_dir(resultdir)
@@ -330,7 +330,7 @@ class FingerprintTestCase(SimulationTestCase):
         # Otherwise, assume the first word as the name of the executable.
         (exeName, progArgs) = (executable, self.cmdLine) if (self.cmdLine.startswith("-")) else self.cmdLine.split(None, 1)
 
-        command =  (exeName+"_dbg" if debug else exeName) + " -u Cmdenv " + progArgs + \
+        command = (exeName + "_dbg" if debug else exeName) + " -u Cmdenv " + progArgs + \
             _iif(self.simtimelimit != "", " --sim-time-limit=" + self.simtimelimit, "") + \
             " \"--fingerprint=" + self.fingerprint + "\" --cpu-time-limit=" + cpuTimeLimit + \
             " --vector-recording=false --scalar-recording=true" + \
