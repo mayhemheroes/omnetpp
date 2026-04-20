@@ -650,9 +650,9 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--oppargs', action='append', metavar='oppargs', nargs=argparse.REMAINDER, help='extra opp_run arguments until the end of the line')
     args = parser.parse_args()
 
-    if os.path.isfile(logFile):
-        FILE = open(logFile, "w")
-        FILE.close()
+    # create / reset logFile
+    FILE = open(logFile, "w")
+    FILE.close()
 
     if not args.testspecfiles:
         args.testspecfiles = glob.glob('*.csv')
