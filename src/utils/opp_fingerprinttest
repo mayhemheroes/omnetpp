@@ -634,7 +634,9 @@ def ensure_dir(f):
     except:
         pass # do nothing if already exist
 
-if __name__ == "__main__":
+def main():
+    global logFile, extraOppRunArgs, executable, rootDir, debug, exitCode
+
     defaultNumThreads = multiprocessing.cpu_count()
     if defaultNumThreads >= 6:
         defaultNumThreads = defaultNumThreads - 1
@@ -695,3 +697,6 @@ if __name__ == "__main__":
     else:
         print("Test results differ from expected results")
     exit(exitCode)
+
+if __name__ == "__main__":
+    main()
