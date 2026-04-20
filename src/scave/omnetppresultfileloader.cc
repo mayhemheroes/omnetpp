@@ -172,6 +172,10 @@ void OmnetppResultFileLoader::processLine(char **vec, int numTokens, ParseContex
 
         if (fieldName == "count")
             ctx.fields.count = value;
+        else if (fieldName == "mean")
+            ctx.fields.mean = value;
+        else if (fieldName == "stddev")
+            ctx.fields.stddev = value;
         else if (fieldName == "min")
             ctx.fields.minValue = value;
         else if (fieldName == "max")
@@ -341,6 +345,7 @@ void OmnetppResultFileLoader::flush(ParseContext& ctx)
 void OmnetppResultFileLoader::resetFields(ParseContext& ctx)
 {
     ctx.fields.count = -1;
+    ctx.fields.mean = ctx.fields.stddev = NaN;
     ctx.fields.minValue = ctx.fields.maxValue = ctx.fields.sum = ctx.fields.sumSquares = NaN;
     ctx.fields.sumWeights = ctx.fields.sumWeightedValues = ctx.fields.sumSquaredWeights = ctx.fields.sumWeightedSquaredValues = NaN;
 }
@@ -348,10 +353,13 @@ void OmnetppResultFileLoader::resetFields(ParseContext& ctx)
 Statistics OmnetppResultFileLoader::makeStatsFromFields(ParseContext& ctx)
 {
     bool weighted = !std::isnan(ctx.fields.sumWeights);
+    Statistics stats;
     if (!weighted)
-        return Statistics::makeUnweighted(ctx.fields.count, ctx.fields.minValue, ctx.fields.maxValue, ctx.fields.sum, ctx.fields.sumSquares);
+        stats = Statistics::makeUnweighted(ctx.fields.count, ctx.fields.minValue, ctx.fields.maxValue, ctx.fields.sum, ctx.fields.sumSquares);
     else
-        return Statistics::makeWeighted(ctx.fields.count, ctx.fields.minValue, ctx.fields.maxValue, ctx.fields.sumWeights, ctx.fields.sumWeightedValues, ctx.fields.sumSquaredWeights, ctx.fields.sumWeightedSquaredValues);
+        stats = Statistics::makeWeighted(ctx.fields.count, ctx.fields.minValue, ctx.fields.maxValue, ctx.fields.sumWeights, ctx.fields.sumWeightedValues, ctx.fields.sumSquaredWeights, ctx.fields.sumWeightedSquaredValues);
+    stats.setCachedMeanAndStddev(ctx.fields.mean, ctx.fields.stddev);
+    return stats;
 }
 
 void OmnetppResultFileLoader::separateItervarsFromAttrs(StringMap& attrs, StringMap& itervars)

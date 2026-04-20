@@ -38,6 +38,8 @@ class COMMON_API Statistics
         statsum_t sumWeightedValues; // sum in the unweighted case
         statsum_t sumSquaredWeights; // equals count in the unweighted case
         statsum_t sumWeightedSquaredValues; // sum of squared values in the unweighted case
+        double cachedMean = NAN;    // if set (not NaN), prefer over recomputed value
+        double cachedStddev = NAN;  // if set (not NaN), prefer over recomputed value
 
     private:
         void assertUnweighted() const;
@@ -58,7 +60,7 @@ class COMMON_API Statistics
         double getMax() const {return maxValue;}
         int64_t getCount() const {return count;} // actual count of values, regardless of their weights; see also getSumWeights()
         double getSumWeights() const {return sumWeights;}
-        double getMean() const {return sumWeightedValues / sumWeights;}
+        double getMean() const;
         double getStddev() const;
         double getVariance() const;
 
@@ -67,6 +69,8 @@ class COMMON_API Statistics
         double getWeightedSum() const {return sumWeightedValues;}
         double getSumSquaredWeights() const {return sumSquaredWeights;}
         double getSumWeightedSquaredValues() const {return sumWeightedSquaredValues;}
+
+        void setCachedMeanAndStddev(double mean, double stddev) {cachedMean = mean; cachedStddev = stddev;}
 };
 
 }  // namespace common

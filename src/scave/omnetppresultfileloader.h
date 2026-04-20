@@ -71,6 +71,8 @@ class SCAVE_API OmnetppResultFileLoader : public IResultFileLoader
         std::string paramValue;
         struct {
             int64_t count;
+            double mean;
+            double stddev;
             double minValue;
             double maxValue;
             double sum;

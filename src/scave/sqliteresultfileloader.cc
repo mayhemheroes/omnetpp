@@ -287,13 +287,12 @@ void SqliteResultFileLoader::loadHistograms()
         double statWeightedsum = sqlite3ColumnDouble(stmt, 14);
         double statSqrSumWeights = sqlite3ColumnDouble(stmt, 15);
         double statWeightedSqrSum = sqlite3ColumnDouble(stmt, 16);
-        (void)statMean; (void)statStddev; // unused vars; we'll recompute mean and stddev from the other fields
-
         Statistics stat;
         if (isWeighted)
             stat = Statistics::makeWeighted(statCount, statMin, statMax, statWeights, statWeightedsum, statSqrSumWeights, statWeightedSqrSum);
         else
             stat = Statistics::makeUnweighted(statCount, statMin, statMax, statSum, statSqrsum);
+        stat.setCachedMeanAndStddev(statMean, statStddev);
         if (isHistogram)
             sqliteStatIdToHistogramIdx[statId] = resultFileManager->addHistogram(fileRunMap.at(runId), moduleName.c_str(), statName.c_str(), stat, Histogram(), emptyAttrs);
         else

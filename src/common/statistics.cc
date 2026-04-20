@@ -72,6 +72,8 @@ void Statistics::clear()
     sumWeightedValues = 0.0;
     sumSquaredWeights = 0.0;
     sumWeightedSquaredValues = 0.0;
+    cachedMean = NaN;
+    cachedStddev = NaN;
 }
 
 void Statistics::collect(double value)
@@ -84,6 +86,8 @@ void Statistics::collect(double value)
     sumWeightedValues += value;
     sumSquaredWeights += 1;
     sumWeightedSquaredValues += value * value;
+    cachedMean = NaN;
+    cachedStddev = NaN;
 }
 
 void Statistics::collect(double value, double weight)
@@ -96,6 +100,8 @@ void Statistics::collect(double value, double weight)
     sumWeightedValues += weight * value;
     sumSquaredWeights += weight * weight;
     sumWeightedSquaredValues += weight * value * value;
+    cachedMean = NaN;
+    cachedStddev = NaN;
 }
 
 void Statistics::adjoin(const Statistics& other)
@@ -108,15 +114,24 @@ void Statistics::adjoin(const Statistics& other)
     sumWeightedValues += other.sumWeightedValues;
     sumSquaredWeights += other.sumSquaredWeights;
     sumWeightedSquaredValues += other.sumWeightedSquaredValues;
+    cachedMean = NaN;
+    cachedStddev = NaN;
+}
+
+double Statistics::getMean() const
+{
+    return !std::isnan(cachedMean) ? cachedMean : (double)(sumWeightedValues / sumWeights);
 }
 
 double Statistics::getStddev() const
 {
-    return std::sqrt(getVariance());
+    return !std::isnan(cachedStddev) ? cachedStddev : std::sqrt(getVariance());
 }
 
 double Statistics::getVariance() const
 {
+    if (!std::isnan(cachedStddev))
+        return cachedStddev * cachedStddev;
     // note: no checks for division by zero, we prefer to return Inf or NaN
     if (count <= 1)
         return NaN;
