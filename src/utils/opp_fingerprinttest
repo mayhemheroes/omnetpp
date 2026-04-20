@@ -41,6 +41,7 @@ debug=False
 release=False
 exitCode = 0
 writeOutfile = True
+showPassedFingerprints = False
 showRuntime = False
 failedIngredients = []
 failedIngredientsLock = threading.Lock()
@@ -369,6 +370,10 @@ class SimulationTestCase(unittest.TestCase):
         # process error messages
         errorLines = re.findall("<!>.*", out, re.M)
         errorMsg = ""
+        fp = '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}/[a-zA-Z0~]+'
+        fps = fp + '(?: '+fp+')*'
+        fpsl = fps + '(?:, '+fps+')*'
+        pattern = 'calculated: (' + fpsl + '), expected: (' + fpsl + ')( -- during finalization)?$'
         isFingerprintPass = False
         isFingerprintFail = False
         wasError = False
@@ -381,10 +386,6 @@ class SimulationTestCase(unittest.TestCase):
                     isFingerprintPass = True
                     result.isFingerprintOK = True
                 else:
-                    fp = '[a-fA-F0-9]{4}-[a-fA-F0-9]{4}/[a-zA-Z0~]+'
-                    fps = fp + '(?: '+fp+')*'
-                    fpsl = fps + '(?:, '+fps+')*'
-                    pattern = 'calculated: (' + fpsl + '), expected: (' + fpsl + ')( -- during finalization)?$'
                     m = re.search(pattern, err)
                     if m:
                         isFingerprintFail = True
@@ -515,6 +516,11 @@ class FingerprintTestCase(SimulationTestCase):
             self.storeFingerprintCallback(computedFingerprints)
             (afp, efp) = diffFpGroups(computedFingerprints, self.fingerprint)
             msg = "some fingerprint mismatch: actual '" + formatFingerprintGroupForCsv(afp) + "', expected: '" + formatFingerprintGroupForCsv(efp) + "'"
+            if showPassedFingerprints:
+                # Calculate passed fingerprints (those that match between actual and expected)
+                passedFp = [fp for fp in self.fingerprint if fp not in efp]
+                passedStr = formatFingerprintGroupForCsv(passedFp) if passedFp else "none"
+                msg += ", passed: '" + passedStr + "'"
             with failedIngredientsLock:
                 for fpGroup in efp:
                     for fp in fpGroup:
@@ -786,7 +792,7 @@ def ensure_dir(f):
 
 def main():
     global logFile, extraOppRunArgs, executable, rootDir, debug, release, writeOutfile
-    global showRuntime, exitCode
+    global showPassedFingerprints, showRuntime, exitCode
 
     defaultNumThreads = multiprocessing.cpu_count()
     if defaultNumThreads >= 6:
@@ -809,6 +815,7 @@ def main():
     parser.add_argument('-n', type=int, default=1, help='Split the selected test cases into n sets, and only run one of these sets')
     parser.add_argument('-i', type=int, default=0, help='Which set of test cases to run [0..n-1]')
     parser.add_argument('-l', '--logfile', default = "fingerprinttest.out", metavar='filename', help='name of the logfile')
+    parser.add_argument('--show-passed', action='store_true', help='show passed fingerprints in mismatch error messages')
     parser.add_argument('--show-runtime', action='store_true', help='show elapsed time for each test case')
     args = parser.parse_args()
 
@@ -838,6 +845,7 @@ def main():
     debug = args.debug
     release = args.release
     writeOutfile = args.writeOutfile
+    showPassedFingerprints = args.show_passed
     showRuntime = args.show_runtime
 
     generator = FingerprintTestCaseGenerator()
