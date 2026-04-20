@@ -16,7 +16,6 @@
 # Authors: Andras Varga, Zoltan Bojthe
 #
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 import argparse
 import copy
 import csv
@@ -42,15 +41,12 @@ exitCode = 0
 use_colors = sys.stdout.isatty()
 
 def red(txt):
-    global use_colors
     return '\033[0;31m' + txt + "\033[0;0m" if use_colors else txt
 
 def yellow(txt):
-    global use_colors
     return '\033[0;33m' + txt + "\033[0;0m" if use_colors else txt
 
 def green(txt):
-    global use_colors
     return '\033[0;32m' + txt + "\033[0;0m" if use_colors else txt
 
 class FingerprintTestCaseGenerator():
@@ -506,7 +502,7 @@ class SimulationTextTestResult(ThreadedTestResult):
     def startTest(self, test):
         super(SimulationTextTestResult, self).startTest(test)
         if self.showAll:
-            self.stream.write(""+self.getDescription(test))  # NOTE: the empty "" string is needed here for python2/3 compatibility (unicode vs. str) - can be removed if only python3 is used
+            self.stream.write(self.getDescription(test))
             self.stream.write(" ... ")
             self.stream.flush()
 
