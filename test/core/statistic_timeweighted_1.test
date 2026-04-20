@@ -96,7 +96,7 @@ scalar Test.node timeweighted:mean 4
 attr recordingmode mean
 attr source foo
 attr timeWeighted 1
-scalar Test.node timeweighted:mean+100 102
+scalar Test.node timeweighted:mean+100 104
 attr recordingmode mean+100
 attr source foo
 attr timeWeighted 1

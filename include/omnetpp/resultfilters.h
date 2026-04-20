@@ -278,6 +278,7 @@ class SIM_API MeanFilter : public cNumericResultFilter
     public:
         MeanFilter() {}
         virtual void init(Context *ctx) override;
+        virtual void finish(cResultFilter *prev) override;
         double getMean() const;
         virtual std::string str() const override;
 };
@@ -353,6 +354,7 @@ class SIM_API TimeAverageFilter : public cNumericResultFilter
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
     public:
         TimeAverageFilter() {}
+        virtual void finish(cResultFilter *prev) override;
         double getTimeAverage() const;
         virtual std::string str() const override;
 };
@@ -442,6 +444,7 @@ class SIM_API SumPerDurationFilter : public cNumericResultFilter
         virtual bool process(simtime_t& t, double& value, cObject *details) override;
     public:
         SumPerDurationFilter() {sum = 0;}
+        virtual void finish(cResultFilter *prev) override;
         double getSumPerDuration() const;
         virtual double getInitialDoubleValue() const override {return getSumPerDuration();}
         virtual std::string str() const override;

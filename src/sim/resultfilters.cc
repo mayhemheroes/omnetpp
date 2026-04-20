@@ -416,6 +416,15 @@ double MeanFilter::getMean() const
     }
 }
 
+void MeanFilter::finish(cResultFilter *prev)
+{
+    if (timeWeighted) {
+        double result = getMean();
+        if (!std::isnan(result))
+            fire(this, getSimulation()->getSimTime(), result, nullptr);
+    }
+}
+
 std::string MeanFilter::str() const
 {
     std::stringstream os;
@@ -509,6 +518,13 @@ double TimeAverageFilter::getTimeAverage() const
     return tmpWeightedSum / tmpTotalTime;
 }
 
+void TimeAverageFilter::finish(cResultFilter *prev)
+{
+    double result = getTimeAverage();
+    if (!std::isnan(result))
+        fire(this, getSimulation()->getSimTime(), result, nullptr);
+}
+
 std::string TimeAverageFilter::str() const
 {
     std::stringstream os;
@@ -596,6 +612,13 @@ double SumPerDurationFilter::getSumPerDuration() const
     simtime_t warmupPeriod = simulation->getWarmupPeriod();
     simtime_t interval = now - warmupPeriod;
     return interval <= SIMTIME_ZERO ? NAN : sum/interval;
+}
+
+void SumPerDurationFilter::finish(cResultFilter *prev)
+{
+    double result = getSumPerDuration();
+    if (!std::isnan(result))
+        fire(this, getSimulation()->getSimTime(), result, nullptr);
 }
 
 std::string SumPerDurationFilter::str() const
