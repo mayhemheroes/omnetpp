@@ -39,7 +39,7 @@ extraOppRunArgs = ""
 debug=False
 release=False
 exitCode = 0
-
+writeOutfile = True
 useColors = sys.stdout.isatty()
 
 def red(txt):
@@ -263,15 +263,16 @@ class SimulationTestCase(unittest.TestCase):
                  + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
         FILE.close()
 
-        FILE = open(resultdir + "/test.out", "w")
-        FILE.write("------------------------------------------------------\n"
-                 + "Running: " + title + "\n\n"
-                 + "$ cd " + workingdir + "\n"
-                 + "$ " + command + "\n\n"
-                 + out.strip() + "\n\n"
-                 + "Exit code: " + str(exitcode) + "\n"
-                 + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
-        FILE.close()
+        if (writeOutfile):
+            FILE = open(resultdir + "/test.out", "w")
+            FILE.write("------------------------------------------------------\n"
+                     + "Running: " + title + "\n\n"
+                     + "$ cd " + workingdir + "\n"
+                     + "$ " + command + "\n\n"
+                     + out.strip() + "\n\n"
+                     + "Exit code: " + str(exitcode) + "\n"
+                     + "Elapsed time:  " + str(round(elapsedTime,2)) + "s\n\n")
+            FILE.close()
 
         result = SimulationResult(command, workingdir, exitcode, elapsedTime=elapsedTime)
 
@@ -670,7 +671,7 @@ def ensure_dir(f):
         pass # do nothing if already exist
 
 def main():
-    global logFile, extraOppRunArgs, executable, rootDir, debug, release, exitCode
+    global logFile, extraOppRunArgs, executable, rootDir, debug, release, writeOutfile, exitCode
 
     defaultNumThreads = multiprocessing.cpu_count()
     if defaultNumThreads >= 6:
@@ -685,6 +686,7 @@ def main():
     parser.add_argument('-C', '--directory', help='Change to DIRECTORY before executing the tests. Working dirs in the CSV files are relative to this.')
     parser.add_argument('-d', '--debug', action='store_true', help='Run debug executables: use the debug version of the executable (appends _dbg to the executable name)')
     parser.add_argument('-s', '--release', action='store_true', help='Run release executables: use the release version of the executable (appends _release to the executable name)')
+    parser.add_argument('-q', '--disable_outfile', dest='writeOutfile', action='store_false', help='disable the writing standard output of simulations to result directory')
     parser.add_argument('-a', '--oppargs', action='append', metavar='oppargs', nargs=argparse.REMAINDER, help='extra opp_run arguments until the end of the line')
     parser.add_argument('-n', type=int, default=1, help='Split the selected test cases into n sets, and only run one of these sets')
     parser.add_argument('-i', type=int, default=0, help='Which set of test cases to run [0..n-1]')
@@ -713,6 +715,7 @@ def main():
 
     debug = args.debug
     release = args.release
+    writeOutfile = args.writeOutfile
 
     generator = FingerprintTestCaseGenerator()
     testcases = generator.generateFromCSV(args.testspecfiles, args.match, args.exclude, args.repeat)
