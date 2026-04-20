@@ -85,6 +85,7 @@ class COMMON_API OmnetppVectorFileWriter
     std::string fname;     // output file name
     FILE *f = nullptr;     // file ptr of output file
     int prec = 14;         // number of significant digits when writing doubles
+    int iprec = 17;        // number of significant digits for summary stats in index file (default: full precision)
     int nextVectorId = 0;  // holds next free ID for output vectors
 
     std::string ifname;  // index file name

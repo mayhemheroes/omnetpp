@@ -262,13 +262,13 @@ void OmnetppVectorFileWriter::writeBlock(VectorData *vp)
                 vp->id, block.offset, block.size,
                 block.startEventNum, block.endEventNum,
                 block.startTime.ttoa(buf), block.endTime.ttoa(buf2),
-                stats.getCount(), prec, stats.getMin(), prec, stats.getMax(), prec, stats.getSum(), prec, stats.getSumSqr()));
+                stats.getCount(), iprec, stats.getMin(), iprec, stats.getMax(), iprec, stats.getSum(), iprec, stats.getSumSqr()));
     }
     else {
         checki(fprintf(fi, "%d\t%" PRId64 " %" PRId64 " %s %s %" PRId64 " %.*g %.*g %.*g %.*g\n",
                 vp->id, block.offset, block.size,
                 block.startTime.ttoa(buf), block.endTime.ttoa(buf2),
-                stats.getCount(), prec, stats.getMin(), prec, stats.getMax(), prec, stats.getSum(), prec, stats.getSumSqr()));
+                stats.getCount(), iprec, stats.getMin(), iprec, stats.getMax(), iprec, stats.getSum(), iprec, stats.getSumSqr()));
     }
 
     fflush(fi);
