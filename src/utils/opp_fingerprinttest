@@ -37,6 +37,7 @@ cpuTimeLimit = "30000s"
 logFile = "test.out"
 extraOppRunArgs = ""
 debug=False
+release=False
 exitCode = 0
 
 useColors = sys.stdout.isatty()
@@ -359,7 +360,7 @@ class FingerprintTestCase(SimulationTestCase):
 
     def runTest(self):
         # CPU time limit is a safety guard: fingerprint checks shouldn't take forever
-        global rootDir, executable, debug, cpuTimeLimit, extraOppRunArgs
+        global rootDir, executable, debug, release, cpuTimeLimit, extraOppRunArgs
 
         # run the simulation
         workingdir = _iif(self.wd.startswith('/'), rootDir + "/" + self.wd, self.wd)
@@ -374,7 +375,7 @@ class FingerprintTestCase(SimulationTestCase):
         # Otherwise, assume the first word as the name of the executable.
         (exeName, progArgs) = (executable, self.cmdLine) if (self.cmdLine.startswith("-")) else self.cmdLine.split(None, 1)
 
-        command = (exeName + "_dbg" if debug else exeName) + " -u Cmdenv " + progArgs + \
+        command = (exeName + "_dbg" if debug else exeName + "_release" if release else exeName) + " -u Cmdenv " + progArgs + \
             _iif(self.simtimelimit != "", " --sim-time-limit=" + self.simtimelimit, "") + \
             " \"--fingerprint=" + self.fingerprint + "\" --cpu-time-limit=" + cpuTimeLimit + \
             " --vector-recording=false --scalar-recording=true" + \
@@ -669,7 +670,7 @@ def ensure_dir(f):
         pass # do nothing if already exist
 
 def main():
-    global logFile, extraOppRunArgs, executable, rootDir, debug, exitCode
+    global logFile, extraOppRunArgs, executable, rootDir, debug, release, exitCode
 
     defaultNumThreads = multiprocessing.cpu_count()
     if defaultNumThreads >= 6:
@@ -683,6 +684,7 @@ def main():
     parser.add_argument('-e', '--executable', default=defaultExecutable, help='Determines which binary to execute (e.g. opp_run_dbg, opp_run_release) if the command column in the CSV file does not specify one.')
     parser.add_argument('-C', '--directory', help='Change to DIRECTORY before executing the tests. Working dirs in the CSV files are relative to this.')
     parser.add_argument('-d', '--debug', action='store_true', help='Run debug executables: use the debug version of the executable (appends _dbg to the executable name)')
+    parser.add_argument('-s', '--release', action='store_true', help='Run release executables: use the release version of the executable (appends _release to the executable name)')
     parser.add_argument('-a', '--oppargs', action='append', metavar='oppargs', nargs=argparse.REMAINDER, help='extra opp_run arguments until the end of the line')
     parser.add_argument('-n', type=int, default=1, help='Split the selected test cases into n sets, and only run one of these sets')
     parser.add_argument('-i', type=int, default=0, help='Which set of test cases to run [0..n-1]')
@@ -710,6 +712,7 @@ def main():
         rootDir = os.path.abspath(args.directory)
 
     debug = args.debug
+    release = args.release
 
     generator = FingerprintTestCaseGenerator()
     testcases = generator.generateFromCSV(args.testspecfiles, args.match, args.exclude, args.repeat)
