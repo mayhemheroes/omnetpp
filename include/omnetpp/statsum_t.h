@@ -70,11 +70,10 @@ class SIM_API NeumaierSum
 
 }  // namespace internals
 
-#ifdef WITH_NEUMAIER_SUMMATION
 using statsum_t = internals::NeumaierSum;
-#else
-using statsum_t = double;
-#endif
+
+// Legacy mode:
+// using statsum_t = double;
 
 }  // namespace omnetpp
 

@@ -65,11 +65,10 @@ class COMMON_API NeumaierSum
     }
 };
 
-#ifdef WITH_NEUMAIER_SUMMATION
 using statsum_t = NeumaierSum;
-#else
-using statsum_t = double;
-#endif
+
+// Legacy mode:
+// using statsum_t = double;
 
 }  // namespace common
 }  // namespace omnetpp
