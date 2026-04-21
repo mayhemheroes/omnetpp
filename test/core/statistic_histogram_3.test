@@ -17,6 +17,8 @@ network Test
         node: Node;
 }
 
+%round-numbers: 14
+
 %subst: /-nan/nan/
 %subst: /\(ind\)//
 

@@ -30,6 +30,8 @@ network Test
 
 **.scalar-recording = false
 
+%round-numbers: 14
+
 %contains: results/General-#0.sca
 statistic Test.node bins:histogram
 field count 100

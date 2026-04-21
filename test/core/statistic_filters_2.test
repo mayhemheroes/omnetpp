@@ -60,6 +60,7 @@ Define_Module(Node);
 %subst: /-?1\.#IND/nan/
 %subst: /-?1\.#QNAN/nan/
 %subst: /-?:NaN/:nan/
+%round-numbers: 14
 %subst: /1.87[0-9]+/1.87/
 
 %contains: results/General-#0.sca

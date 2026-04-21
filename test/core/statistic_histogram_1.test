@@ -25,6 +25,8 @@ network Test
 **.nobins:histogram.bin-recording = false
 **.nothing:histogram.scalar-recording = false
 
+%round-numbers: 14
+
 %contains: results/General-#0.sca
 statistic Test.node bins:histogram
 field count 100

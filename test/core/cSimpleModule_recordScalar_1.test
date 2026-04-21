@@ -17,6 +17,8 @@ for (int i=1; i<=10; i++)
     weightedStats.collectWeighted(i*i,i);
 recordStatistic(&weightedStats, "m");
 
+%round-numbers: 14
+
 %contains-regex: results/General-#0.sca
 scalar Test one 24.2
 scalar Test two -1.3

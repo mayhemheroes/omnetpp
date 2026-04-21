@@ -13,6 +13,8 @@ cmdenv-express-mode = false
 output-scalar-file = test-${runnumber}.sca
 repeat = 2
 
+%round-numbers: 14
+
 %contains-regex: test-0.sca
 run General-0-.*?
 scalar Test one 24.2
