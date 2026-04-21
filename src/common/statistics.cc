@@ -137,12 +137,18 @@ double Statistics::getVariance() const
         return NaN;
     else if (minValue == maxValue)
         return 0;
-    else if (!isWeighted()) {
-        double var = (sumWeightedSquaredValues - sumWeightedValues*sumWeightedValues/sumWeights) / (sumWeights-1);
-        return var < 0 ? 0 : var;
-    }
     else {
-        double var = (sumWeights * sumWeightedSquaredValues - sumWeightedValues * sumWeightedValues) / (sumWeights * sumWeights - sumSquaredWeights);
+        // Use fma() for numerical stability: fma(-mean, S, Q) computes Q - mean*S
+        // in a single operation with one rounding, avoiding catastrophic cancellation
+        // that occurs with the textbook formula (Q - S*S/n) when the mean is large
+        // relative to the standard deviation.
+        double mean = (double)sumWeightedValues / (double)sumWeights;
+        double ssd = std::fma(-mean, (double)sumWeightedValues, (double)sumWeightedSquaredValues);
+        double var;
+        if (!isWeighted())
+            var = ssd / ((double)sumWeights - 1);
+        else
+            var = (double)sumWeights * ssd / ((double)sumWeights * (double)sumWeights - (double)sumSquaredWeights);
         return var < 0 ? 0 : var;
     }
 }
