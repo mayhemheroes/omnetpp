@@ -508,6 +508,28 @@ brought to a common form:
 %subst: /-?nan/nan/
 \end{filelisting}
 
+\subsubsection{\%round-numbers}
+\label{sec:testing:opptest:round-numbers}
+
+Syntax:
+
+\begin{filelisting}
+%round-numbers: <significant-digits>
+\end{filelisting}
+
+This directive rounds all floating-point numbers in the output to the
+specified number of significant digits before matching against expected
+output. It is applied before \ftest{\%subst} rules. The rounding uses
+\textit{\%.<N>g} formatting, which strips trailing zeros.
+
+This is useful for eliminating floating-point representation noise that
+may appear when output precision is high. For example, a bin edge that is
+mathematically 0.06 may be stored as the IEEE 754 double
+0.059999999999999998. At high output precision, this noise becomes visible,
+and poses a challenge when specifying the expected output.
+With \ftest{\%round-numbers}, the value is first properly
+rounded, so subsequent truncation produces the correct result.
+
 \subsubsection{\%exitcode, \%ignore-exitcode}
 \label{sec:testing:opptest:exitcode}
 

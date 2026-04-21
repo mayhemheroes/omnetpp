@@ -123,6 +123,7 @@ class OppTest:
         'network'            : '1v',
 
         'subst'              : 'v',
+        'round-numbers'      : '1v',
 
         'contains'           : 'vbf',
         'not-contains'       : 'vbf',
@@ -797,6 +798,15 @@ Supported .test file entry types:
 
                 # do substitutions on it
                 havesubst = False
+
+                # apply rounding to floating-point numbers
+                if 'round-numbers(1)' in self.values:
+                    havesubst = True
+                    sigdigits = int(self.values['round-numbers(1)'])
+                    def round_number(m):
+                        return f'{float(m.group()):.{sigdigits}g}'
+                    txt = re.sub(r'-?\d+\.\d+([eE][+-]?\d+)?', round_number, txt)
+
                 for key2,value2 in self.values.items():
                     if key2.startswith('subst'):
                         havesubst = True
