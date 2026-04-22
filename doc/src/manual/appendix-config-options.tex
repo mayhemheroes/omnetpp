@@ -518,7 +518,7 @@ with the \fopt{-h configdetails} option.
     \textit{Per-simulation-run setting.}\\
     What to do when the output scalar file already exists: append to it
     (OMNeT++ 3.x behavior), or delete it and begin a new file (default).
-\item[output-scalar-precision] = \textit{<int>}, default: \ttt{14}\\
+\item[output-scalar-precision] = \textit{<int>}, default: \ttt{17}\\
     \textit{Per-simulation-run setting.}\\
     The number of significant digits for recording data into the output scalar
     file. The maximum value is {\textasciitilde}15 (IEEE double precision).
@@ -537,7 +537,7 @@ with the \fopt{-h configdetails} option.
     delete it and begin a new file (default). Note:
     \ttt{cIndexed\-File\-Output\-Vector\-Manager} currently does not support
     appending.
-\item[output-vector-precision] = \textit{<int>}, default: \ttt{14}\\
+\item[output-vector-precision] = \textit{<int>}, default: \ttt{17}\\
     \textit{Per-simulation-run setting.}\\
     The number of significant digits for recording data into the output vector
     file. The maximum value is {\textasciitilde}15 (IEEE double precision).
@@ -776,6 +776,11 @@ with the \fopt{-h configdetails} option.
     The random number generator class to be used. It can be
     \ttt{cMersenne\-Twister}, \ttt{cLCG32}, \ttt{cAkaroa\-RNG}, or you can use
     your own RNG class (it must be subclassed from \ttt{cRNG}).
+\item[rngmanager-class] = \textit{<string>}, default: \ttt{omnetpp::{\allowbreak}cRng\-Manager}\\
+    \textit{Per-simulation-run setting.}\\
+    Part of the Envir plugin mechanism: selects the RNG manager class to be
+    used for providing RNGs to modules and channels. The class has to implement
+    the \ttt{cIRng\-Manager} interface.
 \item[runnumber-width] = \textit{<int>}, default: \ttt{0}\\
     \textit{Per-simulation-run setting.}\\
     Setting a nonzero value will cause the \ttt{\$runnumber} variable to get

@@ -140,8 +140,9 @@ One can print the full definitions by running \ttt{opp\_run -h neddecls}.
 
 % @BEGINFILE tools/neddecls.txt
 \begin{ned}
+
 package ned;
-@namespace("omnetpp");
+@namespace(omnetpp);
 
 channel IdealChannel
 {
@@ -153,8 +154,8 @@ channel DelayChannel
     @class(cDelayChannel);
     @signal[messageSent](type=omnetpp::cMessage);
     @signal[messageDiscarded](type=omnetpp::cMessage);
-    @statistic[messages](source="constant1(messageSent)";record=count?;interpolationmode=none);
-    @statistic[messagesDiscarded](source="constant1(messageDiscarded)";record=count?;interpolationmode=none);
+    @statistic[messages](title="messages sent";source=constant1(messageSent);record=count?;interpolationmode=none);
+    @statistic[messagesDiscarded](title="messages discarded";source=constant1(messageDiscarded);record=count?;interpolationmode=none);
     bool disabled @mutable = default(false);
     double delay @mutable = default(0s) @unit(s); // propagation delay
 }
@@ -165,12 +166,12 @@ channel DatarateChannel
     @signal[channelBusy](type=long);
     @signal[messageSent](type=omnetpp::cMessage);
     @signal[messageDiscarded](type=omnetpp::cMessage);
-    @statistic[busy](source=channelBusy;record=vector?;interpolationmode=sample-hold);
-    @statistic[utilization](source="timeavg(channelBusy)";record=last?);
-    @statistic[packets](source="constant1(messageSent)";record=count?;interpolationmode=none);
-    @statistic[packetBytes](source="packetBytes(messageSent)";record=sum?;unit=B;interpolationmode=none);
-    @statistic[packetsDiscarded](source="constant1(messageDiscarded)";record=count?;interpolationmode=none);
-    @statistic[throughput](source="sumPerDuration(packetBits(messageSent))";record=last?;unit=bps);
+    @statistic[busy](title="channel busy state";source=channelBusy;record=vector?;interpolationmode=sample-hold);
+    @statistic[averageUtilization](title="average channel utilization";source=timeavg(channelBusy);record=last?);
+    @statistic[packets](title="packets sent";source=constant1(messageSent);record=count?;interpolationmode=none);
+    @statistic[packetBytes](title="packet bytes sent";source=packetBytes(messageSent);record=sum?;unit=B;interpolationmode=none);
+    @statistic[packetsDiscarded](title="packets discarded";source=constant1(messageDiscarded);record=count?;interpolationmode=none);
+    @statistic[averageThroughput](title="average throughput";source=sumPerDuration(packetBits(messageSent));record=last?;unit=bps);
     bool disabled @mutable = default(false);
     double delay @mutable = default(0s) @unit(s); // propagation delay
     double datarate @mutable = default(0bps) @unit(bps); // bits per second; 0=infinite
