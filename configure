@@ -2756,7 +2756,7 @@ printf "%s\n" "$as_me: Reading configure.user for your custom settings." >&6;}
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Creating a backup of 'Makefile.inc'." >&5
 printf "%s\n" "$as_me: Creating a backup of 'Makefile.inc'." >&6;}
-mv -f ./Makefile.inc ./Makefile.inc.last_known_good
+test -f ./Makefile.inc && mv -f ./Makefile.inc ./Makefile.inc.last_known_good || true
 
 
 ac_ext=cpp
