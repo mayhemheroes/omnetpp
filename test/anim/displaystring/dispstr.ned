@@ -22,6 +22,11 @@ network DisplayStringTest
         arrangements: Arrangements;
         layoutGroup: LayoutGroup;
         iconTransform: IconTransform;
+        connRoutingToParent: ConnRoutingToParent;
+        connRoutingToParentBidi: ConnRoutingToParentBidi;
+        connRoutingCartesian: ConnRoutingCartesian;
+        connRoutingCartesianBidi: ConnRoutingCartesianBidi;
+        connRoutingManual : ConnRoutingManual;
         connTransform: ConnTransform;
 }
 
