@@ -1,3 +1,20 @@
+2026-04-28  Andras Varga
+
+	* omnetpp.scave.utils: More informative error message if scave_bindings cannot be
+	loaded.
+
+2026-04-21  Andras Varga
+
+	* omnetpp.test: Added `%round-numbers` directive
+
+2026-01-22  Attila Torok
+
+	* omnetpp.scave.utils: Make pivoting data for bar charts compatible with Pandas 3.0
+
+2025-12-22  Gyorgy Szaszko
+
+	* Use np.trapezoid instead of obsolete trapz deprecated in numpy 2.0
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-09-25  Andras Varga

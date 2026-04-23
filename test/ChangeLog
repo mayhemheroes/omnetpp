@@ -1,3 +1,145 @@
+2026-04-29  Rudolf Hornig
+
+	* makemake2/runtest: Fix: Ignore line ending differences in expected output
+	(relevant for msys2).
+
+2026-04-28  Andras Varga
+
+	* core: New tests: cValue_formatQuantity_1.test, cValue_getBestUnit_1.test
+
+2026-04-22  Andras Varga
+
+	* anim: added test for connection routing
+
+2026-04-23  Rudolf Hornig
+
+	* common, core: fixed saxparser test failures due to changed error
+	messages in newer libxml2 versions
+	* scave: removed generated Makefile from the repo; updated results_api
+	expected output for increased recording precision
+	* fingerprint: updated histogram fingerprints after statistic
+	calculation changes
+	* Added .gitignore for the test folder
+	* featuretool, sqliteresultfiles: fixed shebangs causing failures on
+	NixOS
+
+2026-04-21  Andras Varga
+
+	* core: updated tests after recording precision change (14->17 digits)
+
+2026-04-17  Andras Varga
+
+	* core: added cStdDev_kahan_1.test, statistic_kahan_1.test for KBN
+	summation; updated fingerprint_1.test after KBN summation and
+	stddev/variance numerical stability changes
+
+2026-04-20  Andras Varga
+
+	* core: updated statistic_timeweighted_1.test after time-weighted
+	filter fix (last interval was previously ignored)
+
+2026-04-19  Andras Varga
+
+	* core: adjusted "r" fingerprint in fingerprint_1.test after
+	cRngManager introduction
+
+2026-03-28  Andras Varga
+
+	* core: updated eventlogrecording_1.test after Enter_Method() logging
+	change
+
+2026-03-29  Andras Varga
+
+	* core: added cRuntimeError_fmt_1.test for C++20 std::format support
+	in exception constructors
+
+2026-04-10  Andras Varga, Attila Torok
+
+	* core: added opp_component_ptr_1.test and opp_component_ptr_2.test
+
+2026-04-13  Andras Varga
+
+	* anim: added tests for new submodule arrangements (centered ring,
+	row/column with wrapping)
+
+2026-04-16  Andras Varga
+
+	* anim: added tests for icon transformations ("it" display string tag)
+
+2026-03-30  Attila Torok
+
+	* anim: added/expanded canvas @figure tests (ZOrder, Transform)
+
+2026-03-31  Attila Torok
+
+	* build: invoke `make cleanall` after each config instead of before
+
+2026-03-25  Andras Varga
+
+	* anim: updated watch tests to use unified WATCH() macro; added test
+	for const pointers
+
+2026-03-25  Andras Varga
+
+	* core: adjusted descriptor_dynamic_1.test
+
+2026-03-24  Andras Varga
+
+	* core: updated WATCH_LAMBDA_1.test
+
+2026-03-24  Attila Torok
+
+	* anim: added @toString to watch test's GeneratedStruct
+
+2026-03-22  Andras Varga
+
+	* core: added descriptor_dynamic_1.test
+
+2025-09-03  Attila Torok
+
+	* anim: added watch test for nested containers
+
+2026-02-12  Attila Torok
+
+	* anim: added more watch test cases for STL containers (nullptr
+	elements, unprintable objects, class hierarchies, various map key
+	types)
+
+2025-09-03  Attila Torok
+
+	* anim: added watch test for STL containers with compound elements
+
+2026-01-23  Attila Torok
+
+	* scave: accept "str" dtype (new in Pandas 3.0) in results_api test
+
+2025-12-04  Attila Torok
+
+	* build: added build tests for configurations disabling Python and/or
+	scave Python bindings
+
+2026-01-19  Andras Varga
+
+	* core, common: updated tests for UnitConversion syntax change
+	(quantities like "1s200ms" now require a space)
+	* core: adjusted tests for str() output changes
+
+2026-01-12  Andras Varga
+
+	* core: updated tests for str()/unparse() refactoring
+
+2025-12-01  Attila Torok
+
+	* anim: added connoffset visual test for connection line bundling
+
+2022-08-04  Attila Torok
+
+	* core: added tests for Python NED functions (pyeval, pycode)
+
+2025-11-25  Andras Varga
+
+	* core: added rateavg to statistic_timeweighted_1.test
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-07-14  ------ omnetpp-6.2.0 released ------
@@ -26,7 +168,7 @@
 	* Added msg_struct_pointer_1.test to demonstrate fix for: 'MSGC: fix:
 	pointer in struct was generated compiler error in _m.cc'
 
-2025-05-29  TÖRÖK Attila
+2025-05-29  Attila Torok
 
 	* makemake2: Update expected outputs
 
@@ -60,8 +202,6 @@
 
 	* core: added cModule_preDelete_1.test
 
-test/core/cModule_preDelete_1.test
-
 2024-11-27  Andras Varga
 
 	* core: update test cases that broke when logging during cleanup was turned off by default
@@ -83,7 +223,7 @@ test/core/cModule_preDelete_1.test
 
 2024-09-25  Attila Torok
 
- 	* build/test-builds: Skip build test with osgEarth if it's not installed
+	* build/test-builds: Skip build test with osgEarth if it's not installed
 
 2024-10-08  ------ omnetpp-6.1.0 released ------
 

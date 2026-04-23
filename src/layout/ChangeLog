@@ -1,3 +1,25 @@
+2026-04-15  Andras Varga
+
+	* arrowcoords() updated with per-endpoint cardinal direction routing with
+	L-shape support; see Qtenv.
+
+2026-04-15  Andras Varga
+
+	* arrowcoords(): Bundle several args into a RoutingConstraint struct
+
+2026-04-10  Andras Varga
+
+	* arrowcoords(): Return std::vector<Pt> instead of Ln.
+
+2026-02-17  Attila Torok
+
+	* arrowcoords() moved here, ported to the geometry types in this lib.
+
+	Expanding some geometry types with useful operators to this end. A thin
+	wrapper is left behind with conversion to/from Qt types to avoid having
+	to also adapt the call site(s). The goal is to make them available for
+	the IDE nativelibs.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-07-14  ------ omnetpp-6.2.0 released ------

@@ -1,3 +1,48 @@
+2026-04-20  Andras Varga
+
+	* Changed the default precision of result files from 14 to 17
+	significant digits, which allows a subsequent read operation to
+	recover the value without any precision loss. (fix #1464)
+
+2026-03-30  Andras Varga
+
+	* RNGs removed from EnvirBase, moved into dedicated RNG manager
+	class in sim/. See cIRngManager in include/omnetpp/ChangeLog.
+
+2026-03-28  Andras Varga
+
+	* Enter_Method() now logs the call with TRACE loglevel.
+
+	* Follow cIEventlogManager::componentMethodBegin() signature change
+	described in include/omnetpp/ChangeLog.
+
+2026-03-19  Rudolf Hornig
+
+	* Fixed spurious error message when running simulation in a
+	read-only directory where a non-existing result file could not be
+	deleted.
+
+2026-03-17  Andras Varga
+
+	* Follow cException appendMessage()/prependMessage() changes
+	described in src/sim/ChangeLog. All envir call sites updated.
+
+2026-02-15  Andras Varga
+
+	* EnvirBase::ensureDebugger(): now prints stack trace on simulation
+	errors when debug-on-errors is enabled (but no debugger is present
+	and attaching a debugger is disabled).
+
+2026-01-21  Attila Torok
+
+	* Added "WITH_PYTHON" to the buildOptions string (printed by
+	opp_run -v).
+
+2026-01-12  Andras Varga
+
+	* Updated result manager call sites for cPar::unparse() change
+	described in include/omnetpp/ChangeLog.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-07-14  ------ omnetpp-6.2.0 released ------
@@ -78,7 +123,6 @@
 
 	* EvnvirBase: fix: make `*.host[*].rng-0 = index` work in omnetpp.ini.
 	`index` was not recognized ("no such variable")
--
 
 2024-09-10  Andras Varga
 
@@ -1740,7 +1784,7 @@
 	iteration variable
 	    ${var = 3, uniform(5,10), "}", {a,b}, foo\,bar, a\\b, "\"}",  "\\a"}
 	will produce the following values:
- 	    3
+	    3
 	    uniform(5,10)
 	    "}"
 	    {a,b}
@@ -2260,11 +2304,11 @@
 
 2004-11-29  Andras Varga
 
-  	* on Mac OS/X, implement ftime() with gettimeofday() [patch from
-  	Michael Tuexen]
+	* on Mac OS/X, implement ftime() with gettimeofday() [patch from
+	Michael Tuexen]
 
-  	* platdep.cc: load-libs= omnetpp.ini option now adds plaform-specific
-  	extension (.dll or .so) to library name
+	* platdep.cc: load-libs= omnetpp.ini option now adds plaform-specific
+	extension (.dll or .so) to library name
 
 2004-11-23  ------ omnetpp-3.0b1 released ------
 

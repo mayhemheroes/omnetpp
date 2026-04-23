@@ -1,15 +1,164 @@
+2026-03-24  Attila Torok
+
+	* Fixed spurious deadlock detection dialogs in the IDE. After the UI
+	thread accumulated enough total blocking time across many short blocks,
+	the detector would fire on every subsequent block. The detection now
+	uses wall-clock tracking instead of cumulative times.
+
+2026-04-15  Andras Varga
+
+	* NED Editor: Added per-endpoint connection routing direction support
+	with L-shaped connections. Each connection endpoint can independently
+	specify horizontal or vertical routing using direction tags in the
+	display string.
+
+2026-04-09  Attila Torok
+
+	* NED Editor: Fixed snap-to-grid spacing initialization in the
+	graphical editor.
+
+2026-04-16  Andras Varga
+
+	* NED Editor: Added support for the layout group ("g" tag) in the
+	submodule Properties Dialog. Renamed the "Module Vector" group to
+	"Layout", since arrangements can also apply to scalar submodules via
+	the layout group tag.
+
+2026-04-10  Andras Varga
+
+	* NED Editor: Added "cring" (centered ring) submodule arrangement,
+	where the coordinates specify the center of the ring instead of the
+	bounding rectangle's top-left corner. Row and column layouts now
+	support optional wrapping (row accepts numCols/deltaY, column accepts
+	numRows/deltaX). The Properties dialog was also updated with more
+	descriptive labels for the arrangement parameters.
+
+2026-04-10  Andras Varga
+
+	* NED Editor: Added support for icon transformations via the new "it"
+	display string tag. Module icons can now be rotated, flipped, and
+	scaled.
+
+2026-03-30  Attila Torok
+
+	* NED Editor: Hover tooltips now show "inherited from ..." for
+	inherited submodules, connections, and figures. A new "Go to
+	Definition" context menu action navigates to the base type where the
+	inherited element is defined.
+
+2026-03-30  Attila Torok
+
+	* NED Editor: Added canvas @figure rendering and editing support in
+	the graphical NED editor. Figures defined as @figure properties in NED
+	are now displayed and can be interacted with visually. Supported figure
+	types include rectangle, oval, ring, arc, pieslice, path, polygon,
+	polyline, label, text, icon, image, and pixmap. Figures can be moved,
+	resized, copied and pasted (including figure hierarchies), and their
+	properties can be edited via the Eclipse Properties view. Unknown or
+	custom figure types are shown as placeholders. Content assist and
+	validation are provided for @figure properties. Also fixed a bug where
+	@figure properties inherited from base module types were silently lost
+	in derived types.
+
+2026-03-27  Andras Varga
+
+	* Project Installer: Numerous improvements to the Install Simulation
+	Models dialog. Removed the "Project name" field (projects now always
+	install with their default names to ensure correct dependencies).
+	Added a note about opp_env. The installer now automatically sets up
+	build configurations, environment variables, project references, and
+	can apply file substitutions as specified in project descriptors.
+	Before installation, project dependencies are validated, and a warning
+	is shown if any are missing from the catalog or the workspace. Supports
+	loading project descriptors from a local directory for testing (via the
+	OMNETPP_IDE_INSTALL_MODELS_DESCRIPTORS_DIR environment variable).
+	Fixed a "Resource already exists" error that could occur during project
+	installation.
+
+2026-03-24  Attila Torok
+
+	* NED Editor: Fixed crashes that could occur when a nested event loop
+	(e.g. from a modal dialog) drained stale async messages after a NED
+	file was already removed from the resolver.
+
+2026-03-24  Attila Torok
+
+	* NED Editor: Added validation that modules and channels fulfill their
+	declared interface contracts (matching parameters and gates with
+	correct types and attributes).
+
+2026-03-24  Attila Torok
+
+	* Ini File Editor: Fixed a deadlock between the ini file analyzer and
+	the Eclipse job manager, and a related concurrency bug.
+
+2026-03-23  Attila Torok
+
+	* NED Editor: Added missing property types (@figure, @omittedTypename,
+	@reconnect, @defaultname, @mutable, @class, @loose, @directIn) to
+	autocomplete suggestions.
+
+2026-03-20  Attila Torok
+
+	* NED Editor: Added rename refactoring with preview and undo/redo
+	support for NED types, submodules, gates, and parameters. Renames are
+	propagated across NED, INI, and C++ files. The rename wizard is
+	accessible from both the graphical and text editors, and supports
+	cancellation during long operations.
+
+2026-03-02  Attila Torok
+
+	* Ini File Editor: Split the inifile editor plugin into a core plugin
+	(containing the analysis engine) and the editor UI plugin. This allows
+	other plugins (e.g. NED rename refactoring) to depend on inifile
+	analysis without pulling in the full editor.
+
+2026-03-16  Rudolf Hornig
+
+	* Updated the bundled Eclipse platform to version 2026-03, PyDev to
+	13.1.0, and the JDK to version 25 LTS.
+
+2026-03-12  Attila Torok
+
+	* NED Editor: Added Ctrl+T shortcut for toggling "Distribute
+	Connection Arrows" in the graphical editor.
+
+2026-02-13  Attila Torok
+
+	* NED Editor: Added quick type hierarchy popup (Ctrl+T) in the
+	textual NED editor, similar to the Java and C++ editors.
+
+2026-02-19  Attila Torok
+
+	* NED Editor: Improved connection arrow placement in the graphical
+	editor to match the simulation runtime (Qtenv). Added "Spread
+	Connection Arrows" context menu option (remembered per module type).
+
+2025-11-25  Andras Varga
+
+	* MSG Editor: Added Ctrl+Tab shortcut to switch to the generated
+	header file.
+
+2025-11-25  Rudolf Hornig
+
+	* NED Documentation Generator: Removed mobile view from generated
+	documentation (it could not be kept consistent with the resizable
+	navigation pane). Fixed a layout glitch in the navigation tree at
+	certain browser zoom levels. The navigation panel width now persists
+	between page reloads.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-11-07  Rudolf Hornig
 
 	* Fixed a bug that prevented debuggig with lldb in containers and other restricted
 	environments like WSL.
-    
-    The IDE now detects whether we are running in a restricted environment (docker, wsl)
-    and pass disableASLR parameter to the debugger so it will not try to disable
-    the address space randomization because that call fails in a container.
-    
-    (NOTE: The same settings must be set also in the .lldbinit file to take effect properly)
+
+	The IDE now detects whether we are running in a restricted environment (docker, wsl)
+	and pass disableASLR parameter to the debugger so it will not try to disable
+	the address space randomization because that call fails in a container.
+
+	(NOTE: The same settings must be set also in the .lldbinit file to take effect properly)
 
 2025-11-03  Rudolf Hornig
 
@@ -247,26 +396,26 @@
 	a number of usability enhancements to the "Form" editor page:
 
 	- Split up the "Result Recording" page into separate "Scalar Results",
-	      "Vector Results" and "Declared Statistics" pages. The "Result directory"
-	      configuration part went to the "General" page.
+	  "Vector Results" and "Declared Statistics" pages. The "Result directory"
+	  configuration part went to the "General" page.
 
-	    - The "Enable recording of scalars" config option checkbox was expanded
-	      to its table form that allows the setting be specified with per-section,
-	      per-object granularity, and it was renamed to "Scalars to record".
-	      Similarly, "Enable recording of vectors" and "Enable recording of @statistics"
-	      were also expended to tables, and renamed to "Vectors to record" and
-	      "Statistics to record", respectively. Other, similar settings were also
-	      expanded to tables to highlight their functionalities.
+	- The "Enable recording of scalars" config option checkbox was expanded
+	  to its table form that allows the setting be specified with per-section,
+	  per-object granularity, and it was renamed to "Scalars to record".
+	  Similarly, "Enable recording of vectors" and "Enable recording of @statistics"
+	  were also expended to tables, and renamed to "Vectors to record" and
+	  "Statistics to record", respectively. Other, similar settings were also
+	  expanded to tables to highlight their functionalities.
 
-	    - Hints were added (in the form of labels) to several form fields to
-	      clarify their purposes.
+	- Hints were added (in the form of labels) to several form fields to
+	  clarify their purposes.
 
-	    - Table column headings were improved, e.g. "Value" columns changed to
-	      something more specific.
+	- Table column headings were improved, e.g. "Value" columns changed to
+	  something more specific.
 
-	    - It is now possible to make a section abstract (see config option of
-	      the same name) in the Form editor, too, using the section edit dialog
-	      on the "Sections" page.
+	- It is now possible to make a section abstract (see config option of
+	  the same name) in the Form editor, too, using the section edit dialog
+	  on the "Sections" page.
 
 2025-05-12  Rudolf Hornig
 
@@ -577,7 +726,7 @@
 
 	* IDE: Upgrade to Eclipse 4.33
 
-024-09-11  Rudolf Hornig
+2024-09-11  Rudolf Hornig
 
 	* Fine-tuned line color and mouse wheel scroll direction for some
 	custom-drawn tables (e.g. EventLog) on macOS

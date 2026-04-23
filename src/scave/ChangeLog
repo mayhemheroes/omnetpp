@@ -1,3 +1,8 @@
+2026-04-20  Andras Varga
+
+	* OmnetppResultFileLoader: Fix for #1465 "opp_scavetool unnecessarily
+	recomputes stddev". Solution: Store parsed mean/stddev in Statistics.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-30  Andras Varga

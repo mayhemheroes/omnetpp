@@ -1,3 +1,47 @@
+2026-04-23  Andras Varga
+
+	* Documented new connection routing options ("m=<srcDir>,<destDir>"
+
+2026-04-22  Andras Varga
+
+	* Appendices refreshed
+
+2026-04-21  Andras Varga
+
+	* Documented %round-numbers opp_test directive
+
+2020-12-01  Andras Varga
+
+	* Updated with missing info on channels and transmissions
+
+2022-02-03  Andras Varga
+
+	* NED, NED-Ref chapters: Updated with resolution rules changed in 6.0
+	regarding "this" and "parent"
+
+2026-03-24  Attila Torok
+
+	* Added documentation for previously undocumented NED @properties
+
+	- @enum on parameters
+	- @class on object parameters
+	- @omittedTypename on submodules/connections
+	- @reconnect on connections
+	- checkSignals and autoWarmupFilter keys in @statistic
+	- Updated Known Properties list with the above entries
+
+2026-04-10  Andras Varga
+
+	- Documented optional wrapping feature for row/column submodule vector arrangement
+
+2026-04-10  Andras Varga
+
+	* Documented new 'cring' (centered ring) submodule vector arrangement
+
+2026-04-10  Andras Varga
+
+	* Documented new display string tag for icon transformation 'it'
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-16  Andras Varga

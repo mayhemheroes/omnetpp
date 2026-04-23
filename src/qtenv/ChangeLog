@@ -1,3 +1,130 @@
+2021-11-17  Rudolf Hornig
+
+	* Added memory usage display to the status bar.
+
+2026-04-15  Andras Varga
+
+	* Graphics: Implemented support for L-shaped connections, selected via the
+	enhanced "m=<srcDir>,<destDir>" display string tag. Each connection endpoint
+	can independently specify the direction (horizontal or vertical) in which
+	the line leaves/enters the module icon.
+
+2026-04-10  Andras Varga
+
+	* Graphics: Implemented support for the "cring" (centered ring) submodule
+	arrangement, where the coordinates specify the center of the ring instead of
+	the bounding rectangle's top-left corner.
+
+	* Row and column arrangements now support optional wrapping (row accepts
+	numCols/deltaY, column accepts numRows/deltaX).
+
+2026-04-10  Andras Varga
+
+	* Graphics: Implemented support for icon transformations via the new "it"
+	display string tag. Module icons can now be rotated, flipped, and scaled.
+
+2026-03-31  Rudolf Hornig
+
+	* Fix: Ensured the Stop dialog is modal on macOS so it cannot be pushed
+	behind the main window.
+
+2026-03-24  Andras Varga
+
+	* Object Tree: Fixed the tree losing selection and collapsing expanded
+	nodes after each refresh (e.g. after pressing F4/Step).
+
+2026-03-11  Attila Torok
+
+	* Generic Object Inspector: Major redesign for improved usability.
+	Each object now automatically appears in its preferred display mode
+	(Children or Details), eliminating the need for frequent toolbar
+	mode-switching. A small overlay icon on hovered tree rows allows
+	toggling between modes. Keyboard shortcuts: Ctrl+T toggles
+	Children/Details, Ctrl+click also toggles, Ctrl+D cycles through
+	Details sub-modes (Grouped, Flat, Inheritance, Packet).
+
+	* Added a "Sort by Name" toolbar button, to facilitate finding specific
+	fields in large objects.
+
+	* Removed the now-obsolete Watch Inspector.
+
+2026-03-12  Attila Torok
+
+	* Module Inspector: Changed the "Distribute Connection Arrows"
+	shortcut to Ctrl+T.
+
+2026-03-11  Attila Torok
+
+	* Preferences: Made the log prefix format an editable combobox with
+	predefined format options, enhancing usability of the dialog.
+
+2026-03-04  Attila Torok
+
+	* Log Inspector: Fixed column width corruption when switching between
+	Log and Messages modes. On first use (before preferences were saved),
+	the message mode columns could appear with near-zero width.
+
+2026-02-20  Attila Torok
+
+	* Log Inspector: Added "Show Messages/Packets Between These Modules"
+	action to the Module Inspector context menu. The module filter is now
+	remembered per module type.
+
+2026-02-20  Attila Torok
+
+	* Module Inspector: Added "Reset Zoom" context menu item.
+
+2026-01-09  Andras Varga, Attila Torok
+
+	* Refined connection tooltips. The tooltip now shows the full
+	connection path in a compact one-line format, with verbose mode
+	showing all hops in a numbered list.
+
+	* Added "Go to Connection Path Start/End" context menu action.
+
+	* Mouse picking of bidirectional connections was improved: both gates are
+	now picked in the middle half of the connection line, making the tooltip and
+	context menu more useful.
+
+2025-12-15  Attila Torok
+
+	* Log View: Ctrl+A "Select All" now works in the embedded log view
+	(was blocked by a shortcut collision).
+
+2025-12-19  Attila Torok
+
+	* Preferences: Removed two obsolete checkboxes: "Zoom out if necessary
+	on layout change" and "Arrange connections on vector gates", as
+	neither had any effect.
+
+2025-12-19  Attila Torok
+
+	* Module Inspector: Added "Distribute Connection Arrows" feature
+	(Ctrl+B toggle). Connections running in parallel between any pair of
+	modules are now shifted so they are not drawn on top of each other.
+	The setting is persisted per module type. The connection line drawing
+	algorithm was also reworked for improved accuracy.
+
+2025-11-28  Andras Varga, Attila Torok
+
+	* Object Tree: Improved synchronization between the object tree and
+	the graphical module view. Entering a module in the graphical view
+	now highlights it in the tree. Clicking a submodule also highlights
+	it. Pressing Enter on a tree node opens the module in the graphical
+	view. Navigating the tree with arrow keys updates the Object
+	Inspector. Added "Show '...' in Graphical View" context menu item.
+
+2025-11-17  Attila Torok
+
+	* Run Selection Dialog: Runs are now filterable by typing in the run
+	combo box, making it much easier to find a specific run based on
+	iteration variable values.
+
+2025-11-17  Attila Torok
+
+	* Module Inspector: Added "Go to Module" action (Ctrl+G) for quickly
+	navigating to any module by typing part of its name or path.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-15  Attila Torok

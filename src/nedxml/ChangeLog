@@ -1,3 +1,23 @@
+2026-04-22  Andras Varga
+
+	* Built-in NED declarations: Added titles to the channel statistics
+
+2026-04-22  Andras Varga
+
+	* Built-in NED declarations: Nits: Remove redundant quotation marks.
+
+2026-04-22  Andras Varga
+
+	* Built-in NED declarations: DatarateChannel statistics renamed:
+	throughput->averageThroughput, utilization->averageUtilization.
+
+	The new names are more explicit about what is being recorded.
+
+2026-03-21  Andras Varga
+
+	* opp_msgtool: added code to generate the new cClassDescriptor
+	methods: object-level getValueAsString() and setValueAsString().
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-22  Zoltan Bojthe

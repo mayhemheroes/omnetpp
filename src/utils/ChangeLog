@@ -1,3 +1,25 @@
+2026-04-20  Zoltan Bojthe
+
+	* opp_fingerprinttest: Major overhaul of the fingerprint testing
+	script. New command-line options: -f/-F (filter/exclude by fingerprint
+	ingredient type), --show-passed, --show-runtime, -c/--calculator
+	(custom fingerprint calculator class), -q/--disable_outfile,
+	-s/--release, -n/-i (test case splitting), -l/--logfile. Added
+	fingerprint group support, colored output (green/red/yellow), tags
+	field in CSV parsing, and improved error handling. Removed Python 2
+	compatibility code.
+
+2026-01-06  Rudolf Hornig
+
+	* Added .opp_shell/flake.nix for NixOS development shell support.
+	install.sh now supports running on NixOS. Also fixed shebangs in
+	various scripts for NixOS compatibility.
+
+2025-10-29  Rudolf Hornig
+
+	* Removed lldbmi2 support: removed opp_dbgmi command and the lldbmi2
+	executable from the IDE native plugin on macOS.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-08-11  Rudolf Hornig
@@ -1227,8 +1249,8 @@
 
 2004-11-29  Andras Varga
 
-  	* opp_makemake.in: avoid generating $(wildcard ..) without args.
-  	Change needed for Mac OS/X [patch from Michael Tuexen]
+	* opp_makemake.in: avoid generating $(wildcard ..) without args.
+	Change needed for Mac OS/X [patch from Michael Tuexen]
 
 	* opp_test: similar change as to opp_neddoc.in below, on 2004-11-21
 
@@ -1236,9 +1258,9 @@
 
 2004-11-21  Andras Varga
 
-  	* opp_neddoc.in: fixed the way it invokes commmands via system()
-  	(We to break up the command line, otherwise redirection sometimes
-  	breaks on Windows; plus we always need to use COMSPEC)
+	* opp_neddoc.in: fixed the way it invokes commmands via system()
+	(We to break up the command line, otherwise redirection sometimes
+	breaks on Windows; plus we always need to use COMSPEC)
 
 2004-11-03  ------ omnetpp-3.0a9 released ------
 

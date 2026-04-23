@@ -1,3 +1,20 @@
+2026-05-01  Rudolf Hornig
+
+	* Updated.
+
+	- Ubuntu 26.04, 24.04
+	- RockyLinux 9, 10 (8 works with PYTHON3=python3.12 ./install.sh --no-gui)
+	- AlmaLinux 9, 10
+	- Fedora 44
+	- ArchLinux
+	- OpenSuse tumbleweed & leap 16.0, 15.6
+	- Debian Trixie
+	- NixOS 25.11
+
+2026-01-20  Rudolf Hornig
+
+	* Added NixOS chapter
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-07-14  ------ omnetpp-6.2.0 released ------

@@ -1,3 +1,85 @@
+2026-04-30  Andras Varga
+
+	* Implemented opp_dtoa() overload as described in include/omnetpp/ChangeLog.
+
+2026-04-28  Andras Varga
+
+	* cValue: implemented getBestUnit(), formatQuantity(), formatQuantityInBestUnit()
+	as described in include/omnetpp/ChangeLog.
+
+2026-04-17  Andras Varga
+
+	* Implemented Neumaier (KBN) summation in cStdDev, result
+	filters/recorders as described in include/omnetpp/ChangeLog.
+	Also improved numerical stability of stddev/variance computation
+	using std::fma().
+
+2026-04-20  Andras Varga
+
+	* Fixed timeavg, sumPerDuration, mean (in time-weighted mode) result
+	filters ignoring the last interval (from last emit to simulation
+	end). They now yield the same result as the corresponding recorders.
+
+2026-03-30  Andras Varga
+
+	* Implemented pluggable RNG manager mechanism (cIRngManager) as
+	described in include/omnetpp/ChangeLog. Also added Rng-prefixed
+	aliases on cComponent.
+
+2026-03-10  Attila Torok
+
+	* Implemented @displayMode property and annotated standard classes
+	with their preferred inspector display mode (Children or Details).
+
+2026-03-23  Andras Varga
+
+	* Implemented WATCH redesign described in include/omnetpp/ChangeLog:
+	cWatch<T>/cPointerWatch<T>, ensureDescriptor<T>(),
+	cClassDescriptor::getValueAsString()/setValueAsString(),
+	cWatchProxyDescriptor generalization.
+
+2026-03-17  Andras Varga
+
+	* Implemented cException changes described in include/omnetpp/ChangeLog:
+	appendMessage()/prependMessage() refactoring, all call sites updated.
+	Exception catch blocks now use appendMessage()/prependMessage() instead
+	of creating new exception objects (avoids double stack trace
+	notification).
+
+2025-09-15  Attila Torok
+
+	* Implemented STL container WATCH improvements described in
+	include/omnetpp/ChangeLog: compound element expansion,
+	getFieldArrayIndexString(), rename cStdVectorWatcherBase ->
+	cStlContainerWatcherBase, property inheritance fix.
+
+2025-12-04  Attila Torok
+
+	* Fixed Python-related build failures on macOS and Windows.
+
+2026-01-12  Andras Varga
+
+	* Implemented cPar::unparse() and str() changes described in
+	include/omnetpp/ChangeLog. str() now formats quantities in the best
+	measurement unit. Call sites updated to use unparse() where parseable
+	output is needed.
+
+2026-01-07  Attila Torok
+
+	* cChannel: str() no longer includes built-in parameters with default
+	values.
+
+2022-08-04  Attila Torok
+
+	* Implemented NED functions for running Python code (pyeval, pycode)
+	as described in include/omnetpp/ChangeLog. Also fixed ambiguous
+	conversion error on Windows and macOS.
+
+2025-11-25  Andras Varga
+
+	* Implemented RateAverageFilter and RateAverageRecorder ("rateavg")
+	as described in include/omnetpp/ChangeLog.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-21  Andras Varga

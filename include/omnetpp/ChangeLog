@@ -1,3 +1,121 @@
+2026-04-30  Andras Varga
+
+	* Added opp_dtoa() overload that is capable of round-trip precision:
+	char *opp_dtoa(char *buf, double d, int numSignificantDigits = 6).
+
+2026-04-28  Andras Varga
+
+	* cValue: add getBestUnit(), formatQuantity(), formatQuantityInBestUnit()
+	utility methods.
+
+2026-04-17  Andras Varga
+
+	* cStdDev, result filters/recorders: Use Neumaier (KBN) summation
+	for improved numerical stability of accumulated sums. A new
+	statsum_t typedef (= NeumaierSum) is used instead of plain double
+	for sum accumulators.
+
+	* Improved numerical stability of stddev/variance computation using
+	std::fma().
+
+2026-04-20  Andras Varga
+
+	* Result filters: Fixed timeavg, sumPerDuration, mean (in
+	time-weighted mode) ignoring the last interval (from last emit to
+	simulation end).
+
+2026-03-30  Andras Varga
+
+	* Added pluggable RNG manager mechanism: new cIRngManager interface
+	and crngmanager.h header. The RNG manager is accessible via
+	cSimulation::getRngManager().
+
+2026-03-29  Andras Varga
+
+	* cException: Added experimental support for C++20 std::format formatting in
+	exception constructors via the _fmt literal suffix. Note that OMNeT++ itself
+	does not yet require or enforce C++20. Example: cRuntimeError("value is {},
+	name is {}"_fmt, 42, name). If
+
+2026-03-28  Andras Varga
+
+	* opp_component_ptr: Added resolveFromPar(), resolveFromParOptional(),
+	resolveFromGate(), resolveFromGateOptional() methods for resolving module
+	references.
+
+2026-03-28  Andras Varga
+
+	* cIEventlogManager::componentMethodBegin(): Changed signature to
+	take plain const char* instead of fmt+va_list. This is a breaking
+	change for custom eventlog manager classes.
+
+2026-04-09  Attila Torok
+
+	* opp_component_ptr: Removed explicit equality operators to fix C++20
+	ambiguous overload errors when comparing with raw pointers of related
+	types. The implicit operator T*() conversion provides all comparison
+	functionality.
+
+2026-03-23  Andras Varga
+
+	* WATCH redesigned: All specialized watch classes replaced with
+	unified cWatch<T>/cPointerWatch<T>. All functionality is now
+	delegated to descriptors via cWatchProxyDescriptor. Added
+	ensureDescriptor<T>() which dynamically creates and registers
+	descriptors for new types (primitives, STL containers, etc.).
+
+	* cClassDescriptor: Added getValueAsString()/setValueAsString().
+
+	* cWatchBase: Added getValuePointer().
+
+	* WATCH_EXPR and WATCH_LAMBDA macros reimplemented using
+	cComputedWatch<T>. WATCH_EXPR capture changed from [=] to [this]
+	to prevent silently frozen local variable captures.
+
+	* Dynamic descriptors: Fixed to support const pointers.
+	is_extractable<> etc. moved into internal namespace.
+
+	* cWatchProxyDescriptor: Added missing SIM_API annotation (Windows
+	build fix).
+
+2026-03-17  Andras Varga
+
+	* cException: appendMessage() and prependMessage() no longer automatically
+	insert ": " between texts. Added new appendMessage() method; extended
+	prependMessage(). These methods should be used to extend the error message
+	where necessary, instead of throwing a new exception object with a different
+	error message. (Creating a new cRuntimeError in the catch block of a
+	cRuntimeError would result in a double notification of cEnvir, e.g. the
+	stack trace being printed twice.)
+
+2026-02-25  Attila Torok
+
+	* STL container WATCHes: Now able to expand compound elements
+	(cObject subclasses and structs with descriptors). Added
+	forEachChild() override to visit cObject elements in "children"
+	mode.
+
+	* cClassDescriptor: Added getFieldArrayIndexString() to provide
+	proper index display for set/map containers instead of confusing
+	[0], [1], etc.
+
+	* STL container watcher classes moved into the internal namespace.
+	Renamed cStdVectorWatcherBase -> cStlContainerWatcherBase.
+
+2026-01-12  Andras Varga
+
+	* cPar: Added unparse() method. Unlike str(), unparse() produces a
+	faithful parseable representation of the value.
+
+2022-08-04  Attila Torok
+
+	* Added NED functions for running Python code: pyeval() and pycode().
+
+2025-11-25  Andras Varga
+
+	* Added RateAverageFilter and RateAverageRecorder ("rateavg" signal
+	statistic).
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-21  Andras Varga
@@ -13,7 +131,7 @@
 	* cCommBufferBase: Added setMode()/getMode()
 
 	* cSingleFingerprintCalculator: added alias MESSAGE_WITH_INTERNALS for
-    fingerprint ingredient MESSAGE_DATA='d'; new fingerprint ingredients
+	fingerprint ingredient MESSAGE_DATA='d'; new fingerprint ingredients
 	MESSAGE_CONTROL_INFO='g' and MESSAGE_CONTENTS='b'.
 
 2025-07-17  Andras Varga
@@ -425,9 +543,9 @@
 	of the type "object".
 
 	* cDynamicExpression: added setResolver()/getResolver(); added back
-   ResolverBase as alias for IResolver.
+	ResolverBase as alias for IResolver.
 
-   * cValue: added isNullptr()
+	* cValue: added isNullptr()
 
 2021-10-11  Andras Varga
 
@@ -2613,7 +2731,7 @@
 
 	* cFingerprint renamed to cFingerprintCalculator
 
- 	* cModule: size() deprecated, use getVectorSize() instead
+	* cModule: size() deprecated, use getVectorSize() instead
 
 	* More methods made virtual in cSimpleModule and other classes
 

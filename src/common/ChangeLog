@@ -1,3 +1,117 @@
+src/common/ChangeLog
+
+2026-04-30  Andras Varga
+
+	* Added opp_dtoa() overload that internally delegates to std::to_chars()
+	instead of sprintf(), and uses round-trip precision if precision>=17 is
+	specified. (Note that 17 digits is the maximum that makes sense for IEEE
+	doubles, as subsequent digits are just noise.)
+
+	* Use this new opp_dtoa() method for writing result files, CSV/JSON export,
+	UnitConversion::formatQuantity(), etc.
+
+2021-11-17  Rudolf Hornig
+
+	* Added opp_memory_usage() function that returns the virtual memory usage
+	of the process.
+
+2026-04-29  Andras Varga
+
+	* UnitConversion: Added maxSignificantDigits arg to formatQuantity()
+	and formatInBestUnit().
+
+2026-04-29  Andras Varga
+
+	* opp_dtoa(): added maxSignificantDigits
+
+2026-04-21  Andras Varga
+
+	* Statistics class: Improve numerical stability of stddev / variance
+	computation using std::fma().
+
+	Use fma(-mean, sumWeightedValues, sumWeightedSquaredValues) to compute
+	the sum of squared deviations with only one rounding error, avoiding
+	catastrophic cancellation that occurs with the textbook formula when the
+	mean is large relative to the standard deviation.
+
+2026-04-20  Andras Varga
+
+	* Statistics class: Store parsed mean/stddev in Statistics. Add optional
+	cachedMean/cachedStddev members to Statistics. When reading from file,
+	populate them. getStddev() returns the cached value if available, otherwise
+	recomputes. collect(), adjoin() etc clears cached fields.
+
+	Fixes #1465 "opp_scavetool unnecessarily recomputes stddev".
+
+2026-04-20  Andras Varga
+
+	* OmnetppVectorFileWriter: Use full precision when writing doubles into vci
+	(vector index) files (partial fix for #1396).
+
+	vci files are small, and the values in question are derived values which
+	will even be combined (each block's stats into whole-vector stats) -- so
+	it makes sense to record them with full precision to avoid accumulation
+	of errors.
+
+2026-04-17  Andras Varga
+
+	* Use Neumaier (KBN) summation in the Statistics class.
+
+2026-03-31  Rudolf Hornig
+
+	* opp_makedatetimestring(): Prevent warning on macOS with strict mode
+	compilation about potential buffer overrun. (The compiler cannot prove that
+	6 integer printed out fits into the 32 byte buffer.)
+
+2026-03-25  Andras Varga
+
+	* expr: Make DivNode return integer when both operands are INT and
+	division is exact
+
+	In NED, 4/2 yielded 2.0 (double) and not 2 (int). This was a problem
+	(runtime error) when the result was to be used as array size or index.
+
+2026-03-17  Attila Torok
+
+	* Move stacktrace functions into their own compilation unit
+
+	They caused problems (missing linker symbols) when building the
+	nativelibs for the IDE, and the Python bindings for scave. This way,
+	backward can just be left out of those builds.
+
+2026-02-15  Andras Varga
+
+	* Added isStacktraceAvailable(), printStacktrace()
+
+2026-01-17  Andras Varga
+
+	* UnitConversion: Allow units to contain underscore.  #1480 "Units may not
+	contain underscore".
+
+	The ned2 and expression grammars parse unit with the NAME token, i.e. as
+	other identifiers (starts with letter or underscore, may contain letters,
+	numbers, underscrore. This patch makes UnitConversion's quantity parsing
+	to follow that.
+
+	ISSUE: this causes "1s200ms" to be parsed as 1 "s200ms" (where "s200ms"
+	is the unit), whereas was previously parsed as 1.2s. Now it has to be
+	written as "1s 200ms".
+
+	In defense of the change, we need to be able to write "m2" to mean square
+	meter, and "J_K" to mean J/K.
+
+2026-01-18  Andras Varga
+
+	* opp_quotestr() to accept a quot (double or single quotation mark)
+
+2026-01-17  Andras Varga
+
+	* UnitConversion: added formatInBestUnit()
+
+2026-01-12  Andras Varga
+
+	* stringutil.h: added opp_htmlquote()
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2024-05-27  Levente Meszaros
@@ -24,7 +138,7 @@
 	* opp_ctype.h: Change opp_isalphaext() and opp_isalnumext() to accept "_" too.
 	Motivation: The new operation suits nearly all use cases better.
 
-2025-04-16  TÖRÖK Attila
+2025-04-16  Attila Torok
 
 	* exprnodes.cc: Disambiguate to 2-arg hypot overload when creating ExprNode.
 	The 3-arg overload was added in C++17. Fixes #1354.
@@ -1096,7 +1210,7 @@
 	 - dBmV (decibel-millivolt)
 	 - dBA (decibel-ampere)
 	 - dBmA (decibel-milliampere)
- 	 - dB (decibel) <--> ratio
+	 - dB (decibel) <--> ratio
 
 2018-05-24  Andras Varga
 

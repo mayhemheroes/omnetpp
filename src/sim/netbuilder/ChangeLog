@@ -1,3 +1,8 @@
+2026-02-15  Andras Varga
+
+	* Follow simulation library change: Use appendMessage()/prependMessage() in
+	catch blocks to avoid creating new exception object.
+
 2025-11-10  ------ omnetpp-6.3.0 released ------
 
 2025-10-21  Andras Varga
