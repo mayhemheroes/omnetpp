@@ -169,5 +169,6 @@ Thumbs.db
 autom4te.cache/
 backups
 compile_commands.json
+/Makefile.inc.last_known_good
 lex.*yy.cc
 out/
