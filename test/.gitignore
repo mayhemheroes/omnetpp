@@ -1,0 +1,5 @@
+*_dbg
+*_dbg.exe
+scave/results_api/Makefile
+scave/analysis/out.anf
+scave/charttemplates/*.anf
