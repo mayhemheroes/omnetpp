@@ -86,7 +86,7 @@
           # libffi
           # openssl
           # icu
-          # libxml2
+          libxml2 libxml2.dev
 
           # python dependencies
           (python3.withPackages (ps: with ps; [

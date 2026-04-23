@@ -1215,8 +1215,18 @@ if test "$WITH_LIBXML" = "yes"; then
   if test -n "$LIBXML_LIBS"; then
       OPP_CHECK_LIB(LibXML XML parser, libxml/parser.h, xmlInitParser(), $CFLAGS $LIBXML_CFLAGS, $LIBXML_LIBS, libxml_ok)
   else
-      OPP_CHECK_LIB(LibXML XML parser, libxml/parser.h, xmlInitParser(), $CFLAGS $LIBXML_CFLAGS, -lxml2,
-                    libxml_ok, LIBXML_LIBS="-lxml2")
+      # Try pkg-config first
+      LIBXML_CFLAGS="$(pkg-config --silence-errors --cflags libxml-2.0)"
+      LIBXML_LIBS="$(pkg-config --silence-errors --libs libxml-2.0)"
+      if test -n "$LIBXML_LIBS"; then
+          OPP_CHECK_LIB(LibXML XML parser, libxml/parser.h, xmlInitParser(), $CFLAGS $LIBXML_CFLAGS, $LIBXML_LIBS, libxml_ok)
+      fi
+
+      # Fallback to manual detection if pkg-config failed
+      if test $libxml_ok = no; then
+          OPP_CHECK_LIB(LibXML XML parser, libxml/parser.h, xmlInitParser(), $CFLAGS $LIBXML_CFLAGS, -lxml2,
+                        libxml_ok, LIBXML_LIBS="-lxml2")
+      fi
 
       if test $libxml_ok = no; then
           OPP_CHECK_LIB(LibXML XML parser, libxml/parser.h, xmlInitParser(), $CFLAGS -isystem /usr/include/libxml2, -lxml2,

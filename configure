@@ -7175,6 +7175,50 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    LIBS=$save_LIBS
 
   else
+      # Try pkg-config first
+      LIBXML_CFLAGS="$(pkg-config --silence-errors --cflags libxml-2.0)"
+      LIBXML_LIBS="$(pkg-config --silence-errors --libs libxml-2.0)"
+      if test -n "$LIBXML_LIBS"; then
+
+   save_CXXFLAGS=$CXXFLAGS
+   save_LIBS=$LIBS
+
+   CXXFLAGS="$CFLAGS $LIBXML_CFLAGS"
+   LIBS="$LIBXML_LIBS"
+
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LibXML XML parser with CFLAGS=\"$CFLAGS $LIBXML_CFLAGS\" LIBS=\"$LIBXML_LIBS\"" >&5
+printf %s "checking for LibXML XML parser with CFLAGS=\"$CFLAGS $LIBXML_CFLAGS\" LIBS=\"$LIBXML_LIBS\"... " >&6; }
+
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libxml/parser.h>
+int
+main (void)
+{
+xmlInitParser();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }; libxml_ok=yes;
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }; libxml_ok=no;  ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+   CXXFLAGS=$save_CXXFLAGS
+   LIBS=$save_LIBS
+
+      fi
+
+      # Fallback to manual detection if pkg-config failed
+      if test $libxml_ok = no; then
 
    save_CXXFLAGS=$CXXFLAGS
    save_LIBS=$LIBS
@@ -7211,6 +7255,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
    CXXFLAGS=$save_CXXFLAGS
    LIBS=$save_LIBS
 
+      fi
 
       if test $libxml_ok = no; then
 
