@@ -855,7 +855,7 @@ Connections support the following tags:
   \item \ttt{ls} -- line style and color
   \item \ttt{t} -- text
   \item \ttt{tt} -- tooltip
-  \item \ttt{m} -- orientation and positioning
+  \item \ttt{m} -- routing constraint (direction of departure and arrival)
 \end{itemize}
 
 Example of a thick, red connection:
@@ -871,6 +871,73 @@ source1.out --> { @display("ls=red,3"); } --> queue1.in++;
 To hide a connection, specify zero line width in the display string:
 \ttt{"ls=,0"}.
 \end{note}
+
+\subsubsection{Connection Routing}
+
+The \ttt{m} tag controls how a connection is routed between two modules.
+The routing rules differ depending on whether the connection goes from
+a submodule to its parent module, or between two submodules.
+
+\textbf{Submodule to parent.}
+The syntax is \ttt{m=<dir>}, where \textit{dir} is a cardinal direction
+letter (\ttt{n}, \ttt{e}, \ttt{s}, \ttt{w}) that specifies which edge of
+the parent module the connection should reach. If omitted or set to \ttt{a}
+(auto), the nearest edge is used.
+
+\begin{ned}
+child.out++ --> { @display("m=n"); } --> out++;   // go to north edge of parent
+child.out++ --> { @display("m=w"); } --> out++;   // go to west edge of parent
+child.out++ --> out++;                            // nearest edge (auto)
+\end{ned}
+
+\textbf{Submodule to submodule.}
+The syntax is \ttt{m=<srcDir>,<destDir>}, where each direction specifies
+the preferred axis along which the connection should leave the source or enter
+the destination module. Accepted values are \ttt{h} (horizontal, i.e.\ leave
+or enter via the east or west edge) and \ttt{v} (vertical, i.e.\ via the
+north or south edge). The values \ttt{e} and \ttt{w} are synonyms for
+\ttt{h}; \ttt{n} and \ttt{s} are synonyms for \ttt{v}. Either or both
+directions may be left empty (unconstrained).
+
+\begin{ned}
+a.out --> { @display("m=h,v"); } --> b.in;   // leave horizontally, arrive vertically (L-shape)
+a.out --> { @display("m=v,h"); } --> b.in;   // leave vertically, arrive horizontally (L-shape)
+a.out --> { @display("m=h"); } --> b.in;     // leave horizontally, arrive auto
+a.out --> { @display("m=,v"); } --> b.in;    // leave auto, arrive vertically
+\end{ned}
+
+\textbf{Routing rules.}
+The following rules are applied in priority order:
+\begin{enumerate}
+  \item \textbf{Overlap rule (strongest).} If the bounding rectangles of the
+    source and destination modules have meaningful overlap in either the x or
+    y direction, a straight horizontal or vertical line is drawn through the
+    overlap zone, regardless of any specified directions.
+  \item \textbf{L-shape rule.} If there is no overlap and at least one
+    direction is specified (and not the invalid same-axis combination
+    \ttt{h,h} or \ttt{v,v}), an L-shaped route with one bend point is
+    produced. The constrained endpoint exits or enters along the specified
+    axis; the unconstrained endpoint uses the other axis as implied by the
+    geometry.
+  \item \textbf{Fallback.} If no direction is specified, or the combination
+    is invalid (\ttt{h,h} or \ttt{v,v}), a straight line is drawn between
+    the two modules.
+\end{enumerate}
+
+\textbf{Bundling.}
+When there are multiple connections between the same pair of modules
+(a \textit{bundle}), the connections are spread apart to avoid overlapping.
+For straight segments, they are distributed within the overlap zone.
+For L-shaped routes, the same offset is applied to both the exit and entry
+edges, resulting in parallel L-shapes. Note that bundling offset is optional
+in Qtenv (only turned on when requested in the GUI).
+
+\textbf{Other modes.}
+The value \ttt{m=a} selects automatic routing (equivalent to leaving both
+directions empty). The value
+\ttt{m=m,\textit{sx},\textit{sy},\textit{dx},\textit{dy}} selects manual
+mode, where the connection endpoints are placed at the specified percentages
+of the source and destination module's bounding rectangles.
 
 More detailed information, such as what each tag argument means, is
 available in Appendix \ref{cha:display-strings}.

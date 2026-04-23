@@ -243,29 +243,29 @@ Color of the grid lines (color name, \#RRGGBB or @HHSSBB). Default: grey
 Name of distance unit. Default: m
 \\
  \hline
-\tbf{m}[0] - routing constraint
+\tbf{m}[0] - src routing direction
 &
-Connection routing constraint. Values: auto (a), south (s), north (n), east (e), west (w), manual (m)
+Routing direction for the source side. For submodule-to-parent connections: a cardinal direction (n, e, s, w) selecting the parent edge, or empty/auto (a) for nearest edge. For submodule-to-submodule connections: h (horizontal, leave via east/west edge) or v (vertical, leave via north/south edge), or empty for unconstrained; e and w are synonyms for h, n and s are synonyms for v. The value manual (m) enables anchor-based routing with m[1]..m[4]
 \\
  \hline
-\tbf{m}[1] - src anchor x
+\tbf{m}[1] - dest routing direction
 &
-When m[0] is 'm', this is the x coordinate of one point of the connection line, in integer percentages of the source rectangle
+Routing direction for the destination side. For submodule-to-submodule connections: h (horizontal) or v (vertical), or empty for unconstrained; e/w are synonyms for h, n/s are synonyms for v. When m[0] is 'm' (manual mode), this is the x coordinate of the source anchor, in integer percentages of the source rectangle
 \\
  \hline
 \tbf{m}[2] - src anchor y
 &
-When m[0] is 'm', this is the y coordinate of one point of the connection line, in integer percentages of the source rectangle
+Manual mode only (m[0]='m'): y coordinate of the source anchor, in integer percentages of the source rectangle
 \\
  \hline
 \tbf{m}[3] - dest anchor x
 &
-When m[0] is 'm', this is the x coordinate of another point of the connection line, in integer percentages of the destination rectangle
+Manual mode only (m[0]='m'): x coordinate of the destination anchor, in integer percentages of the destination rectangle
 \\
  \hline
 \tbf{m}[4] - dest anchor y
 &
-When m[0] is 'm', this is the y coordinate of another point of the connection line, in integer percentages of the destination rectangle
+Manual mode only (m[0]='m'): y coordinate of the destination anchor, in integer percentages of the destination rectangle
 \\
  \hline
 \tbf{ls}[0] - line color
