@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 #
 # Test that SQLite and OMNeT++ result file formats contain the same information.
 #
