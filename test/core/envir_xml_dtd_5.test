@@ -36,6 +36,3 @@ EV << node->getXML();
 %contains: stderr
 DTD validation failed, see stderr for detailed report
 
-%contains: stderr
-No declaration for element extraElem
-

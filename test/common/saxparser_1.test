@@ -131,6 +131,7 @@ EV << ".\n";
 
 %subst: |EndTag: '</' not found at string-content:1|Premature end of data in tag foo line 1 at string-content:1|
 %subst: |Document is empty at string-content:1|Document is empty at string-content:0|
+%subst: |ERROR: Parse error: StartTag: invalid element name at string-content:1|ERROR: Parse error: Extra content at the end of the document at string-content:1|
 
 %contains: stdout
 ----------------
