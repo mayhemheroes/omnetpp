@@ -9,7 +9,7 @@ This file only describes changes that affect compiling and running models;
 for other changes or new features see WHATSNEW, and per source directory
 ChangeLog files.
 
-Note: C++ class names and other identifiers should all be understood to be 
+Note: C++ class names and other identifiers should all be understood to be
 inside the omnetpp namespace, unless otherwise noted.
 
 Legend:
@@ -22,6 +22,101 @@ Legend:
         newname')
 (x)     removed a deprecated method, class or compatibility #define
 (i)     information
+
+
+OMNeT++ 6.4
+~~~~~~~~~~~
+
+(+)     cValue: Added static utility methods getBestUnit(), formatQuantity(), and
+        formatQuantityInBestUnit(). getBestUnit() selects the most human-readable
+        unit for a quantity. formatQuantity() formats a quantity with its original
+        unit kept; formatQuantityInBestUnit() converts to the best unit first.
+
+(+)     cPar: Added unparse() method. Unlike str(), unparse() produces a faithful,
+        parseable representation of the parameter value.
+
+(+)     cIRngManager: New pluggable RNG manager interface, with cRngManager as the
+        default implementation. Accessible via cSimulation::setRngManager() and
+        getRngManager(). This enables custom RNG management strategies without
+        modifying model code.
+
+(+)     cSimulation: Added setRngManager() and getRngManager(). See cIRngManager.
+
+(+)     cComponent: Added getNumRNGs() method, returning the number of RNGs
+        available for the component.
+
+(!)     cComponent::getRNG(): The argument k must now be in the range
+        0..getNumRNGs()-1. Previously, large indices were silently mapped to
+        global RNGs.
+
+(+)     opp_component_ptr: Added resolveFromPar(), resolveFromParOptional(),
+        resolveFromGate(), resolveFromGateOptional() methods for resolving module
+        references from string parameters or by following the connection path.
+
+(+)     Added a new opp_dtoa() overload without a printf format string argument
+        for locale-independent, round-trip-capable (for prec>=17) output.
+
+(+)     cException, cTerminationException, cRuntimeError: Added experimental
+        support for C++20 std::format-style formatting via the _fmt literal
+        suffix. Note: OMNeT++ itself does not yet require C++20.
+
+(+)     cException: Added appendMessage() with printf-style format string.
+
+(!)     cException: prependMessage() changed signature: now takes a printf-style
+        format string (was plain text). No longer automatically inserts ": "
+        between texts.
+
+(!)     cIEventlogManager::componentMethodBegin(): Changed signature to take
+        plain const char* instead of fmt+va_list. This is a breaking change for
+        custom eventlog manager classes.
+
+(+)     cClassDescriptor: Added object-level getValueAsString()/setValueAsString()
+        methods. Added getFieldArrayIndexString() for custom array index formatting
+        (e.g. to show map keys instead of numeric indices). Added UNPRINTABLE
+        constant.
+
+(+)     Added ensureDescriptor<T>() function template that creates and registers
+        a cClassDescriptor for type T on first use.
+
+(+)     WATCH() became a universal macro, able to support many more types incuding
+        STL containers.
+
+(!)     WATCH_RW, WATCH_OBJ, WATCH_PTR, WATCH_VECTOR, WATCH_PTRVECTOR,
+        WATCH_LIST, WATCH_PTRLIST, WATCH_SET, WATCH_PTRSET, WATCH_MAP,
+        WATCH_PTRMAP: Due to WATCH() becoming more powerful, these macros are
+        now simple aliases for WATCH(). In particular, WATCH_RW no longer
+        enables interactive assignment via operator>> in the inspector.
+
+(!)     WATCH_EXPR: The generated lambda now captures [this] instead of [=].
+        Code that relied on capturing local variables by value will silently
+        stop seeing them; use WATCH_LAMBDA with an explicit capture list instead.
+
+(!)     WATCH redesign: The type-specific internal watch classes cGenericReadonlyWatch<T>,
+        cGenericAssignableWatch<T>, cWatch_bool, cWatch_char, cWatch_uchar,
+        cWatch_stdstring, cWatch_cObject, cWatch_cObjectPtr, and
+        cComputedExpressionWatch<T>, along with their createWatch_*() factory
+        functions, have been removed and replaced by the unified cWatch<T>,
+        cPointerWatch<T>, and cComputedWatch<T> templates backed by
+        cClassDescriptor. Code that directly instantiated these internal classes
+        must be updated.
+
+(+)     Added RateAverageFilter and RateAverageRecorder ("rateavg" signal
+        statistic) for backward-sample-hold time-weighted averaging of
+        throughput/rate measurements.
+
+(!)     Result filters timeavg, sumPerDuration, mean (in time-weighted mode):
+        Fixed to account for the last interval (from last emit to simulation end).
+        This may cause minor changes in recorded results.
+
+(!)     cStdDev, cHistogram, result filters and recorders: Internal sum
+        accumulators changed from double to statsum_t (Neumaier compensated
+        summation) for improved numerical stability. This may cause minor
+        differences in recorded statistics.
+
+(+)     Added statsum_t typedef and NeumaierSum class for Kahan-Babuska-Neumaier
+        compensated summation.
+
+(+)     Added createByClassName<T>() convenience template function.
 
 
 OMNeT++ 6.3
