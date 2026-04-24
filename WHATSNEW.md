@@ -5,6 +5,250 @@ This file summarizes OMNeT++ changes in each release. For changes related to
 simulation model compatibility, see doc/API-Changes. For more detailed info
 about all changes, see include/ChangeLog, src/*/ChangeLog, and ide/ChangeLog.
 
+OMNeT++ 6.4 (April 2026)
+------------------------
+
+This release brings major improvements to the simulation kernel's numerical
+stability, a redesigned WATCH mechanism with full STL container inspection, a
+pluggable RNG manager, and significant NED editor enhancements including figure
+rendering, rename refactoring, and new display string features. The Qtenv
+inspector and the IDE also received substantial usability improvements.
+
+Simulation kernel:
+
+  - Redesigned the WATCH mechanism. `WATCH()` is now universal: it works for any
+    type, including STL containers (`std::vector`, `std::map`, etc.), with full
+    recursive inspection of elements. Specialized macros (`WATCH_OBJ`,
+    `WATCH_PTR`, `WATCH_VECTOR`, `WATCH_MAP`, and others) are now simple aliases
+    for `WATCH()`. Another improvement is that map and set containers now show
+    their keys as array indices instead of confusing `[0]`, `[1]`, etc.
+
+  - Improved numerical stability: `cStdDev`, `cHistogram`, and all result
+    filters/recorders now use Neumaier (Kahan-Babuska-Neumaier) compensated
+    summation for accumulated sums. Additionally, standard deviation and
+    variance computation was improved using `std::fma()`. This may cause minor
+    differences in recorded statistics compared to previous versions.
+
+  - Fixed time-weighted result filters (`timeavg`, `sumPerDuration`, `mean` in
+    time-weighted mode) ignoring the last interval (from the last emit to
+    simulation end). They now yield the same result as the corresponding
+    recorders.
+
+  - Added `RateAverageFilter` and `RateAverageRecorder` (`"rateavg"` signal
+    statistic) for backward-sample-hold time-weighted averaging, useful for
+    computing average throughput, bitrate, or packet rate.
+
+  - Added pluggable RNG manager mechanism: new `cIRngManager` interface and
+    `cRngManager` default implementation. The RNG manager is accessible via
+    `cSimulation::getRngManager()`. `cComponent::getNumRNGs()` was also added.
+
+  - `cPar`: Added `unparse()` method. Unlike `str()`, `unparse()` produces a
+    faithful, parseable representation of the parameter value. `str()` may now
+    format quantities in the best measurement unit for display purposes.
+
+  - `opp_component_ptr`: Added `resolveFromPar()`, `resolveFromParOptional()`,
+    `resolveFromGate()`, `resolveFromGateOptional()` methods for resolving module
+    references from string parameters or by following the connection path.
+
+  - `cException`, `cTerminationException`, `cRuntimeError`: Added experimental
+    support for C++20 `std::format`-style formatting via the `_fmt` literal
+    suffix. Example: `cRuntimeError("value is {}, name is {}"_fmt, 42, name)`.
+    Note: OMNeT++ itself does not yet require C++20.
+
+  - `cException`: `prependMessage()` changed to take a printf-style format
+    string (was plain text), and no longer automatically inserts `": "`. Added
+    `appendMessage()`.
+
+  - `Enter_Method()` now logs the call with TRACE loglevel.
+
+  - Changed the default precision of result files from 14 to 17 significant
+    digits, which allows a subsequent read operation to recover the value
+    without any precision loss (fix #1464).
+
+  - `cChannel::str()` no longer includes built-in parameters with default values.
+
+  - `UnitConversion`: Units may now contain underscores (#1480), e.g. `J_K` for
+    J/K and `m2` for square meter. As a side effect, concatenated units like
+    `1s200ms` must now be written as `1s 200ms`.
+
+  - Stack trace is now printed on simulation errors when `debug-on-errors` is
+    enabled but no debugger is present and attaching a debugger is disabled.
+
+NED:
+
+  - Added `pyeval()` and `pycode()` NED functions for evaluating Python
+    expressions and executing Python code from NED.
+
+  - Expression evaluation: The `/` (division) operator now returns integer
+    when both operands are integers and the division is exact.
+
+  - `DatarateChannel` statistics renamed for clarity: `throughput` ->
+    `averageThroughput`, `utilization` -> `averageUtilization`.
+
+Display Strings:
+
+  - Implemented support for L-shaped connections via the enhanced
+    `m=<srcDir>,<destDir>` display string tag, where each endpoint can
+    independently specify horizontal or vertical routing direction.
+
+  - Added support for icon transformations via the new `it` display string
+    tag. Module icons can now be rotated, flipped, and scaled.
+
+  - Added support for the `cring` (centered ring) submodule arrangement, where
+    the coordinates specify the center of the ring instead of the bounding
+    rectangle's top-left corner.
+
+  - The `row` and `column` arrangements now support optional wrapping.
+
+Cmdenv:
+
+  - Memory Usage Display: The periodic status updates in Express mode now
+    include the memory usage of the process. The displayed value is RSS
+    (Resident Set Size), which represents the portion of memory held in RAM.
+
+Qtenv:
+
+  - Generic Object Inspector: Major redesign for improved usability. Each object
+    now automatically appears in its preferred display mode (Children or Details),
+    eliminating the need for frequent toolbar mode-switching. A small overlay icon
+    on hovered tree rows allows toggling between modes. Added a "Sort by Name"
+    toolbar button for finding specific fields in large objects.
+
+  - Object Tree: Improved synchronization with the graphical module view.
+    Entering a module highlights it in the tree; clicking a submodule highlights
+    it. Added "Show in Graphical View" context menu item. Fixed the tree losing
+    selection and collapsing expanded nodes after each refresh.
+
+  - Added "Distribute Connection Arrows" feature (Ctrl+T toggle). Parallel
+    connections between module pairs are now shifted so they are not drawn on top
+    of each other. The connection line drawing algorithm was also reworked.
+
+  - Added "Reset Zoom" context menu item to the graphical module view.
+
+  - Added "Go to Module" action (Ctrl+G) for quickly navigating to any module.
+
+  - Refined connection tooltips with a compact one-line format and verbose mode
+    showing all hops. Added "Go to Connection Path Start/End" context menu
+    action. Improved mouse picking of bidirectional connections.
+
+  - Run Selection Dialog: Runs are now filterable by typing in the combo box.
+
+  - Log Inspector: Added "Show Messages/Packets Between These Modules" action
+    to the Module Inspector context menu. The module filter is now remembered per
+    module type.
+
+  - Log Inspector: Ctrl+A "Select All" now works in the embedded log view.
+
+  - Preferences: Made the log prefix format an editable combobox with predefined
+    format options. Removed two obsolete checkboxes that had no effect.
+
+  - Similarly to Cmdenv, Qtenv now displays the the memory usage (RSS) of the
+    process in the status bar at the bottom.
+
+  - Fix: Ensured the Stop dialog is modal on macOS.
+
+  - Fixed Log Inspector column width corruption when switching between Log and
+    Messages modes.
+
+Command-line Tools:
+
+  - `opp_fingerprinttest`: Major overhaul. New options: `-f`/`-F` (filter/exclude
+    by fingerprint ingredient type), `--show-passed`, `--show-runtime`,
+    `-c`/`--calculator`, `-q`/`--disable_outfile`, `-s`/`--release`,
+    `-n`/`-i` (test case splitting), `-l`/`--logfile`. Added fingerprint group
+    support, colored output, tags field in CSV parsing, and improved error
+    handling.
+
+  - `opp_scavetool`: Fixed unnecessary stddev recomputation (#1465).
+
+  - `opp_test`: Added `%round-numbers` directive.
+
+NED Editor:
+
+  - Added canvas `@figure` rendering and editing support in the graphical NED
+    editor. Figures defined as `@figure` properties in NED are now displayed and
+    can be interacted with visually. Supported figure types include rectangle,
+    oval, ring, arc, pieslice, path, polygon, polyline, label, text, icon, image,
+    and pixmap. Figures can be moved, resized, copied and pasted (including figure
+    hierarchies), and their properties can be edited via the Properties view.
+
+  - Added rename refactoring with preview and undo/redo support for NED types,
+    submodules, gates, and parameters. Renames are propagated across NED, INI,
+    and C++ files.
+
+  - Added support for editing icon transformation (`it` display string
+    tag), centered ring arrangement (`cring`), L-shaped connection routing, and
+    layout group (`g` tag) in the graphical editor and Properties dialog.
+
+  - Hover tooltips now show "inherited from ..." for inherited submodules,
+    connections, and figures. A new "Go to Definition" context menu action
+    navigates to the base type.
+
+  - Added validation that modules and channels fulfill their declared interface
+    contracts (matching parameters and gates with correct types and attributes).
+
+  - Added missing property types (`@figure`, `@omittedTypename`, `@reconnect`,
+    `@defaultname`, `@mutable`, `@class`, `@loose`, `@directIn`) to autocomplete
+    suggestions.
+
+  - Added quick type hierarchy popup (Ctrl+T) in the textual NED editor.
+
+  - Added "Spread Connection Arrows" context menu option.
+
+  - Several bug fixes including crashes from stale async messages, snap-to-grid
+    initialization, and fixes for inherited `@figure` properties.
+
+Other IDE Components:
+
+  - Project Installer: Numerous improvements to the Install Simulation Models
+    dialog. The installer now automatically sets up build configurations,
+    environment variables, project references, and can apply file substitutions.
+    Project dependencies are validated before installation.
+
+  - NED Documentation Generator: Removed mobile view. Fixed layout glitch at
+    certain zoom levels. The navigation panel width now persists between page
+    reloads.
+
+  - Fixed spurious deadlock detection dialogs in the IDE caused by cumulative
+    blocking time tracking.
+
+  - Ini File Editor: Fixed a deadlock between the analyzer and the Eclipse job
+    manager.
+
+  - MSG Editor: Added Ctrl+Tab shortcut to switch to the generated header file.
+
+  - Updated the bundled Eclipse platform to 2026-03, PyDev to 13.1.0, and JDK
+    to version 25 LTS.
+
+Python library:
+
+  - `omnetpp.scave`: Improved compatibility with Pandas 3.0 and NumPy 2.0.
+
+Simulation Manual:
+
+  - Documented new connection routing options, icon transformations, and
+    submodule arrangement features. Appendices refreshed.
+
+Install Guide:
+
+  - Added a new chapter for NixOS.
+
+Build:
+
+  - Added NixOS support: `install.sh` now works on NixOS, `setenv` can be
+    sourced on NixOS. Added `.opp_shell/flake.nix` for Nix development shell
+    support.
+
+  - Fixed incorrect clang toolchain name on macOS with newer (22.0+) clang
+    versions.
+
+  - Various build fixes for macOS and Windows.
+
+See ChangeLogs in individual folders for details.
+
+Bugs fixed: https://github.com/omnetpp/omnetpp/issues?q=is%3Aissue+is%3Aclosed+milestone%3A6.4
+
+
 OMNeT++ 6.3 (November 2025)
 ---------------------------
 
