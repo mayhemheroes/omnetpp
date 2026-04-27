@@ -357,6 +357,7 @@ if $no_gui; then CONFIGOPTS="$CONFIGOPTS WITH_QTENV=no"; fi
 if $no_3d; then CONFIGOPTS="$CONFIGOPTS WITH_OSG=no"; fi
 
 if ! $no_build; then
+    echo_run source setenv -q
     echo_run ./configure $CONFIGOPTS
 
     # build
