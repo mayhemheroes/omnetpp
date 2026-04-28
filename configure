@@ -4420,8 +4420,15 @@ fi
 
 #----------------------
 # Check whether LLD linker is available and preferred as it is a much faster than the system one.
-#----------------------
-if test "$PREFER_LLD" = "yes"; then
+# Note: LLD is NOT used on macOS, because its mach-o backend produces incorrect
+# __eh_frame / __unwind_info for cross-dylib C++ exceptions: a throw from one
+# dylib cannot be caught by a handler in another dylib (the unwinder's phase-1
+# search misses the handler and std::terminate is invoked). This affects
+# OMNeT++ heavily, e.g. exceptions thrown from liboppcommon (XML parser etc.)
+# and caught in liboppenvir/liboppsim. The system linker (ld64/ld-prime) on
+# macOS handles this correctly. If/when LLD's mach-o backend matures, this
+# guard can be relaxed.
+if test "$PREFER_LLD" = "yes" -a "$PLATFORM" != "macos"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether LLD linker is available" >&5
 printf %s "checking whether LLD linker is available... " >&6; }
   LDFLAGS_SAVE="$LDFLAGS"
