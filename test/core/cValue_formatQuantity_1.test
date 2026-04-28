@@ -1,0 +1,93 @@
+%description:
+Tests for cValue::formatQuantity(). Covers: no unit, unit conversion to best
+unit, digit grouping, infinite decimal fractions, and approximation (rounding
+with tilde prefix).
+
+%activity:
+#define P3(d,u,p) EV << #d << " " << (u?u:"") << " (" << p << ") --> " \
+                     << cValue::formatQuantity(d,u,p,"'") << ", " \
+                     << cValue::formatQuantityInBestUnit(d,u,p,"'") << "\n"
+
+// no unit - simple cases (prec=3)
+P3(0, nullptr, 3);
+P3(23, nullptr, 3);
+P3(1000, nullptr, 3);
+EV << "\n";
+
+// digit grouping with long numbers
+P3(1'234'567'890.0, nullptr, 6);
+P3(123'456'789'012'345.0, nullptr, 6);
+EV << "\n";
+
+// infinite decimal fractions (2.0/3.0 = 0.666...) - shows rounding behavior
+P3(2.0/3.0, nullptr, 3);     // prec=3
+P3(2.0/3.0, nullptr, 6);
+P3(2.0/3.0, nullptr, 15);
+EV << "\n";
+
+// another infinite fraction: 1.0/7.0 = 0.142857142857...
+P3(1.0/7.0, nullptr, 3);     // prec=3
+P3(1.0/7.0, nullptr, 6);
+P3(1.0/7.0, nullptr, 15);
+EV << "\n";
+
+// auto unit conversion
+P3(1.0, "s", 3);
+P3(0.001, "s", 3);
+P3(1e-9, "s", 3);
+P3(1000.0, "m", 3);
+P3(1e6, "Hz", 3);
+EV << "\n";
+
+// longer numbers with units - digit grouping at various precisions
+P3(1'234'567.89, "m", 3);
+P3(1'234'567.89, "m", 6);
+P3(1'234'567.89, "m", 9);
+EV << "\n";
+
+// approximation: maxSignificantDigits < actual digits --> tilde prefix
+P3(1234.5, "m", 3);
+P3(1234.5, "m", 6);
+P3(1234.56789, "m", 6);
+P3(1'234.567'890'123, "m", 6);
+EV << "\n";
+
+// very small and very large numbers with unit conversion
+P3(1e-12, "s", 6);
+P3(1e12, "Hz", 6);
+EV << ".\n";
+
+%contains: stdout
+0  (3) --> 0, 0
+23  (3) --> 23, 23
+1000  (3) --> 1'000, 1'000
+
+1'234'567'890.0  (6) --> ~1.234'57e9, ~1.234'57e9
+123'456'789'012'345.0  (6) --> ~1.234'57e14, ~1.234'57e14
+
+2.0/3.0  (3) --> ~0.667, ~0.667
+2.0/3.0  (6) --> ~0.666'667, ~0.666'667
+2.0/3.0  (15) --> 0.666'666'666'666'667, 0.666'666'666'666'667
+
+1.0/7.0  (3) --> ~0.143, ~0.143
+1.0/7.0  (6) --> ~0.142'857, ~0.142'857
+1.0/7.0  (15) --> 0.142'857'142'857'143, 0.142'857'142'857'143
+
+1.0 s (3) --> 1 s, 1 s
+0.001 s (3) --> 0.001 s, 1 ms
+1e-9 s (3) --> 1e-9 s, 1 ns
+1000.0 m (3) --> 1'000 m, 1 km
+1e6 Hz (3) --> 1e6 Hz, 1 MHz
+
+1'234'567.89 m (3) --> ~1.23e6 m, ~1'235 km
+1'234'567.89 m (6) --> ~1'234'568 m, ~1'234.57 km
+1'234'567.89 m (9) --> 1'234'567.89 m, 1'234.567'89 km
+
+1234.5 m (3) --> ~1'235 m, ~1.23 km
+1234.5 m (6) --> 1'234.5 m, 1.234'5 km
+1234.56789 m (6) --> ~1'234.57 m, ~1.234'57 km
+1'234.567'890'123 m (6) --> ~1'234.57 m, ~1.234'57 km
+
+1e-12 s (6) --> 1e-12 s, 1 ps
+1e12 Hz (6) --> 1e12 Hz, 1 THz
+.

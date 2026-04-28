@@ -17,6 +17,7 @@
 #include "common/stringutil.h"
 #include "common/pooledstring.h"
 #include "common/unitconversion.h"
+#include "common/quantityformatter.h"
 #include "common/intutil.h"
 #include "omnetpp/cvalue.h"
 #include "omnetpp/cxmlelement.h"
@@ -204,6 +205,32 @@ double cValue::parseQuantity(const char *str, const char *expectedUnit)
 double cValue::parseQuantity(const char *str, std::string& outActualUnit)
 {
     return UnitConversion::parseQuantity(str, outActualUnit);
+}
+
+const char *cValue::getBestUnit(double d, const char *unit)
+{
+    return UnitConversion::getBestUnit(d, unit);
+}
+
+static QuantityFormatter::Options makeOptions(QuantityFormatter::OutputUnitMode outputUnitMode, int maxSignificantDigits, const char *groupSeparator)
+{
+    QuantityFormatter::Options options;
+    options.outputUnitMode = outputUnitMode;
+    options.maxSignificantDigits = maxSignificantDigits;
+    options.groupSeparator = opp_nulltoempty(groupSeparator);
+    return options;
+}
+
+std::string cValue::formatQuantity(double d, const char *unit, int maxSignificantDigits, const char *groupSeparator)
+{
+    QuantityFormatter::Options options = makeOptions(QuantityFormatter::OutputUnitMode::KEEP, maxSignificantDigits, groupSeparator);
+    return QuantityFormatter(options).formatQuantity(d, unit).text;
+}
+
+std::string cValue::formatQuantityInBestUnit(double d, const char *unit, int maxSignificantDigits, const char *groupSeparator)
+{
+    QuantityFormatter::Options options = makeOptions(QuantityFormatter::OutputUnitMode::AUTO, maxSignificantDigits, groupSeparator);
+    return QuantityFormatter(options).formatQuantity(d, unit).text;
 }
 
 static std::string objectInfo(const cObject *obj)

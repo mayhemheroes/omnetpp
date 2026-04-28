@@ -1,0 +1,50 @@
+%description:
+Tests for cValue::getBestUnit() -- cursory coverage of common unit families.
+
+%global:
+#define B(v,u)  EV << "getBestUnit(" #v ", " #u ") --> " << cValue::getBestUnit(v, u) << "\n"
+
+%activity:
+// time
+B(1.0, "s");
+B(0.001, "s");
+B(1e-6, "s");
+B(1e-9, "s");
+EV << "\n";
+
+// distance
+B(1.0, "m");
+B(0.001, "m");
+B(1000.0, "m");
+EV << "\n";
+
+// power
+B(1.0, "W");
+B(0.001, "W");
+B(1000.0, "W");
+EV << "\n";
+
+// frequency
+B(1.0, "Hz");
+B(1000.0, "Hz");
+B(1e6, "Hz");
+EV << ".\n";
+
+%contains: stdout
+getBestUnit(1.0, "s") --> s
+getBestUnit(0.001, "s") --> ms
+getBestUnit(1e-6, "s") --> us
+getBestUnit(1e-9, "s") --> ns
+
+getBestUnit(1.0, "m") --> m
+getBestUnit(0.001, "m") --> mm
+getBestUnit(1000.0, "m") --> km
+
+getBestUnit(1.0, "W") --> W
+getBestUnit(0.001, "W") --> mW
+getBestUnit(1000.0, "W") --> kW
+
+getBestUnit(1.0, "Hz") --> Hz
+getBestUnit(1000.0, "Hz") --> kHz
+getBestUnit(1e6, "Hz") --> MHz
+.

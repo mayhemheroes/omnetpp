@@ -176,6 +176,32 @@ class SIM_API cValue
      * is given instead of time), the method throws an exception.
      */
     static double parseQuantity(const char *str, std::string& outActualUnit);
+
+    /**
+     * Returns the best unit for human consumption for the given quantity.
+     */
+    static const char *getBestUnit(double d, const char *unit);
+
+    /**
+     * Formats the given quantity as a human-readable string. The output uses
+     * automatically selected regular or scientific notation, automatic unit
+     * conversion to the most readable unit, and digit grouping (e.g. thousands
+     * separator). The optional maxSignificantDigits argument limits the number
+     * of significant digits shown; values that are rounded are prefixed with
+     * a tilde (~). The default (15) shows the full double precision without
+     * approximation. The groupSeparator argument controls the thousands
+     * separator character(s); use "" to disable grouping.
+     */
+    static std::string formatQuantity(double d, const char *unit, int maxSignificantDigits=6, const char *groupSeparator="'");
+
+    /**
+     * Formats the given quantity as a human-readable string, after converting
+     * it to the best unit for human consumption. Equivalent to calling
+     * getBestUnit(), convertUnit(), and formatQuantity() in sequence.
+     * The groupSeparator argument controls the thousands separator character(s);
+     * use "" to disable grouping.
+     */
+    static std::string formatQuantityInBestUnit(double d, const char *unit, int maxSignificantDigits=6, const char *groupSeparator="'");
     //@}
 
     /** @name Setter functions. Note that overloaded assignment operators also exist. */
