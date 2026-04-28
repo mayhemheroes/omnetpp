@@ -46,6 +46,7 @@ def _import_scave_bindings():
 
     import importlib
     sb = None
+    errors = []
 
     for suffix in module_suffixes:
         modulename = "omnetpp.scave.scave_bindings" + suffix
@@ -55,9 +56,24 @@ def _import_scave_bindings():
             break
         except ImportError as e:
             logger.debug(f"Failed to load {modulename}: {e}")
+            errors.append(e)
 
     if sb is None:
-        raise ImportError("Could not import omnetpp.scave.scave_bindings")
+        import importlib.machinery
+        scave_dir = os.path.dirname(os.path.abspath(__file__))
+        ext_suffix = importlib.machinery.EXTENSION_SUFFIXES[0]
+        lines = []
+        for s, err in zip(module_suffixes, errors):
+            fpath = os.path.join(scave_dir, "scave_bindings" + s + ext_suffix)
+            if os.path.exists(fpath):
+                lines.append(f"  {fpath} -- found but failed to load: {err}")
+            else:
+                lines.append(f"  {fpath} -- not found")
+        raise ImportError(
+            "Could not import omnetpp.scave.scave_bindings -- "
+            "OMNeT++ may not be fully built, or a required shared library is missing.\n"
+            "Files checked:\n" + "\n".join(lines)
+        )
 
     return sb
 
