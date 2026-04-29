@@ -143,13 +143,13 @@ class COMMON_API UnitConversion
     /**
      * Returns a concatenation of the number and the unit.
      */
-    static std::string formatQuantity(double d, const char *unit=nullptr);
+    static std::string formatQuantity(double d, const char *unit=nullptr, int maxSignificantDigits=6);
 
     /**
      * Utility function that combines getBestUnit() and formatQuantity() to
      * format the given quantity in the unit best suited to the value.
      */
-    static std::string formatInBestUnit(double value, const char* unit);
+    static std::string formatInBestUnit(double value, const char* unit, int maxSignificantDigits=6);
 
     /**
      * Returns a descriptive name of the given unit; in the worst case

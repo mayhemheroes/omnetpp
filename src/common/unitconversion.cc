@@ -410,10 +410,10 @@ double UnitConversion::parseQuantity(const char *str, std::string& unitName)
     return result;
 }
 
-std::string UnitConversion::formatQuantity(double value, const char *unitName)
+std::string UnitConversion::formatQuantity(double value, const char *unitName, int maxSignificantDigits)
 {
     char buf[32];
-    opp_dtoa(buf, "%g", value);
+    opp_dtoa(buf, "%.*g", value, maxSignificantDigits);
     if (!opp_isempty(unitName)) {
         if (!std::isfinite(value))
             strcat(buf, " ");
@@ -422,11 +422,11 @@ std::string UnitConversion::formatQuantity(double value, const char *unitName)
     return buf;
 }
 
-std::string UnitConversion::formatInBestUnit(double value, const char* unit)
+std::string UnitConversion::formatInBestUnit(double value, const char* unit, int maxSignificantDigits)
 {
     const char* bestUnit = getBestUnit(value, unit);
     double convertedValue = convertUnit(value, unit, bestUnit);
-    return formatQuantity(convertedValue, bestUnit);
+    return formatQuantity(convertedValue, bestUnit, maxSignificantDigits);
 }
 
 std::string UnitConversion::getUnitDescription(const char *unitName)
