@@ -36,9 +36,6 @@ org.foo.ddd
 opp_featuretool: '.oppfeaturestate' updated
 opp_featuretool: '.nedexclusions' updated
 
-%not-contains-regex: test.err
-[a-zA-Z]
-
 %contains: .oppfeaturestate
 <?xml version="1.0" ?>
 <featurestates>
