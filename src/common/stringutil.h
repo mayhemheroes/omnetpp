@@ -418,8 +418,10 @@ COMMON_API char *opp_i64toa(char *buf, int64_t d);
  * If d is finite, the given printf format is used (e.g. "%g"), otherwise
  * it prints "inf", "-inf" or "nan". (Note that printf's handling of NaN and
  * infinity is platform-dependent, e.g. MSVC produces "1.#QNAN" and "1.#INF".)
+ * If maxSignificantDigits >= 0, the format must contain ".*" and the precision
+ * will be supplied as that argument (e.g. "%.*g").
  */
-COMMON_API char *opp_dtoa(char *buf, const char *format, double d);
+COMMON_API char *opp_dtoa(char *buf, const char *format, double d, int maxSignificantDigits = -1);
 
 /**
  * Utility function to convert a 64-bit fixed point number into a string

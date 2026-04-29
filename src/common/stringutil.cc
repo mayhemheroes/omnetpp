@@ -810,10 +810,14 @@ char *opp_i64toa(char *buf, int64_t d)
     return buf;
 }
 
-char *opp_dtoa(char *buf, const char *format, double d)
+char *opp_dtoa(char *buf, const char *format, double d, int maxSignificantDigits)
 {
-    if (std::isfinite(d))
-        snprintf(buf, 32, format, d);
+    if (std::isfinite(d)) {
+        if (maxSignificantDigits >= 0)
+            snprintf(buf, 32, format, maxSignificantDigits, d);
+        else
+            snprintf(buf, 32, format, d);
+    }
     else if (std::isinf(d))
         strcpy(buf, d<0 ? "-inf" : "inf");
     else // must be nan
