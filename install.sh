@@ -151,7 +151,7 @@ install_deps() {
 
             echo_root_run "dnf install -y $packages ; dnf clean packages"
 
-        elif [[ "$(command -v dnf)" != "" &&  ( "$ID" == "almalinux" || "$ID" == "rhel" ) ]]; then # (tested versions 9, 10)
+        elif [[ "$(command -v dnf)" != "" &&  ( "$ID" == "almalinux" || "$ID" == "rhel" || "$ID" == "rocky" || "$ID" == "centos" ) ]]; then # (tested versions 9, 10)
             packages="make ccache clang lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel graphviz xdg-utils elfutils-devel"
 
             if ! $no_gui; then
