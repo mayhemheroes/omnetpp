@@ -23,6 +23,7 @@
 *.out
 *.pdb
 *.pyc
+*.pyd
 *.so
 *.tab.cc
 *.tab.h
