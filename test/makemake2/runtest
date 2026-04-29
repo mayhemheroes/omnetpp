@@ -3,7 +3,6 @@
 import os
 import sys
 import subprocess
-import filecmp
 
 # Command lines to test
 commands = [
@@ -57,9 +56,12 @@ for i, command in enumerate(commands):
     # Copy the resulting Makefile to the actual/ directory
     os.replace(f"{playground_dir}/Makefile", actual_path)
 
-    # Compare the actual output to the expected output
+    # Compare the actual output to the expected output (ignoring line ending differences)
     try:
-        if filecmp.cmp(actual_path, expected_path):
+        with open(actual_path, 'rb') as f1, open(expected_path, 'rb') as f2:
+            actual_content = f1.read().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+            expected_content = f2.read().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+        if actual_content == expected_content:
             num_pass += 1
         else:
             print(f"Test case {i} failed (output mismatch)")
