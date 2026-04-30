@@ -19,7 +19,7 @@ no_3d=false
 no_gui=false
 no_build=false
 quiet_flag=false
-PYTHON3=python3
+PYTHON3=${PYTHON3:-python3}
 
 # print the usage and supported options
 print_usage() {
@@ -111,7 +111,7 @@ install_python_deps() {
     echo_q
     echo_q -e "${GREEN}*** Installing required python packages ***${RESET}"
     echo_q
-    echo_run python3 -m pip install -r python/requirements.txt
+    echo_run $PYTHON3 -m pip install -r python/requirements.txt
 }
 
 # install dependencies
@@ -125,7 +125,7 @@ install_deps() {
         # detect the package manager
         if [[ "$(command -v apt)" != "" ]]; then # e.g. ID=ubuntu (tested versions: 22.04, 24.04, 25.04)
             # apt-get is used on debian (i.e. Ubuntu,  etc.)
-            packages="make diffutils pkg-config ccache clang lld gdb lldb bison flex perl sed gawk python3 python3-pip python3-venv python3-dev libxml2-dev zlib1g-dev doxygen graphviz xdg-utils libdw-dev"
+            packages="make diffutils pkg-config ccache clang lld gdb lldb bison flex perl sed gawk $PYTHON3 $PYTHON3-pip $PYTHON3-venv $PYTHON3-dev libxml2-dev zlib1g-dev doxygen graphviz xdg-utils libdw-dev"
 
             if ! $no_gui; then
                 packages="$packages qt6-base-dev qt6-base-dev-tools qmake6 libqt6svg6 qt6-wayland libwebkit2gtk-4.1-0"
@@ -139,7 +139,7 @@ install_deps() {
 
         elif [[ "$(command -v dnf)" != "" && "$ID" == "fedora" ]]; then # e.g. ID=fedora (tested versions: 42)
             # dnf is used on fedora
-            packages="make ccache clang awk lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdwarf-devel"
+            packages="make ccache clang awk lld lldb gdb bison flex perl $PYTHON3-devel $PYTHON3-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdwarf-devel"
 
             if ! $no_gui; then
                 packages="$packages qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg qt6-qtwayland webkit2gtk4.1"
@@ -152,7 +152,7 @@ install_deps() {
             echo_root_run "dnf install -y $packages ; dnf clean packages"
 
         elif [[ "$(command -v dnf)" != "" &&  ( "$ID" == "almalinux" || "$ID" == "rhel" || "$ID" == "rocky" || "$ID" == "centos" ) ]]; then # (tested versions 9, 10)
-            packages="make ccache clang lld lldb gdb bison flex perl python3-devel python3-pip libxml2-devel zlib-devel graphviz xdg-utils elfutils-devel"
+            packages="make ccache clang lld lldb gdb bison flex perl $PYTHON3-devel $PYTHON3-pip libxml2-devel zlib-devel graphviz xdg-utils elfutils-devel"
 
             if ! $no_gui; then
                 packages="$packages qt6-qttools-devel qt6-qtbase-devel qt6-qtsvg qt6-qtwayland" # 10: webkit2gtk4.1 9:webkit2gtk3
