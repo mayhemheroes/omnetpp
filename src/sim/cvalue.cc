@@ -248,7 +248,7 @@ std::string cValue::str() const
         case INT: snprintf(buf, sizeof(buf), "%" PRId64 "%s", (int64_t)intv, opp_nulltoempty(unit.c_str())); return buf;
         case DOUBLE: {
             if (unit.empty())
-                return opp_dtoa(buf, "%g", dbl);
+                return opp_dtoa(buf, dbl);
             else {
                 double value = dbl;
                 const char *displayUnit = unit.c_str();

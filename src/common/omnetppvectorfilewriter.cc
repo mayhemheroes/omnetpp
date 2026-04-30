@@ -241,11 +241,11 @@ void OmnetppVectorFileWriter::writeBlock(VectorData *vp)
 
     if (vp->recordEventNumbers) {
         for (auto sample : vp->buffer)
-            check(fprintf(f, "%d\t%" PRId64 "\t%s\t%.*g\n", vp->id, sample.eventNumber, sample.time.ttoa(buf), prec, sample.value));
+            check(fprintf(f, "%d\t%" PRId64 "\t%s\t%s\n", vp->id, sample.eventNumber, sample.time.ttoa(buf), opp_dtoa(buf2, sample.value, prec)));
     }
     else {
         for (auto sample : vp->buffer)
-            check(fprintf(f, "%d\t%s\t%.*g\n", vp->id, sample.time.ttoa(buf), prec, sample.value));
+            check(fprintf(f, "%d\t%s\t%s\n", vp->id, sample.time.ttoa(buf), opp_dtoa(buf2, sample.value, prec)));
     }
 
     currentBlock.size = opp_ftell(f) - currentBlock.offset;
@@ -257,18 +257,19 @@ void OmnetppVectorFileWriter::writeBlock(VectorData *vp)
     // so the index can be used to access the vector file while it is being written
     fflush(f);
 
+    char b1[32], b2[32], b3[32], b4[32];
     if (vp->recordEventNumbers) {
-        checki(fprintf(fi, "%d\t%" PRId64 " %" PRId64 " %" PRId64 " %" PRId64 " %s %s %" PRId64 " %.*g %.*g %.*g %.*g\n",
+        checki(fprintf(fi, "%d\t%" PRId64 " %" PRId64 " %" PRId64 " %" PRId64 " %s %s %" PRId64 " %s %s %s %s\n",
                 vp->id, block.offset, block.size,
                 block.startEventNum, block.endEventNum,
                 block.startTime.ttoa(buf), block.endTime.ttoa(buf2),
-                stats.getCount(), iprec, stats.getMin(), iprec, stats.getMax(), iprec, stats.getSum(), iprec, stats.getSumSqr()));
+                stats.getCount(), opp_dtoa(b1, stats.getMin(), iprec), opp_dtoa(b2, stats.getMax(), iprec), opp_dtoa(b3, stats.getSum(), iprec), opp_dtoa(b4, stats.getSumSqr(), iprec)));
     }
     else {
-        checki(fprintf(fi, "%d\t%" PRId64 " %" PRId64 " %s %s %" PRId64 " %.*g %.*g %.*g %.*g\n",
+        checki(fprintf(fi, "%d\t%" PRId64 " %" PRId64 " %s %s %" PRId64 " %s %s %s %s\n",
                 vp->id, block.offset, block.size,
                 block.startTime.ttoa(buf), block.endTime.ttoa(buf2),
-                stats.getCount(), iprec, stats.getMin(), iprec, stats.getMax(), iprec, stats.getSum(), iprec, stats.getSumSqr()));
+                stats.getCount(), opp_dtoa(b1, stats.getMin(), iprec), opp_dtoa(b2, stats.getMax(), iprec), opp_dtoa(b3, stats.getSum(), iprec), opp_dtoa(b4, stats.getSumSqr(), iprec)));
     }
 
     fflush(fi);

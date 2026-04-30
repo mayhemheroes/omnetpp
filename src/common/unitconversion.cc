@@ -413,7 +413,7 @@ double UnitConversion::parseQuantity(const char *str, std::string& unitName)
 std::string UnitConversion::formatQuantity(double value, const char *unitName, int maxSignificantDigits)
 {
     char buf[32];
-    opp_dtoa(buf, "%.*g", value, maxSignificantDigits);
+    opp_dtoa(buf, value, maxSignificantDigits);
     if (!opp_isempty(unitName)) {
         if (!std::isfinite(value))
             strcat(buf, " ");

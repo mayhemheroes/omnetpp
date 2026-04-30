@@ -255,9 +255,19 @@ SIM_API char *opp_i64toa(char *buf, int64_t d);
 
 /**
  * @brief Prints the d double into the given buffer, then returns the buffer pointer.
+ * Uses std::to_chars for locale-independent formatting. If numSignificantDigits
+ * is >= 17, the shortest round-trip representation is used; otherwise the value
+ * is formatted with the given number of significant digits (like printf's "%.*g").
+ * Non-finite values are printed as "inf", "-inf" or "nan".
+ */
+SIM_API char *opp_dtoa(char *buf, double d, int numSignificantDigits = 6);
+
+/**
+ * @brief Prints the d double into the given buffer, then returns the buffer pointer.
  * If d is finite, the given printf format is used (e.g. "%g"), otherwise
  * it prints "inf", "-inf" or "nan". (Note that printf's handling of NaN and
  * infinity is platform-dependent, e.g. MSVC produces "1.#QNAN" and "1.#INF".)
+ * @deprecated Use the format-free overload instead.
  */
 SIM_API char *opp_dtoa(char *buf, const char *format, double d);
 

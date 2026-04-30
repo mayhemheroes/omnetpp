@@ -67,8 +67,10 @@ void JsonWriter::doWriteInt(int64_t value)
 
 void JsonWriter::doWriteDouble(double value)
 {
-    if (std::isfinite(value))
-        out() << std::setprecision(prec) << value;
+    if (std::isfinite(value)) {
+        char buf[32];
+        out() << opp_dtoa(buf, value, prec);
+    }
     else if (isPositiveInfinity(value))
         out() << infStr;
     else if (isNegativeInfinity(value))

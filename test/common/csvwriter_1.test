@@ -62,7 +62,7 @@ EV << ".\n";
 OPTIONS:  quoting: DOUBLING  sep: {,}  quotechar: {"}
 42,-100,9223372036854775807,-9223372036854775808
 0,3.1415,-3.15e-200
-Inf,-Inf,NaN
+inf,-inf,nan
 0,1,-1
 +Inf,-Inf,NaN,Nil
 Foo,Hello World,"Good morning, Sir!"
@@ -74,19 +74,19 @@ break"
 OPTIONS:  quoting: DOUBLING  sep: {	}  quotechar: {"}
 42	-100	9223372036854775807	-9223372036854775808
 0	3.1415	-3.15e-200
-Inf	-Inf	NaN
+inf	-inf	nan
 0	1	-1
 +Inf	-Inf	NaN	Nil
 Foo	Hello World	Good morning, Sir!
 "qu""o""te"	apos'	"T-	A-	B"	"line-
 break"
-	2			5	6	
+	2			5	6
 ---------
 
 OPTIONS:  quoting: DOUBLING  sep: { }  quotechar: {"}
 42 -100 9223372036854775807 -9223372036854775808
 0 3.1415 -3.15e-200
-Inf -Inf NaN
+inf -inf nan
 0 1 -1
 +Inf -Inf NaN Nil
 Foo "Hello World" "Good morning, Sir!"
@@ -98,7 +98,7 @@ break"
 OPTIONS:  quoting: DOUBLING  sep: {,}  quotechar: {'}
 42,-100,9223372036854775807,-9223372036854775808
 0,3.1415,-3.15e-200
-Inf,-Inf,NaN
+inf,-inf,nan
 0,1,-1
 +Inf,-Inf,NaN,Nil
 Foo,Hello World,'Good morning, Sir!'
@@ -110,7 +110,7 @@ break'
 OPTIONS:  quoting: BACKSLASH  sep: {,}  quotechar: {"}
 42,-100,9223372036854775807,-9223372036854775808
 0,3.1415,-3.15e-200
-Inf,-Inf,NaN
+inf,-inf,nan
 0,1,-1
 +Inf,-Inf,NaN,Nil
 Foo,Hello World,"Good morning, Sir!"

@@ -160,7 +160,7 @@ std::string ExprValue::str() const
             snprintf(buf, sizeof(buf), "%" PRId64 "%s", (int64_t)intv, opp_nulltoempty(unit.c_str()));
             return buf;
         case DOUBLE:
-            opp_dtoa(buf, "%g", dbl);
+            opp_dtoa(buf, dbl);
             if (!unit.empty()) {
                 if (!std::isfinite(dbl))
                     strcat(buf, " ");

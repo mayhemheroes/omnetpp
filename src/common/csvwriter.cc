@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include "commonutil.h"
+#include "stringutil.h"
 #include "bigdecimal.h"
 #include "opp_ctype.h"
 #include "csvwriter.h"
@@ -148,14 +149,9 @@ void CsvWriter::writeSep()
 
 void CsvWriter::doWriteDouble(double value)
 {
-    if (std::isfinite(value))
-        out() << std::setprecision(prec) << value;
-    else if (isPositiveInfinity(value))
-        out() << "Inf";
-    else if (isNegativeInfinity(value))
-        out() << "-Inf";
-    else
-        out() << "NaN";
+    char buf[32];
+    opp_dtoa(buf, value, prec);
+    out() << buf;
 }
 
 bool CsvWriter::needsQuote(const std::string& value)

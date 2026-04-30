@@ -179,6 +179,11 @@ char *opp_i64toa(char *buf, int64_t d)
     return common::opp_i64toa(buf, d);
 }
 
+char *opp_dtoa(char *buf, double d, int numSignificantDigits)
+{
+    return common::opp_dtoa(buf, d, numSignificantDigits);
+}
+
 char *opp_dtoa(char *buf, const char *format, double d)
 {
     return common::opp_dtoa(buf, format, d);

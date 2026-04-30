@@ -19,6 +19,7 @@
 #include <cerrno>
 #include <cmath>  // HUGE_VAL
 #include <clocale>
+#include <charconv>
 #include <algorithm>
 #include "omnetpp/platdep/platmisc.h"
 #include "commonutil.h"
@@ -807,6 +808,23 @@ char *opp_ltoa(char *buf, long d)
 char *opp_i64toa(char *buf, int64_t d)
 {
     snprintf(buf, 20, "%" PRId64, d);
+    return buf;
+}
+
+char *opp_dtoa(char *buf, double d, int numSignificantDigits)
+{
+    if (std::isfinite(d)) {
+        std::to_chars_result res;
+        if (numSignificantDigits >= 17)
+            res = std::to_chars(buf, buf + 32, d);
+        else
+            res = std::to_chars(buf, buf + 32, d, std::chars_format::general, numSignificantDigits);
+        *res.ptr = '\0';
+    }
+    else if (std::isinf(d))
+        strcpy(buf, d<0 ? "-inf" : "inf");
+    else // must be nan
+        strcpy(buf, "nan");
     return buf;
 }
 

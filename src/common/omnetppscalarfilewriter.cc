@@ -72,7 +72,8 @@ void OmnetppScalarFileWriter::writeStatisticField(const char *name, int64_t valu
 
 void OmnetppScalarFileWriter::writeStatisticField(const char *name, double value)
 {
-    check(fprintf(f, "field %s %.*g\n", QUOTE(name), prec, value));
+    char buf[32];
+    check(fprintf(f, "field %s %s\n", QUOTE(name), opp_dtoa(buf, value, prec)));
 }
 
 void OmnetppScalarFileWriter::writeStatisticFields(const Statistics& statistic)
@@ -126,7 +127,8 @@ void OmnetppScalarFileWriter::endRecordingForRun()
 void OmnetppScalarFileWriter::recordScalar(const std::string& componentFullPath, const std::string& name, double value, const StringMap& attributes)
 {
     Assert(isOpen());
-    check(fprintf(f, "scalar %s %s %.*g\n", QUOTE(componentFullPath.c_str()), QUOTE(name.c_str()), prec, value));
+    char buf[32];
+    check(fprintf(f, "scalar %s %s %s\n", QUOTE(componentFullPath.c_str()), QUOTE(name.c_str()), opp_dtoa(buf, value, prec)));
     writeAttributes(attributes);
 }
 
@@ -143,10 +145,10 @@ bool OmnetppScalarFileWriter::isEnoughPrecision(const Histogram& bins, int prec)
     // check if the given precision is enough to make adjacent bin edges differ in the output
     int n = bins.getNumBins();
     char prevEdge[32];
-    snprintf(prevEdge, sizeof(prevEdge), "%.*g", prec, bins.getBinEdge(0));
+    opp_dtoa(prevEdge, bins.getBinEdge(0), prec);
     for (int i = 1; i <= n; i++) {
         char edge[32];
-        snprintf(edge, sizeof(edge), "%.*g", prec, bins.getBinEdge(i));
+        opp_dtoa(edge, bins.getBinEdge(i), prec);
         if (opp_streq(edge, prevEdge))
             return false;
         strcpy(prevEdge, edge);
@@ -156,7 +158,8 @@ bool OmnetppScalarFileWriter::isEnoughPrecision(const Histogram& bins, int prec)
 
 void OmnetppScalarFileWriter::writeBin(double lowerEdge, double value, int prec)
 {
-    check(fprintf(f, "bin\t%.*g\t%.*g\n", prec, lowerEdge, prec, value));
+    char buf1[32], buf2[32];
+    check(fprintf(f, "bin\t%s\t%s\n", opp_dtoa(buf1, lowerEdge, prec), opp_dtoa(buf2, value, prec)));
 }
 
 void OmnetppScalarFileWriter::recordHistogram(const std::string& componentFullPath, const std::string& name, const Statistics& statistic, const Histogram& bins, const StringMap& attributes)
