@@ -20,6 +20,7 @@ no_gui=false
 no_build=false
 quiet_flag=false
 PYTHON3=${PYTHON3:-python3}
+PYTHON3_DOTLESS=${PYTHON3//./}
 
 # print the usage and supported options
 print_usage() {
@@ -135,7 +136,7 @@ install_deps() {
                 packages="$packages libopenscenegraph-dev"
             fi
 
-            echo_root_run "DEBIAN_FRONTEND=noninteractive apt install -y $packages ; apt clean"
+            echo_root_run "apt update; DEBIAN_FRONTEND=noninteractive apt install -y $packages ; apt clean"
 
         elif [[ "$(command -v dnf)" != "" && "$ID" == "fedora" ]]; then # e.g. ID=fedora (tested versions: 42)
             # dnf is used on fedora
@@ -165,10 +166,16 @@ install_deps() {
 
             echo_root_run "dnf install -y epel-release && dnf install -y $packages ; dnf clean packages"
 
-        elif [[ "$(command -v zypper)" != "" && "$ID" == "opensuse-leap" ]]; then
-            # zypper is used on OpenSUSE. Force using python 3.11 because the default python version is 3.6 on older versions of leap
-            packages="make ccache clang lld lldb gdb bison gawk flex perl python311-devel python311-pip libxml2-devel zlib-devel doxygen graphviz xdg-utils libdw-devel"
-            PYTHON3="python3.11"
+        elif [[ "$(command -v zypper)" != "" && ( "$ID" == "opensuse-leap" || "$ID" == "opensuse-tumbleweed") ]]; then
+            # zypper is used on OpenSUSE. 
+
+            # KLUDGE: Force using python 3.12 on leap 15.x because the default python version is 3.6 which is too old.
+            if [[ "$PYTHON3" == "python3" && "$ID" == "opensuse-leap" && "$VERSION" == 15.* ]]; then
+                PYTHON3="python3.12"
+                PYTHON3_DOTLESS="python312"
+            fi
+
+            packages="make ccache clang lld lldb gdb bison gawk flex perl $PYTHON3_DOTLESS-devel $PYTHON3_DOTLESS-pip doxygen graphviz xdg-utils libdw-devel"
 
             if ! $no_gui; then
                 packages="$packages qt6-base-devel qt6-wayland libQt6Svg6 libwebkit2gtk-4_1-0"
@@ -185,7 +192,7 @@ install_deps() {
             packages="make diffutils ccache clang pkgconf lld lldb gdb bison gawk flex perl python python-pip libxml2 zlib doxygen graphviz xdg-utils libdwarf"
 
             if ! $no_gui; then
-                packages="$packages qt6-base qt6-svg qt6-wayland webkit2gtk"
+                packages="$packages qt6-base qt6-svg qt6-wayland webkit2gtk-4.1"
             fi
 
             if ! $no_3d; then
@@ -325,9 +332,9 @@ install the required dependencies, install a python virtual environment
 and then configure and build OMNeT++.
 
 Supported operating systems [and package managers]:
-- Linux (Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL [dnf],
-        OpenSuse-tumbleweed [zypper], ArchLinux [pacman], NixOS [nix])
-- macOS 15 [homebrew]
+- Linux (Ubuntu/Debian [apt], Fedora/AlmaLinux/RHEL/RockyLinux [dnf],
+        OpenSuse-tumbleweed/leap [zypper], ArchLinux [pacman], NixOS [nix])
+- macOS 16 [homebrew]
 - Windows 11/Msys2 [pacman]
 
 ${BLUE}NOTE: This is an experimental script. If it doesn't work, please open

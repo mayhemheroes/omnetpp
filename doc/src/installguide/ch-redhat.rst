@@ -5,7 +5,7 @@ Supported Releases
 ------------------
 
 This chapter provides additional information for installing |omnet++| on
-Red Hat Enterprise Linux (RHEL) and AlmaLinux distributions. 
+Red Hat Enterprise Linux (RHEL), RockyLinux and AlmaLinux distributions. 
 
 Installing the Prerequisite Packages
 ------------------------------------

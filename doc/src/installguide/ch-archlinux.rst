@@ -24,7 +24,7 @@ Next, install packages for the graphical environment (Qtenv and IDE). If you do 
 
 .. code::
 
-   $ sudo pacman -Sy --needed --noconfirm qt6-base qt6-svg qt6-wayland webkit2gtk
+   $ sudo pacman -Sy --needed --noconfirm qt6-base qt6-svg qt6-wayland webkit2gtk-4.1
 
 For 3D visualization support in Qtenv, install the OpenSceneGraph package. If you do not need 3D support, you can skip this step and later configure |omnet++| with ``WITH_OSG=no``.
 
