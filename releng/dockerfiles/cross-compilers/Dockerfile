@@ -17,15 +17,15 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get clean
 
 # Install osxcross
-ENV OSXCROSS_SDK_VERSION 12.3
+ENV OSXCROSS_SDK_VERSION 13.3
 RUN mkdir /opt/osxcross && \
     cd /opt && \
     git clone https://github.com/tpoechtrager/osxcross.git && \
     cd osxcross && \
-    git checkout f873f534c6 && \
+    git checkout e6ab3fa74 && \
     ./tools/get_dependencies.sh && \
     curl -L -o ./tarballs/MacOSX${OSXCROSS_SDK_VERSION}.sdk.tar.xz \
-        https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX${OSXCROSS_SDK_VERSION}.sdk.tar.xz && \
+        https://github.com/alexey-lysiuk/macos-sdk/releases/download/${OSXCROSS_SDK_VERSION}/MacOSX${OSXCROSS_SDK_VERSION}.tar.xz && \
     yes | UNATTENDED=1 TARGET_DIR=/opt/clang-macos ./build.sh
 
 # second stage build (copy only the final resuts from the previous build process)
@@ -46,5 +46,5 @@ RUN apt-get update && \
 
 # add clang-mingw windows cross compiler
 RUN mkdir /opt/clang-mingw && \
-   curl -LsS "https://github.com/mstorsjo/llvm-mingw/releases/download/20251021/llvm-mingw-20251021-ucrt-ubuntu-22.04-x86_64.tar.xz" | tar -xJ --strip-components=1 -C /opt/clang-mingw
+   curl -LsS "https://github.com/mstorsjo/llvm-mingw/releases/download/20260421/llvm-mingw-20260421-ucrt-ubuntu-22.04-x86_64.tar.xz" | tar -xJ --strip-components=1 -C /opt/clang-mingw
 ENV PATH $PATH:/opt/clang-mingw/bin
