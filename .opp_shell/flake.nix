@@ -2,7 +2,7 @@
   description = "OMNeT++ development environment (NixOS)";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -44,9 +44,9 @@
           gsettings-desktop-schemas
           shared-mime-info
           webkitgtk_4_1
-          xorg.libX11
-          xorg.libXrender
-          xorg.libXtst
+          libX11
+          libXrender
+          libXtst
           zlib
 
           # additional libraries for vscode
@@ -62,12 +62,12 @@
           nss
           pango
           udev
-          xorg.libXcomposite
-          xorg.libXdamage
-          xorg.libXext
-          xorg.libXfixes
-          xorg.libXrandr
-          xorg.libxcb
+          libXcomposite
+          libXdamage
+          libXext
+          libXfixes
+          libXrandr
+          libxcb
 
         ];
 
