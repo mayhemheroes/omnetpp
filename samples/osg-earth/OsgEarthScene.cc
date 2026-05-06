@@ -46,8 +46,8 @@ void OsgEarthScene::initialize()
 
     playgroundLat = getSystemModule()->par("playgroundLatitude");
     playgroundLon = getSystemModule()->par("playgroundLongitude");
-    playgroundHeight = getSystemModule()->par("playgroundHeight");
-    playgroundWidth = getSystemModule()->par("playgroundWidth");
+    playgroundHeight = getSystemModule()->par("playgroundHeight").doubleValue();
+    playgroundWidth = getSystemModule()->par("playgroundWidth").doubleValue();
     double centerLongitude = toLongitude(playgroundWidth/2);
     double centerLatitude = toLatitude(playgroundHeight/2);
 

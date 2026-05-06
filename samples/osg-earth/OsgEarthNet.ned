@@ -13,7 +13,7 @@
 network OsgEarthNet
 {
     parameters:
-        @display("bgb=$playgroundWidth,$playgroundHeight;bgi=background/terrain,s");
+        @display("bgb=${dropUnit(playgroundWidth)},${dropUnit(playgroundHeight)};bgi=background/terrain,s");
         double playgroundLatitude; // geographic position of the playground's north-west corner
         double playgroundLongitude; // geographic position of the playground's north-west corner
         double playgroundWidth @unit("m") = default(300m);  // the E-W size of playground

@@ -39,8 +39,8 @@ void RambleNode::initialize(int stage)
         y = par("startY");
         heading = 360 * dblrand();
         speed = par("speed");
-        playgroundHeight = getSystemModule()->par("playgroundHeight");
-        playgroundWidth = getSystemModule()->par("playgroundWidth");
+        playgroundHeight = getSystemModule()->par("playgroundHeight").doubleValue();
+        playgroundWidth = getSystemModule()->par("playgroundWidth").doubleValue();
         transmissionDuration = par("transmissionDuration");
         initialAlpha = par("transmissionAlpha");
         // this will make the animation smoother
