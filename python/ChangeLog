@@ -1,3 +1,5 @@
+2026-05-06  ------ omnetpp-6.4.0 released ------
+
 2026-04-28  Andras Varga
 
 	* omnetpp.scave.utils: More informative error message if scave_bindings cannot be
