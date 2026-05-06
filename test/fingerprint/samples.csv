@@ -70,7 +70,7 @@
 
 /samples/histograms/,                ./histograms -f omnetpp.ini -c Uniform -r 0,             1000s,         7c0d-e5b8/rsz,PASS,
 /samples/histograms/,                ./histograms -f omnetpp.ini -c IntUniform -r 0,          1000s,         1014-70a1/rsz,PASS,
-/samples/histograms/,                ./histograms -f omnetpp.ini -c Normal -r 0,              1000s,         7edc-554c/rsz 148a-f878/rsz,PASS,
+/samples/histograms/,                ./histograms -f omnetpp.ini -c Normal -r 0,              1000s,         7edc-554c/rsz 148a-f878/rsz 85f7-6efb/rsz,PASS,
 /samples/histograms/,                ./histograms -f omnetpp.ini -c Exponential -r 0,         1000s,         45bc-2c33/rsz,PASS,
 /samples/histograms/,                ./histograms -f omnetpp.ini -c Bimodal -r 0,             1000s,         5d61-d6c8/rsz,PASS,
 /samples/histograms/,                ./histograms -f omnetpp.ini -c ConstantWeightedUniform -r 0, 1000s,     eed5-f03f/rsz,PASS,
