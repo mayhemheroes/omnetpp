@@ -180,7 +180,7 @@ std::string cDoubleParImpl::unparse() const
 {
     if (flags & FL_ISEXPR)
         return expr->str();
-    return UnitConversion::formatQuantity(val, getUnit(), 15); // use near-maximum precision (digit 16 often accumulates rounding errors, and digit 17 is part noise)
+    return UnitConversion::formatQuantity(val, getUnit(), 17); // use round-trip precision; note that digits 16-17 may contain noise from unit conversion
 }
 
 void cDoubleParImpl::parse(const char *text, FileLine loc, const cPar *targetPar)
