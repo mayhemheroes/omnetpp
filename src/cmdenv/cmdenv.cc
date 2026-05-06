@@ -516,14 +516,14 @@ void Cmdenv::doStatusUpdate(Speedometer& speedometer)
         out << "     Messages:  created: " << cMessage::getTotalMessageCount()
             << "   present: " << cMessage::getLiveMessageCount()
             << "   in FES: " << getSimulation()->getFES()->getLength()
-            << "   Memory (rss): " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
+            << "   Memory (RSS): " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
     }
     else {
         out << "** Event #" << getSimulation()->getEventNumber() << "   t=" << getSimulation()->getSimTime()
             << "   Elapsed: " << timeToStr(getElapsedSecs())
             << progressPercentage() // note: IDE launcher uses this to track progress
             << "   ev/sec=" << speedometer.getEventsPerSec()
-            << "   Memory (rss): " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
+            << "   Memory (RSS): " << UnitConversion::formatInBestUnit(opp_memory_usage(), "B") << endl;
     }
 
     // status update is always autoflushed (not only if opt->autoflush is on)

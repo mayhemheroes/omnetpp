@@ -193,7 +193,7 @@ void MainWindow::updateSimulationIdenticon(const QString &tooltip, const QString
 void MainWindow::updateMenuPlacement()
 {
     bool moveMenuToToolbar = getQtenv()->getPref("move-menu-to-toolbar", ui->menuBar->isNativeMenuBar()).toBool();
-    
+
     if (moveMenuToToolbar) {
         // Hide regular menu bar and add toolbar button
         ui->menuBar->setVisible(false);
@@ -714,7 +714,7 @@ void MainWindow::updateSimtimeDisplay()
     ui->labelMessageStats->setText("Msg stats: " + QString::number(getSimulation()->getFES()->getLength())
             +" scheduled / " + QString::number(cMessage::getLiveMessageCount())
             +" existing / " + QString::number(cMessage::getTotalMessageCount()) + " created");
-    ui->labelMemory->setText("Memory: " + QString::fromStdString(UnitConversion::formatInBestUnit(opp_memory_usage(), "B")));
+    ui->labelMemory->setText("Memory (RSS): " + QString::fromStdString(UnitConversion::formatInBestUnit(opp_memory_usage(), "B")));
 }
 
 void MainWindow::updatePerformanceDisplay()
