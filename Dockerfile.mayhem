@@ -9,8 +9,11 @@ RUN pip3 install --user --upgrade numpy pandas matplotlib scipy seaborn posix_ip
 
 COPY . /omnetpp
 WORKDIR /omnetpp
-RUN cp configure.user.dist configure.user
-RUN source ./setenv -f && ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no && make -j8
+RUN cp configure.user.dist configure.user && \
+    sed -i "s/^WITH_OSG=.*/WITH_OSG=no/" configure.user && \
+    sed -i "s/^WITH_OSGEARTH=.*/WITH_OSGEARTH=no/" configure.user && \
+    sed -i "s/^WITH_QTENV=.*/WITH_QTENV=no/" configure.user
+RUN source ./setenv -f && ./configure && make -j8
 
 FROM ubuntu:22.04 as package
 COPY --from=builder /omnetpp/bin/opp_msgtool /
