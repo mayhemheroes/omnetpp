@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
 
 ARG VERSION
